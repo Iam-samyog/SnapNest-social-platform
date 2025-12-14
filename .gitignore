@@ -1,0 +1,82 @@
+# ======================
+# Python
+# ======================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+
+# ======================
+# Virtual Environments
+# ======================
+env/
+venv/
+ENV/
+.venv/
+
+# ======================
+# Django
+# ======================
+*.log
+local_settings.py
+settings/local.py
+settings/.env
+.env
+.env.*
+
+# SQLite / DB
+db.sqlite3
+db.sqlite3-journal
+
+# Django media & static
+media/
+staticfiles/
+
+# Migrations (optional – uncomment if you don't want them tracked)
+# */migrations/*.py
+# */migrations/__pycache__/
+
+# ======================
+# IDE / Editors
+# ======================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ======================
+# Node / Frontend
+# ======================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ======================
+# Testing / Coverage
+# ======================
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ======================
+# Debugging
+# ======================
+debug.log
+
+# ======================
+# Redis
+# ======================
+dump.rdb
+
+# ======================
+# Django Extensions
+# ======================
+*.sqlite3
+
+# ======================
+# OS Files
+# ======================
+Thumbs.db
