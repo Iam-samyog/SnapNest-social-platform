@@ -121,3 +121,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',  # Optional: project-level static folder
 ]
 
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+
