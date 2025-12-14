@@ -136,3 +136,6 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 
+#media
+MEDIA_URL='media/'
+MEDIA_ROOT=BASE_DIR/'media'
