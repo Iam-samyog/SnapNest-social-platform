@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-c#*h=m7tb&10lvrx%-p2*+@&wh_*@@-_jdsqk#+svfn5i$^g&j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['mysite.com', 'localhost', '127.0.0.1']
+
 
 
 # Application definition
@@ -41,10 +42,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'social_django',
     'images.apps.ImagesConfig',
+    'django_extensions',
+  
+    
     
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_PRIVATE_NETWORK = True
+
 MIDDLEWARE = [
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'Snapnest.urls'
@@ -121,9 +131,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # Optional: project-level static folder
+    BASE_DIR / 'static', 
+    BASE_DIR / 'images' / 'static',  
 ]
 
 LOGIN_REDIRECT_URL = 'dashboard'
@@ -141,7 +152,7 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 
 #media
-MEDIA_URL='media/'
+MEDIA_URL='/media/'
 MEDIA_ROOT=BASE_DIR/'media'
 
 AUTHENTICATION_BACKENDS=[
