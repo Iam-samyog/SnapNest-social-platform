@@ -24,10 +24,11 @@
                 </a>
             </li>
             <li {% if section == 'people' %}class="selected"{% endif %}>
-                <a href="#">
+                <a href="{% url 'user_list' %}">
                     People
                 </a>
             </li>
+            
 
         </ul>
         {% endif %}
