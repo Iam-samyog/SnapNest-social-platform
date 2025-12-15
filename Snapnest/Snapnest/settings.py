@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'social_django',
     'images.apps.ImagesConfig',
     'django_extensions',
+    'easy_thumbnails',
   
     
     
