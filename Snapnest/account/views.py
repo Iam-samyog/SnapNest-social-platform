@@ -13,6 +13,8 @@ from .models import Contact, Profile
 from actions.utils import create_action
 from actions.models import Action
 from images.models import Image
+from django.db.models import Q
+
 # Create your views here.
 
 
@@ -143,6 +145,19 @@ def user_detail(request,username):
         'account/user/detail.html',
         {'section':'people','user':user}
     )
+
+@login_required
+def user_search(request):
+    query = request.GET.get('q', '')
+    if query:
+        users = User.objects.filter(
+            Q(username__icontains=query) | 
+            Q(first_name__icontains=query) | 
+            Q(last_name__icontains=query)
+        ).select_related('profile')[:10]
+    else:
+        users = []
+    return render(request, 'account/user_search.html', {'users': users, 'query': query})
 
 @require_POST
 @login_required

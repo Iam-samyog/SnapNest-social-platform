@@ -16,9 +16,12 @@
           like{{ total_likes|pluralize }}
         </span>
         <span class="count">
-            {{ total_views }} view{{ total_view|pluralize }}
+          <span class="total">{{ total_views }}</span>
+          view{{ total_views|pluralize }}
         </span>
-        <a href="#" data-id="{{ image.id }}" data-action="{% if request.user in users_like %}unlike{% else %}like{% endif %}"
+
+        {% if request.user.is_authenticated %}
+        <a href="#" data-id="{{ image.id }}" data-action="{% if request.user in users_like %}un{% endif %}like"
     class="like button">
           {% if request.user not in users_like %}
             Like
@@ -26,6 +29,7 @@
             Unlike
           {% endif %}
         </a>
+        {% endif %}
       </div>
       {{ image.description|linebreaks }}
     </div>
@@ -41,8 +45,334 @@
         Nobody likes this image yet.
       {% endfor %}
     </div>
+    
+    <div class="image-comments">
+      <h3>Comments</h3>
+      {% for comment in comments %}
+        <div class="comment">
+          <div class="comment-content">
+            <div class="comment-avatar">
+              {% if comment.user.profile.photo %}
+                <img src="{% thumbnail comment.user.profile.photo 45x45 crop='100%' %}" alt="{{ comment.user.username }}">
+              {% else %}
+                <div class="comment-avatar-placeholder">
+                  {{ comment.user.first_name|first|default:comment.user.username|first|upper }}
+                </div>
+              {% endif %}
+            </div>
+            <div class="comment-body">
+              <div class="comment-header">
+                <span class="comment-author">{{ comment.user.username }}</span>
+                <span class="comment-timestamp">{{ comment.created|date:"M d, Y H:i" }}</span>
+              </div>
+              <p class="comment-text">{{ comment.body|linebreaks }}</p>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="no-comments">
+          <p>No comments yet. Be the first to comment!</p>
+        </div>
+      {% endfor %}
+      
+      {% if request.user.is_authenticated %}
+        <div class="comment-form">
+          <h4>Add a comment</h4>
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              {{ comment_form.body }}
+            </div>
+            <button type="submit">
+              <span>📝</span>
+              Post Comment
+            </button>
+          </form>
+        </div>
+      {% else %}
+        <div class="login-prompt">
+          <p><a href="{% url 'login' %}">Log in</a> to join the conversation and add your thoughts!</p>
+        </div>
+      {% endif %}
+    </div>
   {% endwith %}
 {% endblock %}
+
+<style>
+.image-comments {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 2px solid #e9ecef;
+}
+
+.image-comments h3 {
+  margin-bottom: 25px;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.image-comments h3::before {
+  content: "💬";
+  font-size: 1.2rem;
+}
+
+.comment {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.comment:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+
+.comment::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #007bff, #0056b3);
+  border-radius: 12px 0 0 12px;
+}
+
+.comment-content {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.comment-avatar {
+  flex-shrink: 0;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.comment-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comment-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.comment-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-author::before {
+  content: "@";
+  color: #6c757d;
+  font-weight: normal;
+}
+
+.comment-timestamp {
+  color: #6c757d;
+  font-size: 0.85rem;
+  background: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.comment-text {
+  color: #495057;
+  line-height: 1.6;
+  margin: 0;
+  word-wrap: break-word;
+}
+
+.no-comments {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+}
+
+.no-comments::before {
+  content: "🤔";
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.comment-form {
+  margin-top: 30px;
+  padding: 25px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid #dee2e6;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.comment-form h4 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comment-form h4::before {
+  content: "✍️";
+  font-size: 1.1rem;
+}
+
+.comment-form .form-group {
+  margin-bottom: 20px;
+}
+
+.comment-form textarea {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: all 0.3s ease;
+  background: #fff;
+}
+
+.comment-form textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+}
+
+.comment-form textarea::placeholder {
+  color: #adb5bd;
+}
+
+.comment-form button {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,123,255,0.3);
+}
+
+.comment-form button:active {
+  transform: translateY(0);
+}
+
+.login-prompt {
+  text-align: center;
+  padding: 30px;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 1px solid #f39c12;
+  border-radius: 12px;
+  color: #8b4513;
+}
+
+.login-prompt a {
+  color: #e67e22;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-prompt a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .comment-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .comment-avatar {
+    align-self: flex-start;
+  }
+  
+  .comment-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .comment-form {
+    padding: 20px;
+  }
+  
+  .comment-form textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  .image-comments h3 {
+    font-size: 1.3rem;
+  }
+  
+  .comment {
+    padding: 15px;
+  }
+  
+  .comment-form h4 {
+    font-size: 1.1rem;
+  }
+}
+</style>
 
 {% block domready %}
   const url = '{% url "images:like" %}';

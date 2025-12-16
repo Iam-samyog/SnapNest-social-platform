@@ -5,11 +5,17 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .forms import ImageCreateForm, ImageUploadForm
-from .models import Image
+from .forms import ImageCreateForm, ImageUploadForm, CommentForm
+from .models import Image, Comment
 from actions.utils import create_action
 import redis
 from django.conf import settings
+
+r = redis.Redis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    db=settings.REDIS_DB
+)
 
 @login_required
 def image_create(request):
@@ -61,10 +67,35 @@ def image_detail(request, id, slug):
     image = get_object_or_404(Image, id=id, slug=slug)
     total_views=r.incr(f'image:{image.id}:views')
     r.zincrby('image_ranking',1,image.id)
+    
+    # List of comments
+    comments = image.comments.all()
+    
+    if request.method == 'POST':
+        # A comment was posted
+        comment_form = CommentForm(data=request.POST)
+        if comment_form.is_valid():
+            # Create comment object but don't save to database yet
+            new_comment = comment_form.save(commit=False)
+            # Assign the current user and image to the comment
+            new_comment.user = request.user
+            new_comment.image = image
+            # Save the comment to the database
+            new_comment.save()
+            return redirect(image.get_absolute_url())
+    else:
+        comment_form = CommentForm()
+    
     return render(
         request,
         'images/image/detail.html',
-        {'section': 'images', 'image': image,'total_views':total_views},
+        {
+            'section': 'images', 
+            'image': image,
+            'total_views': total_views,
+            'comments': comments,
+            'comment_form': comment_form
+        },
     )
 
 

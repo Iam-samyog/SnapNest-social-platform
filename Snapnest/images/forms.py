@@ -1,5 +1,5 @@
 from django import forms
-from .models import Image
+from .models import Image, Comment
 import requests
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
@@ -46,4 +46,13 @@ class ImageUploadForm(forms.ModelForm):
         fields = ['title', 'description', 'image']
         widgets = {
             'image': forms.FileInput(attrs={'accept': 'image/*'}),
+        }
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['body']
+        widgets = {
+            'body': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Add a comment...'}),
         }
