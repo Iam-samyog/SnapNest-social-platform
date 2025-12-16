@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from .models import Contact, Profile
 from actions.utils import create_action
 from actions.models import Action
+from images.models import Image
 # Create your views here.
 
 
@@ -27,10 +28,13 @@ def dashboard(request):
     actions=actions.select_related(
         'user','user__profile'
     ).prefetch_related('target')[:10]
+
+    images = Image.objects.filter(user__in=following_ids).select_related('user').order_by('-created')[:20]
+
     return render(
         request,
         'account/dashboard.html',
-        {'section':'dashboard','actions':actions}
+        {'section':'dashboard','actions':actions, 'images': images}
     )
 
 def user_login(request):
@@ -93,8 +97,9 @@ def edit(request):
             instance=request.user,
             data=request.POST
         )
+        profile, created = Profile.objects.get_or_create(user=request.user)
         profile_form=ProfileEditForm(
-            instance=request.user.profile,
+            instance=profile,
             data=request.POST,
             files=request.FILES
         )
@@ -108,7 +113,8 @@ def edit(request):
             
     else:
         user_form=UserEditForm(instance=request.user)
-        profile_form=ProfileEditForm(instance=request.user.profile)
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        profile_form=ProfileEditForm(instance=profile)
         
     return render(
         request,

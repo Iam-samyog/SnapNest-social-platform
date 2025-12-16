@@ -1,26 +1,156 @@
 {% extends "base.html" %}
+{% load static %}
+{% load thumbnail %}
 
-{% block title %}Dashboard {% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-
-    <h1>Dashboard</h1>
-    {% with total_images_created=request.user.images_created.count %}
-    <p>
-        Welcome to your dashboard. You have bookmarked 
-        {{ total_images_created}} image{{ total_images_created|pluralize }}.
-    </p>
-    {% endwith %}
-    <p>
-        Drag the following button to your bookmarks toolbar to bookmark images from other websites <a href="javascript:{% include 'bookmarklet_launcher.js' %} " class="button">Bookmark it</a>
-    </p>
-    <p>
-        You can <a href="{% url 'edit' %}">Edit your profile </a> or <a href="{% url 'password_change' %}">Change your password</a>
-    </p>
-    <h2>What's happening</h2>
-    <div id="action-list">
-        {% for action in actions %}
-         {% include 'actions/action/detail.html' %}
-        {% endfor %}
+<div class="dashboard-container">
+    <!-- Profile Header (Instagram-style) -->
+    <div class="profile-header bg-white border-bottom p-3 mb-4">
+        <div class="d-flex align-items-center">
+            {% if request.user.profile.photo %}
+                {% thumbnail request.user.profile.photo "60x60" crop="100%" as im %}
+                <img src="{{ im.url }}" alt="Avatar" class="rounded-circle me-3" style="width: 60px; height: 60px;">
+            {% else %}
+                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-user text-white fa-lg"></i>
+                </div>
+            {% endif %}
+            <div>
+                <h5 class="mb-0">{{ request.user.first_name|default:request.user.username }}</h5>
+                <p class="text-muted mb-0">{{ request.user.followers.count }} followers • {{ request.user.following.count }} following</p>
+            </div>
+        </div>
+        <div class="ms-auto">
+            <a href="javascript:{% include 'bookmarklet_launcher.js' %}" class="btn btn-outline-success btn-sm me-2">
+                <i class="fas fa-bookmark"></i> Bookmark
+            </a>
+            <a href="{% url 'images:upload' %}" class="btn btn-outline-primary btn-sm me-2">
+                <i class="fas fa-plus"></i> Upload
+            </a>
+            <a href="{% url 'edit' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-cog"></i>
+            </a>
+        </div>
     </div>
+
+    <!-- Bookmarklet Info -->
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Tip:</strong> Drag the <strong>Bookmark</strong> button above to your browser's bookmark bar for quick image sharing from any website!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Stories Section (What's Happening as Stories) -->
+    <div class="stories-section bg-white border-bottom p-3 mb-4">
+        <h6 class="mb-3">What's Happening</h6>
+        <div class="d-flex overflow-auto pb-2" style="max-width: 100%;">
+            {% for action in actions %}
+            <div class="story-card me-3 text-center">
+                <div class="story-avatar rounded-circle border border-2 border-primary p-1">
+                    {% if action.user.profile.photo %}
+                        {% thumbnail action.user.profile.photo "50x50" crop="100%" as im %}
+                        <img src="{{ im.url }}" alt="User" class="rounded-circle" style="width: 50px; height: 50px;">
+                    {% else %}
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user text-secondary"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <small class="d-block mt-1 text-truncate" style="max-width: 70px;">{{ action.user.first_name|default:action.user.username }}</small>
+                <small class="text-muted d-block">{{ action.verb }}</small>
+            </div>
+            {% empty %}
+            <p class="text-muted mb-0">No recent activity. Follow users to see updates!</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Image Feed Grid (Instagram-style) -->
+    <div class="image-feed">
+        <div class="row g-1">
+            {% for image in images %}
+            <div class="col-4">
+                <div class="image-card position-relative">
+                    <a href="{{ image.get_absolute_url }}">
+                        {% thumbnail image.image "300x300" crop="smart" as im %}
+                        <img src="{{ im.url }}" alt="{{ image.title }}" class="img-fluid w-100 h-100 object-fit-cover">
+                    </a>
+                    <div class="image-overlay d-flex align-items-end justify-content-between p-2">
+                        <div class="text-white">
+                            <i class="fas fa-heart me-1"></i>{{ image.total_likes }}
+                        </div>
+                        <div class="text-white">
+                            <i class="fas fa-eye me-1"></i>{{ image.total_views|default:0 }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                <h5>No images yet</h5>
+                <p class="text-muted">Start by uploading or bookmarking images!</p>
+                <a href="{% url 'images:upload' %}" class="btn btn-primary">Upload Your First Image</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #fafafa;
+    min-height: 100vh;
+    padding-bottom: 2rem;
+}
+
+.profile-header {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.stories-section .story-card {
+    min-width: 80px;
+}
+
+.image-card {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.image-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.5));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.image-card:hover .image-overlay {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .profile-header .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    .profile-header .ms-auto {
+        margin-top: 1rem;
+    }
+    .dashboard-container {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+}
+</style>
 {% endblock %}

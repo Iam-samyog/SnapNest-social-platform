@@ -1,40 +1,48 @@
 {% load thumbnail %}
 
 {% with user=action.user profile=action.user.profile %}
-<div class="action">
-<div class="images">
-{% if profile.photo %}
-{% thumbnail user.profile.photo "80x80" crop="100%" as im %}
-<a href="{{ user.get_absolute_url }}">
-<img src="{{ im.url }}" alt="{{ user.get_full_name }}"
-class="item-img">
-</a>
-{% endif %}
-{% if action.target %}
-{% with target=action.target %}
-{% if target.image %}
-{% thumbnail target.image "80x80" crop="100%" as im %}
-<a href="{{ target.get_absolute_url }}">
-<img src="{{ im.url }}" class="item-img">
-</a>
-{% endif %}
-{% endwith %}
-{% endif %}
-</div>
-<div class="info">
-<p>
-<span class="date">{{ action.created|timesince }} ago</span>
-<br />
-<a href="{{ user.get_absolute_url }}">
-{{ user.first_name }}
-</a>
-{{ action.verb }}
-{% if action.target %}
-{% with target=action.target %}
-<a href="{{ target.get_absolute_url }}">{{ target }}</a>
-{% endwith %}
-{% endif %}
-</p>
-</div>
+<div class="action mb-3 p-3 border rounded bg-light">
+    <div class="d-flex align-items-center">
+        <div class="me-3">
+            {% if profile.photo %}
+                {% thumbnail user.profile.photo "60x60" crop="100%" as im %}
+                <a href="{{ user.get_absolute_url }}">
+                    <img src="{{ im.url }}" alt="{{ user.get_full_name }}" class="rounded-circle border">
+                </a>
+            {% else %}
+                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="fas fa-user text-white fa-lg"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="flex-grow-1">
+            <p class="mb-1">
+                <small class="text-muted">{{ action.created|timesince }} ago</small>
+            </p>
+            <p class="mb-0">
+                <a href="{{ user.get_absolute_url }}" class="text-decoration-none fw-bold text-primary">
+                    {{ user.first_name|default:user.username }}
+                </a>
+                {{ action.verb }}
+                {% if action.target %}
+                    {% with target=action.target %}
+                        <a href="{{ target.get_absolute_url }}" class="text-decoration-none fw-bold text-success">{{ target }}</a>
+                    {% endwith %}
+                {% endif %}
+            </p>
+        </div>
+        {% if action.target %}
+            {% with target=action.target %}
+                {% if target.image %}
+                    <div class="ms-3">
+                        {% thumbnail target.image "60x60" crop="100%" as im %}
+                        <a href="{{ target.get_absolute_url }}">
+                            <img src="{{ im.url }}" class="rounded border" alt="Action image">
+                        </a>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+    </div>
 </div>
 {% endwith %}

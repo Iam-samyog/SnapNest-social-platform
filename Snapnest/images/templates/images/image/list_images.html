@@ -1,16 +1,24 @@
 {% load thumbnail %}
 {% for image in images %}
-<div class="image">
-    <a href="{{ image.get_absolute_url }}">
-        {% thumbnail image.image 300x300 crop="smart" as im %}
-    <a href="{{ image.get_absolute_url }}">
-        <img src="{{ im.url }}" alt="">
-    </a>
-    <div class="info">
-        <a href="{{ image.get_absolute_url }}" class="title">
-            {{ image.title }}
+<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12 mb-4">
+    <div class="card h-100 shadow-sm">
+        <a href="{{ image.get_absolute_url }}" class="text-decoration-none">
+            {% thumbnail image.image "300x300" crop="smart" as im %}
+            <img src="{{ im.url }}" class="card-img-top" alt="{{ image.title }}" style="height: 200px; object-fit: cover;">
         </a>
+        <div class="card-body d-flex flex-column">
+            <h6 class="card-title text-truncate">
+                <a href="{{ image.get_absolute_url }}" class="text-decoration-none text-dark">{{ image.title }}</a>
+            </h6>
+            <div class="mt-auto">
+                <small class="text-muted">
+                    <i class="fas fa-user me-1"></i>{{ image.user.first_name|default:image.user.username }}
+                </small>
+                <small class="text-muted ms-2">
+                    <i class="fas fa-heart me-1"></i>{{ image.total_likes }}
+                </small>
+            </div>
+        </div>
     </div>
-    </a>
 </div>
 {% endfor %}

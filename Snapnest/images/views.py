@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .forms import ImageCreateForm
+from .forms import ImageCreateForm, ImageUploadForm
 from .models import Image
 from actions.utils import create_action
 import redis
@@ -33,6 +33,26 @@ def image_create(request):
     return render(
         request,
         'images/image/create.html',
+        {'section': 'images', 'form': form},
+    )
+
+
+@login_required
+def image_upload(request):
+    if request.method == 'POST':
+        form = ImageUploadForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            new_image = form.save(commit=False)
+            new_image.user = request.user
+            new_image.save()
+            create_action(request.user, 'uploaded image', new_image)
+            messages.success(request, 'Image uploaded successfully')
+            return redirect(new_image.get_absolute_url())
+    else:
+        form = ImageUploadForm()
+    return render(
+        request,
+        'images/image/upload.html',
         {'section': 'images', 'form': form},
     )
 
