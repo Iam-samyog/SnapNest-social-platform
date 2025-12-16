@@ -30,6 +30,39 @@
           {% endif %}
         </a>
         {% endif %}
+        {% if request.user == image.user %}
+        <div class="image-actions mt-2">
+          <a href="{% url 'images:edit' image.id image.slug %}" class="btn btn-primary btn-sm me-2">
+            <i class="fas fa-edit me-1"></i>Edit Image
+          </a>
+          <!-- Button to trigger modal -->
+          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="fas fa-trash me-1"></i>Delete Image
+          </button>
+
+          <!-- Modal for confirmation -->
+          <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title text-danger" id="deleteModalLabel">Confirm Delete</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  Are you sure you want to permanently delete <strong>{{ image.title }}</strong>? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                  <form action="{% url 'images:delete' image.id image.slug %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                  </form>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
       </div>
       {{ image.description|linebreaks }}
     </div>
@@ -331,6 +364,25 @@
 
 .login-prompt a:hover {
   text-decoration: underline;
+}
+
+.image-actions {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  margin-top: 15px;
+}
+
+.image-actions .btn {
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 8px 16px;
+}
+
+.image-actions .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 /* Responsive Design */

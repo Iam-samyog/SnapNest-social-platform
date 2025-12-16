@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Delete Image{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title mb-0 text-danger"><i class="fas fa-trash me-2"></i>Delete Image</h1>
+                                        <p>Are you sure you want to delete "{{ image.title }}"?</p>
+                                        <!-- Delete Button triggers modal -->
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                                Delete
+                                        </button>
+                                        <a href="{{ image.get_absolute_url }}" class="btn btn-secondary">Cancel</a>
+
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title text-danger" id="deleteModalLabel">Confirm Delete</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Are you sure you want to permanently delete <strong>{{ image.title }}</strong>? This action cannot be undone.
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <form method="post" class="d-inline">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                                                        </form>
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

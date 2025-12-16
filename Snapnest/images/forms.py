@@ -49,10 +49,21 @@ class ImageUploadForm(forms.ModelForm):
         }
 
 
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ['body']
         widgets = {
             'body': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Add a comment...'}),
+        }
+
+
+# Form for editing images
+class ImageEditForm(forms.ModelForm):
+    class Meta:
+        model = Image
+        fields = ['title', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
         }

@@ -5,7 +5,40 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .forms import ImageCreateForm, ImageUploadForm, CommentForm
+from .forms import ImageCreateForm, ImageUploadForm, CommentForm, ImageEditForm
+
+# Edit image view
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+@login_required
+def image_edit(request, id, slug):
+    image = get_object_or_404(Image, id=id, slug=slug)
+    if image.user != request.user:
+        messages.error(request, 'You can only edit your own images.')
+        return redirect(image.get_absolute_url())
+    if request.method == 'POST':
+        form = ImageEditForm(instance=image, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Image updated successfully!')
+            return redirect(image.get_absolute_url())
+    else:
+        form = ImageEditForm(instance=image)
+    return render(request, 'images/image/edit.html', {'form': form, 'image': image})
+
+# Delete image view
+@login_required
+def image_delete(request, id, slug):
+    image = get_object_or_404(Image, id=id, slug=slug)
+    if image.user != request.user:
+        messages.error(request, 'You can only delete your own images.')
+        return redirect(image.get_absolute_url())
+    if request.method == 'POST':
+        image.delete()
+        messages.success(request, 'Image deleted successfully!')
+        return redirect('images:list')
+    return render(request, 'images/image/delete.html', {'image': image})
 from .models import Image, Comment
 from actions.utils import create_action
 import redis
