@@ -80,3 +80,11 @@ dump.rdb
 # OS Files
 # ======================
 Thumbs.db
+
+# ======================
+# Certificates and Keys
+# ======================
+*.crt
+*.key
+cert.crt
+cert.key
