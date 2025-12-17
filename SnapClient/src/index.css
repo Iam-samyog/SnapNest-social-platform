@@ -1,0 +1,41 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap");
+@import "tailwindcss";
+
+* {
+  font-family: "Poppins", sans-serif;
+}
+
+.font-roboto {
+  font-family: "Roboto", sans-serif;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes pulse-icon {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-icon {
+  animation: pulse-icon 2s ease-in-out infinite;
+}
+.diagonal-split {
+  clip-path: polygon(0 0, 55% 0, 45% 100%, 0 100%);
+}
