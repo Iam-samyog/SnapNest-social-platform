@@ -153,7 +153,20 @@ def image_like(request):
 
 @login_required
 def image_list(request):
-    images = Image.objects.all()
+    # Get ranked images from Redis
+    image_ranking = r.zrange('image_ranking', 0, -1, desc=True)
+    ranked_ids = [int(id) for id in image_ranking]
+    
+    # Get ranked images in order
+    ranked_images = Image.objects.filter(id__in=ranked_ids)
+    ranked_images = sorted(ranked_images, key=lambda x: ranked_ids.index(x.id))
+    
+    # Get unranked images
+    unranked_images = Image.objects.exclude(id__in=ranked_ids)
+    
+    # Combine: ranked first, then unranked
+    images = list(ranked_images) + list(unranked_images)
+    
     paginator = Paginator(images, 8)
     page = request.GET.get('page')
     images_only = request.GET.get('images_only')

@@ -14,6 +14,7 @@ from actions.utils import create_action
 from actions.models import Action
 from images.models import Image
 from django.db.models import Q
+from django.contrib.postgres.search import SearchVector, SearchQuery
 
 # Create your views here.
 
@@ -149,15 +150,23 @@ def user_detail(request,username):
 @login_required
 def user_search(request):
     query = request.GET.get('q', '')
+    users = []
+    images = []
     if query:
-        users = User.objects.filter(
-            Q(username__icontains=query) | 
-            Q(first_name__icontains=query) | 
-            Q(last_name__icontains=query)
-        ).select_related('profile')[:10]
-    else:
-        users = []
-    return render(request, 'account/user_search.html', {'users': users, 'query': query})
+        # User search (username, first_name, last_name)
+        users = User.objects.annotate(
+            search=SearchVector('username', 'first_name', 'last_name')
+        ).filter(search=SearchQuery(query)).select_related('profile')[:10]
+
+        # Image search (title, description)
+        images = Image.objects.annotate(
+            search=SearchVector('title', 'description')
+        ).filter(search=SearchQuery(query)).select_related('user')[:12]
+    return render(
+        request,
+        'account/user_search.html',
+        {'users': users, 'images': images, 'query': query}
+    )
 
 @require_POST
 @login_required

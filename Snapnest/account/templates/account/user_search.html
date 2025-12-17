@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load thumbnail %}
 
-{% block title %}Search Users{% endblock %}
+{% block title %}Search{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -14,6 +14,8 @@
                 <div class="card-body">
                     {% if query %}
                         <p class="text-muted">Showing results for "<strong>{{ query }}</strong>"</p>
+                        
+                        <h4 class="mt-4 mb-3">Users</h4>
                         {% if users %}
                             <div class="row">
                                 {% for user in users %}
@@ -40,17 +42,42 @@
                                 {% endfor %}
                             </div>
                         {% else %}
-                            <div class="text-center py-5">
-                                <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                                <h5>No users found</h5>
-                                <p class="text-muted">Try a different search term.</p>
+                            <div class="text-center py-3">
+                                <i class="fas fa-search fa-2x text-muted mb-2"></i>
+                                <h6>No users found</h6>
+                            </div>
+                        {% endif %}
+
+                        <h4 class="mt-5 mb-3">Images</h4>
+                        {% if images %}
+                            <div class="row">
+                                {% for image in images %}
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <a href="{{ image.get_absolute_url }}">
+                                            {% thumbnail image.image 300x300 crop='center' as im %}
+                                            <img src="{{ im.url }}" class="card-img-top" alt="{{ image.title }}">
+                                        </a>
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-1">{{ image.title }}</h6>
+                                            <p class="card-text text-muted small mb-0">{{ image.description|truncatewords:12 }}</p>
+                                            <small class="text-muted">by <a href="{{ image.user.get_absolute_url }}">{{ image.user.username }}</a></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i class="fas fa-image fa-2x text-muted mb-2"></i>
+                                <h6>No images found</h6>
                             </div>
                         {% endif %}
                     {% else %}
                         <div class="text-center py-5">
                             <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                            <h5>Search for Users</h5>
-                            <p class="text-muted">Enter a name or username in the search bar above.</p>
+                            <h5>Search for Users or Images</h5>
+                            <p class="text-muted">Enter a name, username, image title, or description in the search bar above.</p>
                         </div>
                     {% endif %}
                 </div>
@@ -65,12 +92,10 @@
     border: none;
     border-radius: 10px;
 }
-
 .user-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
-
 .user-card img {
     width: 50px;
     height: 50px;
