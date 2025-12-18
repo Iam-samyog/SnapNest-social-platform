@@ -5,11 +5,12 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .api import UserViewSet
 
-
+from .api import RegisterApiView
 
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
+
 urlpatterns=[
     # path('login/',auth_views.LoginView.as_view(),name='login'),
     # path('logout/',auth_views.LogoutView.as_view(),name='logout'),

@@ -26,8 +26,8 @@ urlpatterns = [
     path('social-auth/',include('social_django.urls',namespace='social')),
     path('images/',include('images.urls',namespace='images')),
     path('__debug__/',include('debug_toolbar.urls')),
-    path('api/', include('account.urls')),  # For auth APIs
-    path('api/', include('images.urls')),   # For image APIs
+    path('api/', include('account.api_urls')),
+    path('api/', include('images.api_urls')),   # For image APIs
     path('api/', include('actions.urls')), 
 ]
 

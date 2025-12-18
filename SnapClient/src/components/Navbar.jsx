@@ -1,15 +1,31 @@
-
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import SearchBar from './SearchBar';
+import ImageModal from './ImageModal';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const isAuthenticated = !!localStorage.getItem('access');
 
-  const navLinks = [
-    { href: '#home', label: 'HOME' },
-   
-    { href: '#portfolio', label: 'PORTFOLIO' },
-    { href: '#info', label: 'INFO' },
-   
+  const handleLogout = () => {
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    navigate('/auth');
+  };
+
+  const publicNavLinks = [
+    { href: '/', label: 'HOME' },
+    { href: '/auth', label: 'LOGIN' },
+  ];
+
+  const authNavLinks = [
+    { href: '/dashboard', label: 'DASHBOARD' },
+    { href: '/images', label: 'IMAGES' },
+    { href: '/users', label: 'PEOPLE' },
+    { href: '/images/ranking', label: 'RANKING' },
   ];
 
   return (
@@ -17,21 +33,36 @@ const Navbar = () => {
       <nav className="relative z-50 px-6 md:px-12 py-8 flex items-center justify-between bg-white/10 backdrop-blur-md">
         {/* Logo */}
         <div className="flex items-center space-x-3">
-          
-          <span className="text-2xl md:text-4xl font-bold text-black tracking-wide">SNAPNEST</span>
+          <Link to="/" className="text-2xl md:text-4xl font-bold text-black tracking-wide hover:opacity-80 transition-opacity">
+            SNAPNEST
+          </Link>
         </div>
         
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-6 lg:space-x-10">
-          {navLinks.map((link) => (
-            <a
+        <div className="hidden md:flex items-center space-x-6 lg:space-x-10 flex-1 justify-center">
+          {(isAuthenticated ? authNavLinks : publicNavLinks).map((link) => (
+            <Link
               key={link.href}
-              href={link.href}
+              to={link.href}
               className="text-sm font-semibold text-black tracking-wide hover:text-amber-500 transition-colors duration-300"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
+          {isAuthenticated && (
+            <>
+              <SearchBar onImageClick={(imageId) => {
+                setSelectedImageId(imageId);
+                setIsModalOpen(true);
+              }} />
+              <button
+                onClick={handleLogout}
+                className="text-sm font-semibold text-black tracking-wide hover:text-red-500 transition-colors duration-300"
+              >
+                LOGOUT
+              </button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -75,21 +106,51 @@ const Navbar = () => {
 
               {/* Menu Links */}
               <div className="flex flex-col space-y-6">
-                {navLinks.map((link) => (
-                  <a
+                {(isAuthenticated ? authNavLinks : publicNavLinks).map((link) => (
+                  <Link
                     key={link.href}
-                    href={link.href}
+                    to={link.href}
                     className="text-black font-semibold hover:text-amber-500 transition-colors duration-300"
                     onClick={() => setIsOpen(false)}
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 ))}
+                {isAuthenticated && (
+                  <>
+                    <div className="py-2">
+                      <SearchBar onImageClick={(imageId) => {
+                        setSelectedImageId(imageId);
+                        setIsModalOpen(true);
+                        setIsOpen(false);
+                      }} />
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                      }}
+                      className="text-black font-semibold hover:text-red-500 transition-colors duration-300 text-left"
+                    >
+                      LOGOUT
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </>
       )}
+
+      {/* Image Modal */}
+      <ImageModal
+        imageId={selectedImageId}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedImageId(null);
+        }}
+      />
     </>
   );
 };

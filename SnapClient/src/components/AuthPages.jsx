@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Add this import if using React Router
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../utils/axiosInstance';
 
 const AuthPages = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -11,7 +12,7 @@ const AuthPages = () => {
   });
   const [errors, setErrors] = useState({});
 
-  const navigate = useNavigate(); // For navigation
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -42,21 +43,61 @@ const AuthPages = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm();
-    if (Object.keys(newErrors).length === 0) {
-      if (isSignIn) {
-        alert(`Signing in with username: ${formData.username}`);
-      } else {
-        alert(`Registering with email: ${formData.email}`);
-      }
-      setFormData({ username: '', email: '', password: '', confirmPassword: '' });
-    } else {
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      return;
+    }
+
+    try {
+      if (isSignIn) {
+        // Login: use JWT endpoint
+        const res = await axiosInstance.post('auth/token/', {
+          username: formData.username,
+          password: formData.password,
+        });
+        localStorage.setItem('access', res.data.access);
+        localStorage.setItem('refresh', res.data.refresh);
+        navigate('/dashboard');
+      } else {
+        // Register: use register endpoint
+        await axiosInstance.post('auth/register/', {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        });
+        // After registration, log in automatically
+        const res = await axiosInstance.post('auth/token/', {
+          username: formData.username,
+          password: formData.password,
+        });
+        localStorage.setItem('access', res.data.access);
+        localStorage.setItem('refresh', res.data.refresh);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      if (error.response && error.response.data) {
+        // Handle different error formats
+        const errorData = error.response.data;
+        if (typeof errorData === 'string') {
+          setErrors({ general: errorData });
+        } else if (errorData.detail) {
+          setErrors({ general: errorData.detail });
+        } else if (errorData.non_field_errors) {
+          setErrors({ general: errorData.non_field_errors[0] });
+        } else {
+          setErrors(errorData);
+        }
+      } else {
+        setErrors({ general: 'Server error. Try again.' });
+      }
     }
   };
 
+
+   
   const handleSocialLogin = (provider) => {
     alert(`Sign in with ${provider} clicked!`);
   };
@@ -68,7 +109,7 @@ const AuthPages = () => {
   };
 
   const goToHomepage = () => {
-    navigate('/'); // Change '/' to your actual homepage route if different
+    navigate('/');
   };
 
   return (
@@ -88,7 +129,12 @@ const AuthPages = () => {
           </h2>
 
           {/* Error Message */}
-          {Object.keys(errors).length > 0 && isSignIn && (
+          {errors.general && (
+            <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
+              <p className="font-semibold">{errors.general}</p>
+            </div>
+          )}
+          {Object.keys(errors).length > 0 && isSignIn && !errors.general && (
             <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
               <p className="font-semibold">
                 Your username and password didn't match. Please try again.

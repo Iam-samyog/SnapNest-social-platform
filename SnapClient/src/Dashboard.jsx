@@ -1,51 +1,122 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Plus, Settings, Bookmark, Heart, Eye, X, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import ImageModal from './components/ImageModal';
+import axiosInstance from './utils/axiosInstance';
 
 const Dashboard = () => {
   const [showAlert, setShowAlert] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [images, setImages] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
-  // Mock data
-  const user = {
-    username: "john_doe",
-    firstName: "John",
-    photo: null,
-    followers: 1234,
-    following: 567
-  };
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Check if user is authenticated
+        const token = localStorage.getItem('access');
+        if (!token) {
+          navigate('/auth');
+          return;
+        }
 
-  const activities = [
-    { id: 1, user: { firstName: "Sarah", photo: null }, verb: "liked" },
-    { id: 2, user: { firstName: "Mike", photo: null }, verb: "bookmarked" },
-    { id: 3, user: { firstName: "Emma", photo: null }, verb: "followed" },
-    { id: 4, user: { firstName: "Alex", photo: null }, verb: "shared" },
-    { id: 5, user: { firstName: "Lisa", photo: null }, verb: "commented" }
-  ];
+        // Fetch user profile
+        const profileRes = await axiosInstance.get('profile/');
+        const profileData = profileRes.data;
+        
+        // Extract user data from profile response
+        const userData = {
+          username: profileData.user?.username || 'User',
+          firstName: profileData.user?.first_name || profileData.user?.username || 'User',
+          photo: profileData.photo || null,
+          followers: profileData.followers_count || 0,
+          following: profileData.following_count || 0,
+        };
 
-  const images = [
-    { id: 1, title: "Sunset Beach", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=300&fit=crop", likes: 245, views: 1203 },
-    { id: 2, title: "Mountain Peak", url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop", likes: 189, views: 892 },
-    { id: 3, title: "City Lights", url: "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=300&h=300&fit=crop", likes: 432, views: 2104 },
-    { id: 4, title: "Forest Path", url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=300&fit=crop", likes: 321, views: 1567 },
-    { id: 5, title: "Ocean Wave", url: "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=300&h=300&fit=crop", likes: 567, views: 2890 },
-    { id: 6, title: "Desert Dunes", url: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=300&h=300&fit=crop", likes: 198, views: 945 },
-    { id: 7, title: "Northern Lights", url: "https://images.unsplash.com/photo-1483347756197-71ef80e95f73?w=300&h=300&fit=crop", likes: 789, views: 3421 },
-    { id: 8, title: "Waterfall", url: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=300&h=300&fit=crop", likes: 412, views: 1876 },
-    { id: 9, title: "Starry Night", url: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=300&h=300&fit=crop", likes: 634, views: 2567 }
-  ];
+        // Fetch user's images
+        try {
+          const imagesRes = await axiosInstance.get('images/');
+          // Get all images and filter by current user
+          let allImages = imagesRes.data.results || imagesRes.data || [];
+          // Filter images by current user
+          if (profileData.user?.username) {
+            allImages = allImages.filter(img => img.user === profileData.user.username);
+          }
+          
+          // Transform images to match our format
+          const transformedImages = allImages.map(img => {
+            let imageUrl = img.image || img.url || '';
+            // If it's a relative path, make it absolute
+            if (imageUrl && !imageUrl.startsWith('http')) {
+              imageUrl = `http://localhost:8000${imageUrl}`;
+            }
+            return {
+              id: img.id,
+              title: img.title || 'Untitled',
+              url: imageUrl,
+              likes: img.total_likes || 0,
+              views: img.total_views || 0,
+            };
+          });
+          setImages(transformedImages);
+        } catch (imgError) {
+          console.error('Error fetching images:', imgError);
+          setImages([]);
+        }
+
+        // For now, activities will be empty until we have an actions API
+        setActivities([]);
+        setUser(userData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem('access');
+          localStorage.removeItem('refresh');
+          navigate('/auth');
+        } else {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDashboardData();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="max-w-8xl mx-auto bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-black font-semibold">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <>
-    
       <div className="max-w-8xl mx-auto bg-gray-50 min-h-screen pb-8">
-       <Navbar/>
+        <Navbar/>
         {/* Profile Header */}
         <div className="bg-yellow-400 border-b-4 border-black p-4 mb-4 sticky top-0 z-20 shadow-lg">
-             
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               {user.photo ? (
-                <img src={user.photo} alt="Avatar" className="w-16 h-16 rounded-full border-4 border-black" />
+                <img 
+                  src={user.photo.startsWith('http') ? user.photo : `/media/${user.photo}`} 
+                  alt="Avatar" 
+                  className="w-16 h-16 rounded-full border-4 border-black object-cover" 
+                />
               ) : (
                 <div className="w-16 h-16 rounded-full bg-white border-4 border-black flex items-center justify-center">
                   <User className="w-8 h-8 text-black" />
@@ -65,11 +136,17 @@ const Dashboard = () => {
                 <Bookmark className="w-4 h-4" />
                 <span className="hidden sm:inline">Bookmark</span>
               </button>
-              <button className="bg-black text-yellow-400 px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2">
+              <button 
+                onClick={() => navigate('/images/upload')}
+                className="bg-black text-yellow-400 px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
+              >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Upload</span>
               </button>
-              <button className="bg-white border-2 border-black text-black px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <button 
+                onClick={() => navigate('/profile/edit')}
+                className="bg-white border-2 border-black text-black px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
                 <Settings className="w-5 h-5" />
               </button>
             </div>
@@ -128,9 +205,16 @@ const Dashboard = () => {
           {images.length > 0 ? (
             <div className="grid grid-cols-3 gap-1">
               {images.map((image) => (
-                <div key={image.id} className="relative aspect-square group cursor-pointer overflow-hidden rounded-lg border-2 border-black">
+                <div 
+                  key={image.id} 
+                  onClick={() => {
+                    setSelectedImageId(image.id);
+                    setIsModalOpen(true);
+                  }}
+                  className="relative aspect-square group cursor-pointer overflow-hidden rounded-lg border-2 border-black"
+                >
                   <img 
-                    src={image.url} 
+                    src={image.url.startsWith('http') ? image.url : image.url.startsWith('/') ? image.url : `/media/${image.url}`} 
                     alt={image.title}
                     className="w-full h-full object-cover"
                   />
@@ -141,7 +225,7 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center gap-2 text-white text-sm font-semibold">
                       <Eye className="w-4 h-4" />
-                      <span>{image.views}</span>
+                      <span>{image.total_views || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -152,13 +236,26 @@ const Dashboard = () => {
               <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h5 className="text-xl font-bold text-black mb-2">No images yet</h5>
               <p className="text-gray-600 mb-6">Start by uploading or bookmarking images!</p>
-              <button className="bg-black text-yellow-400 px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors">
+              <button 
+                onClick={() => navigate('/images/upload')}
+                className="bg-black text-yellow-400 px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors"
+              >
                 Upload Your First Image
               </button>
             </div>
           )}
         </div>
       </div>
+      
+      {/* Image Modal */}
+      <ImageModal
+        imageId={selectedImageId}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedImageId(null);
+        }}
+      />
       </>
 
    
