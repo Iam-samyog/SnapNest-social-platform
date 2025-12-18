@@ -1,12 +1,15 @@
 import React from 'react';
 
+import { useNavigate } from "react-router-dom";
+
 const CTASection = () => {
+    const navigate=useNavigate();
   const handleRegister = () => {
-    alert('Register Now clicked!');
+     navigate("/auth");
   };
 
   const handleSignIn = () => {
-    alert('Sign In clicked!');
+     navigate("/auth");
   };
 
   return (

@@ -1,15 +1,20 @@
-import React from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import HowToSnapNest from './components/HowToSnapNest';
-import Reviews from './components/Reviews';
-import Footer from './components/Footer';
+
 import MainPage from './MainPage';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import CTASection from "./components/CTAsection";
+import AuthPages from "./components/AuthPages";
+import Dashboard from './Dashboard';
 
 const App = () => {
   return (
      
-        <MainPage></MainPage>
+      <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        <Route path="/auth" element={<AuthPages />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </BrowserRouter>
      
   
   );

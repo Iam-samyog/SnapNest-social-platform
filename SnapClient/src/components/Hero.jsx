@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 export default function HeroPage() {
   return (
     <div className="w-full bg-white">
@@ -41,14 +42,19 @@ export default function HeroPage() {
               </p>
             </div>
             {/* Buttons */}
-            <div className="space-y-4 pt-6">
-              <button className="w-full bg-gray-900 text-white py-3 md:py-4 px-6 rounded-lg text-base md:text-lg font-semibold hover:bg-gray-800 transition-colors duration-200 shadow-lg">
-                Sign In
-              </button>
-              <button className="w-full bg-white text-gray-900 py-3 md:py-4 px-6 rounded-lg text-base md:text-lg font-semibold hover:bg-gray-100 transition-colors duration-200 shadow-lg border-2 border-gray-900">
-                Sign Up
-              </button>
-            </div>
+           
+<div className="space-y-8 pt-6">
+  <Link to="/auth">
+    <button className="w-full bg-gray-900 text-white py-3 md:py-4 px-6 rounded-lg text-base md:text-lg font-semibold hover:bg-gray-800 transition-colors duration-200 shadow-lg">
+      Sign In
+    </button>
+  </Link>
+  <Link to="/auth">
+    <button className="mt-3 w-full bg-white text-gray-900 py-3 md:py-4 px-6 rounded-lg text-base md:text-lg font-semibold hover:bg-gray-100 transition-colors duration-200 shadow-lg border-2 border-gray-900">
+      Sign Up
+    </button>
+  </Link>
+</div>
           </div>
         </div>
       </div>
