@@ -313,7 +313,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
 
                 {/* Comments Section */}
                 <div className="flex-1 flex flex-col border-t-4 border-black pt-6">
-                  <h3 className="text-2xl font-black text-black mb-4">💬 Comments</h3>
+                  <h3 className="text-2xl font-black text-black mb-4"> Comments</h3>
 
                   <div className="space-y-4 mb-6 flex-1">
                     {comments.length > 0 ? (
@@ -360,7 +360,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
 
                   {/* Comment Form */}
                   <form onSubmit={handleComment} className="bg-yellow-400 border-2 border-black rounded-lg p-4 mt-auto">
-                    <h4 className="text-xl font-bold text-black mb-3">✍️ Add a comment</h4>
+                    <h4 className="text-xl font-bold text-black mb-3"> Add a comment</h4>
                     <textarea
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}

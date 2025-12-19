@@ -71,7 +71,7 @@ const ImageList = () => {
       <div className="min-h-screen bg-gray-50 pb-8">
         <div className="bg-yellow-400 border-b-4 border-black p-6 mb-6">
         <h1 className="text-4xl font-black text-black text-center">
-          📸 Images Bookmarked
+          Images Bookmarked
         </h1>
       </div>
 
