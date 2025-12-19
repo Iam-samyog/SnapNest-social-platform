@@ -34,10 +34,12 @@ class UserSerializer(serializers.ModelSerializer):
         return False
     
     def get_followers_count(self, obj):
-        return obj.followers.count()
+        # Use Contact model's reverse relationship instead of removed 'followers' field
+        return obj.rel_to_set.count()
     
     def get_following_count(self, obj):
-        return obj.following.count()
+        # Use Contact model's reverse relationship instead of removed 'following' field
+        return obj.rel_from_set.count()
 
     def get_profile(self, obj):
         if hasattr(obj, 'profile'):
@@ -55,10 +57,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ['date_of_birth', 'photo', 'user', 'followers_count', 'following_count']
     
     def get_followers_count(self, obj):
-        return obj.user.followers.count()
+        # Use Contact model's reverse relationship instead of removed 'followers' field
+        return obj.user.rel_to_set.count()
     
     def get_following_count(self, obj):
-        return obj.user.following.count()
+        # Use Contact model's reverse relationship instead of removed 'following' field
+        return obj.user.rel_from_set.count()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
