@@ -2,13 +2,17 @@ from rest_framework import viewsets, generics, status, views
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
+from typing import Optional
 from .models import Profile, Contact
 from .serializers import (
     UserSerializer,
     RegisterSerializer,
     ProfileSerializer
 )
+from actions.utils import create_action
+from django.shortcuts import get_object_or_404
 
 # New imports for password reset
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -25,6 +29,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     # queryset = User.objects.filter(is_active=True) # Removed static queryset
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'username'
 
     def get_queryset(self):
         queryset = User.objects.filter(is_active=True)
@@ -39,7 +44,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         return context
 
     @action(detail=True, methods=['post'])
-    def follow(self, request, pk=None):
+    def follow(self, request, username=None):
         user_to_follow = self.get_object()
         if user_to_follow == request.user:
             return Response({'error': 'Cannot follow yourself'}, status=status.HTTP_400_BAD_REQUEST)
@@ -51,42 +56,31 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         if not created:
             # Already following, so unfollow
             contact.delete()
-            # Refresh from database to get updated count
-            user_to_follow.refresh_from_db()
             return Response({
                 'status': 'unfollowed', 
                 'following': False,
-                'followers_count': user_to_follow.followers.count()
+                'followers_count': user_to_follow.rel_to_set.count()
             })
-        # Refresh from database to get updated count
-        user_to_follow.refresh_from_db()
+        
+        create_action(request.user, 'is following', user_to_follow)
         return Response({
             'status': 'followed', 
             'following': True,
-            'followers_count': user_to_follow.followers.count()
+            'followers_count': user_to_follow.rel_to_set.count()
         })
 
     @action(detail=True, methods=['post'])
-    def unfollow(self, request, pk=None):
+    def unfollow(self, request, username=None):
         user_to_unfollow = self.get_object()
         deleted = Contact.objects.filter(
             user_from=request.user,
             user_to=user_to_unfollow
         ).delete()
-        if deleted[0] > 0:
-            # Refresh from database to get updated count
-            user_to_unfollow.refresh_from_db()
-            return Response({
-                'status': 'unfollowed', 
-                'following': False,
-                'followers_count': user_to_unfollow.followers.count()
-            })
-        # Refresh from database to get updated count
-        user_to_unfollow.refresh_from_db()
+        
         return Response({
-            'status': 'already_unfollowed', 
+            'status': 'unfollowed', 
             'following': False,
-            'followers_count': user_to_unfollow.followers.count()
+            'followers_count': user_to_unfollow.rel_to_set.count()
         })
 
 
@@ -175,10 +169,25 @@ class FollowToggleAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, username):
-        target_user = User.objects.get(username=username)
+        target_user = get_object_or_404(User, username=username)
+        # Prevent self follow
+        if request.user == target_user:
+             return Response({'error': 'You cannot follow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+
         contact, created = Contact.objects.get_or_create(user_from=request.user, user_to=target_user)
+        
         if not created:
             # Already following, so unfollow
             contact.delete()
-            return Response({'status': 'unfollowed'})
-        return Response({'status': 'followed'})
+            return Response({
+                'status': 'unfollowed',
+                'following': False,
+                'followers_count': target_user.rel_to_set.count()
+            })
+        
+        create_action(request.user, 'is following', target_user)
+        return Response({
+            'status': 'followed',
+            'following': True,
+            'followers_count': target_user.rel_to_set.count()
+        })
