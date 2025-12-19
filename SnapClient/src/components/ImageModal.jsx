@@ -23,24 +23,10 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen && imageId) {
       fetchImage();
-      incrementViews();
       // Reset edit state when opening a new image
       setIsEditing(false);
     }
   }, [isOpen, imageId]);
-
-  const incrementViews = async () => {
-    try {
-      const response = await axiosInstance.post(`images/${imageId}/increment_views/`);
-      const newViewCount = response.data.total_views || 0;
-      setViewCount(newViewCount);
-      if (image) {
-        setImage({ ...image, total_views: newViewCount });
-      }
-    } catch (error) {
-      console.error('Error incrementing views:', error);
-    }
-  };
 
   const fetchImage = async () => {
     try {
@@ -182,9 +168,9 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
             </button>
 
             {/* Main responsive layout */}
-            <div className="flex flex-col md:flex-row w-full">
+            <div className="flex flex-col md:flex-row w-full h-full">
               {/* Left: Image */}
-              <div className="w-full md:w-1/2 flex items-center justify-center bg-gray-100 p-4">
+              <div className="w-full md:w-2/3 flex items-center justify-center bg-gray-100 p-4">
                 <img
                   src={image.image || image.url || ''}
                   alt={image.title}
@@ -193,7 +179,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
               </div>
 
               {/* Right: All metadata and comments */}
-              <div className="w-full md:w-1/2 flex flex-col p-6 overflow-y-auto bg-white">
+              <div className="w-full md:w-1/3 flex flex-col p-6 overflow-y-auto bg-white border-l-0 md:border-l-4 border-black border-t-4 md:border-t-0">
                 {/* Title and Actions */}
                 <div className="mb-6">
                   {isEditing ? (

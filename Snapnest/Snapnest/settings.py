@@ -19,17 +19,21 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+import os
+import dj_database_url
+
+# ... (Previous imports kept if needed, but standardizing)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-c#*h=m7tb&10lvrx%-p2*+@&wh_*@@-_jdsqk#+svfn5i$^g&j'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-c#*h=m7tb&10lvrx%-p2*+@&wh_*@@-_jdsqk#+svfn5i$^g&j')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['mysite.com', 'localhost', '127.0.0.1']
-
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -41,8 +45,10 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage', # Added Cloudinary
     'django.contrib.staticfiles',
     'social_django',
+    'cloudinary', # Added Cloudinary
     'images.apps.ImagesConfig',
     'django_extensions',
     'easy_thumbnails',
@@ -51,27 +57,19 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-
-  
-    
 ]
-
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_PRIVATE_NETWORK = True
 
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware", # Added WhiteNoise
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # Check ordering, usually high up
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-
 ]
 
 ROOT_URLCONF = 'Snapnest.urls'
@@ -86,8 +84,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends',  
-                'social_django.context_processors.login_redirect',  
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -100,15 +98,12 @@ WSGI_APPLICATION = 'Snapnest.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'snapnest',
-        'USER': 'snapuser',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default='postgres://snapuser:password@localhost:5432/snapnest'),
+        conn_max_age=600
+    )
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -145,33 +140,41 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static', 
-    BASE_DIR / 'images' / 'static',  
+    BASE_DIR / 'static',
+    BASE_DIR / 'images' / 'static',
 ]
+# Enable WhiteNoise's Gzip compression of static assets.
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
 
 
-#media
-MEDIA_URL='/media/'
-MEDIA_ROOT=BASE_DIR/'media'
+# Media
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Cloudinary Configuration
+if config('CLOUDINARY_URL', default=None):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 AUTHENTICATION_BACKENDS=[
     'social_core.backends.google.GoogleOAuth2',
-    'social_core.backends.github.GithubOAuth2',  
-    'social_core.backends.facebook.FacebookOAuth2',  
+    'social_core.backends.github.GithubOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
     'django.contrib.auth.backends.ModelBackend',
     'account.authentication.EmailAuthBackend',
 ]
@@ -182,12 +185,12 @@ SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'dashboard'
 SOCIAL_AUTH_LOGIN_ERROR_URL = 'login'
 
 # Google OAuth2 Credentials
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('GOOGLE_CLIENT_ID')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('GOOGLE_CLIENT_SECRET')
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('GOOGLE_CLIENT_ID', default='')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('GOOGLE_CLIENT_SECRET', default='')
 
 # GitHub OAuth2 Credentials
-SOCIAL_AUTH_GITHUB_KEY = config('GITHUB_CLIENT_ID')
-SOCIAL_AUTH_GITHUB_SECRET = config('GITHUB_CLIENT_SECRET')
+SOCIAL_AUTH_GITHUB_KEY = config('GITHUB_CLIENT_ID', default='')
+SOCIAL_AUTH_GITHUB_SECRET = config('GITHUB_CLIENT_SECRET', default='')
 
 
 SOCIAL_AUTH_PIPELINE = [
@@ -211,14 +214,25 @@ INTERNAL_IPS = [
 '127.0.0.1',
 ]
 
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
-REDIS_DB = 0
+# Redis Configuration
+REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
+# Parse REDIS_URL to get host, port, db if needed, or just use the URL directly in the codebase
+# But existing code uses separate settings. Let's try to parse simple cases or just override.
+# Ideally refactor api_views.py to use REDIS_URL, but for now let's keep compatibility if possible
+# or modify api_views.py.
+# Actually, let's just make settings provide the breakdown if easy, or expect the code to change.
+# The `api_views.py` uses: settings.REDIS_HOST, settings.REDIS_PORT, settings.REDIS_DB
+# We can extract them from the URL if provided.
+import urllib.parse
+redis_url_parsed = urllib.parse.urlparse(REDIS_URL)
+REDIS_HOST = redis_url_parsed.hostname
+REDIS_PORT = redis_url_parsed.port
+REDIS_DB = 0 # Default/Simplify for now, or extract from path
 
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  
-]
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000').split(',')
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
+CORS_ALLOW_CREDENTIALS = True
 
 
 REST_FRAMEWORK = {
