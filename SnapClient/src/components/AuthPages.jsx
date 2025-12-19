@@ -14,6 +14,7 @@ const AuthPages = () => {
   });
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -62,6 +63,9 @@ const AuthPages = () => {
       return;
     }
 
+    setLoading(true);
+    setErrors({});
+    
     try {
       if (isForgotPassword) {
         await axiosInstance.post('auth/password-reset/', {
@@ -95,6 +99,8 @@ const AuthPages = () => {
         navigate('/dashboard');
       }
     } catch (error) {
+      // ... error handling ...
+      console.error("Auth Error:", error);
       if (error.response && error.response.data) {
         // Handle different error formats
         const errorData = error.response.data;
@@ -110,6 +116,8 @@ const AuthPages = () => {
       } else {
         setErrors({ general: 'Server error. Try again.' });
       }
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -311,9 +319,15 @@ const AuthPages = () => {
                 {/* Submit Button */}
                 <button
                   onClick={handleSubmit}
-                  className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black"
+                  disabled={loading}
+                  className={`w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide transition-colors duration-300 border-2 border-black ${
+                    loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'
+                  }`}
                 >
-                  {isForgotPassword ? 'Send Reset Link' : (isSignIn ? 'Log-in' : 'Sign Up')}
+                    {loading 
+                        ? 'Processing...' 
+                        : (isForgotPassword ? 'Send Reset Link' : (isSignIn ? 'Log-in' : 'Sign Up'))
+                    }
                 </button>
               </div>
 

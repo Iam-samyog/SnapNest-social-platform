@@ -127,13 +127,17 @@ class PasswordResetRequestAPIView(views.APIView):
             frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
             reset_link = f"{frontend_url}/password-reset/{uid}/{token}"
             
-            send_mail(
-                'Password Reset Request',
-                f'Click the following link to reset your password for user {user.username}: {reset_link}',
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
-            )
+            try:
+                send_mail(
+                    'Password Reset Request',
+                    f'Click the following link to reset your password for user {user.username}: {reset_link}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(f"Error sending email: {e}")
+                return Response({'error': 'Failed to send email. Please check server configuration.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response({'message': 'If an account exists with this email, a reset link has been sent.'})
 
