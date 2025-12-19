@@ -311,7 +311,7 @@ const Dashboard = () => {
         )}
 
         {/* Stories/Activity Section */}
-        <div className="bg-white border-b-4 border-black p-4 mb-4 mx-4 rounded-lg shadow-lg">
+        {/* <div className="bg-white border-b-4 border-black p-4 mb-4 mx-4 rounded-lg shadow-lg">
           <h6 className="text-lg font-bold text-black mb-4">What's Happening</h6>
           <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide">
             {activities.length > 0 ? (
@@ -336,7 +336,7 @@ const Dashboard = () => {
               <p className="text-gray-500 text-sm">No recent activity. Follow users to see updates!</p>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Image Feed Grid */}
         <div className="px-4">
