@@ -238,8 +238,8 @@ const Dashboard = () => {
                 <h5 className="text-2xl font-bold text-black mb-1">{user.firstName || user.username}</h5>
                 <div className="flex gap-6 mt-3 mb-3">
                   <div className="text-center">
-                    <div className="text-xl font-black text-black">{images.length}</div>
-                    <div className="text-xs font-bold text-black uppercase">posts</div>
+                    <div className="text-xl font-black text-black">{images.length} posts</div>
+                   
                   </div>
                   <div 
                     className="text-center cursor-pointer hover:opacity-75 transition-opacity"
@@ -248,8 +248,8 @@ const Dashboard = () => {
                       setIsFollowModalOpen(true);
                     }}
                   >
-                    <div className="text-xl font-black text-black">{user.followers}</div>
-                    <div className="text-xs font-bold text-black uppercase">followers</div>
+                    <div className="text-xl font-black text-black">{user.followers}followers</div>
+    
                   </div>
                   <div 
                     className="text-center cursor-pointer hover:opacity-75 transition-opacity"
@@ -258,8 +258,8 @@ const Dashboard = () => {
                       setIsFollowModalOpen(true);
                     }}
                   >
-                    <div className="text-xl font-black text-black">{user.following}</div>
-                    <div className="text-xs font-bold text-black uppercase">following</div>
+                    <div className="text-xl font-black text-black">{user.following} following</div>
+            
                   </div>
                 </div>
                 <div className="flex gap-2">
