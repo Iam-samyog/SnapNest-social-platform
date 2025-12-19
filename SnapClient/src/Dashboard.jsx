@@ -206,7 +206,7 @@ const Dashboard = () => {
                 <img 
                   src={getFullMediaUrl(user.photo)} 
                   alt="Avatar" 
-                  className="w-16 h-16 rounded-full border-4 border-black object-cover" 
+                  className="w-50 h-50 rounded-full border-4 border-black object-cover" 
                 />
               ) : (
                 <div className="w-16 h-16 rounded-full bg-white border-4 border-black flex items-center justify-center">
@@ -220,6 +220,29 @@ const Dashboard = () => {
                   <span className="font-semibold ml-1">{user.following}</span> following
                 </p>
               </div>
+               <div className="flex gap-2">
+              <a 
+                ref={bookmarkletRef}
+                className="bg-white border-2 border-black text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 cursor-grab active:cursor-grabbing"
+                title="Drag me to your bookmarks bar or click to test!"
+              >
+                <FontAwesomeIcon icon={faBookmark} />
+                <span className="hidden sm:inline">SnapNest Bookmark</span>
+              </a>
+              <button 
+                onClick={() => navigate('/images/upload')}
+                className="bg-black text-yellow-400 px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
+              >
+                <FontAwesomeIcon icon={faPlus} />
+                <span className="hidden sm:inline">Upload</span>
+              </button>
+              <button 
+                onClick={() => navigate('/profile/edit')}
+                className="bg-white border-2 border-black text-black px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <FontAwesomeIcon icon={faCog} className="text-xl" />
+              </button>
+            </div>
             </div>
             
             <div className="flex gap-2">
