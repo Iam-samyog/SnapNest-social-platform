@@ -16,8 +16,8 @@ const ImageUpload = () => {
     url: ''
   });
   const [preview, setPreview] = useState(null);
-  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [isUrlMode, setIsUrlMode] = useState(false);
 
   useEffect(() => {
@@ -71,6 +71,8 @@ const ImageUpload = () => {
     }
 
     setLoading(true);
+    setLoadingMessage(isUrlMode ? 'Saving bookmark...' : 'Uploading image to server...');
+    
     try {
       const uploadData = new FormData();
       uploadData.append('title', formData.title);
@@ -82,21 +84,26 @@ const ImageUpload = () => {
          uploadData.append('image', formData.image);
       }
 
+      setLoadingMessage('Optimizing and saving details...');
       const response = await axiosInstance.post('images/', uploadData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      navigate(`/images/${response.data.id}`);
+      setLoadingMessage('Success! Opening image...');
+      setTimeout(() => {
+        navigate(`/images/${response.data.id}`);
+      }, 800);
+      
     } catch (error) {
       if (error.response?.data) {
         setErrors(error.response.data);
       } else {
         setErrors({ general: 'Error uploading image. Please try again.' });
       }
-    } finally {
       setLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -219,9 +226,10 @@ const ImageUpload = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black disabled:opacity-50"
+                className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? 'Saving...' : (isUrlMode ? 'Save Bookmark' : 'Upload Image')}
+                {loading && <Upload className="w-5 h-5 animate-bounce" />}
+                {loading ? loadingMessage : (isUrlMode ? 'Save Bookmark' : 'Upload Image')}
               </button>
             </form>
           </div>

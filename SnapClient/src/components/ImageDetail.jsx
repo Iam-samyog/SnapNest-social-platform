@@ -16,6 +16,7 @@ const ImageDetail = () => {
   const [commentText, setCommentText] = useState('');
   const [isOwner, setIsOwner] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchImage();
@@ -90,11 +91,17 @@ const ImageDetail = () => {
   };
 
   const handleDelete = async () => {
+    setIsDeleting(true);
     try {
       await axiosInstance.delete(`images/${id}/`);
-      navigate('/images');
+      // Short delay to show success
+      setTimeout(() => {
+        navigate('/images');
+      }, 500);
     } catch (error) {
       console.error('Error deleting image:', error);
+      setIsDeleting(false);
+      alert('Error deleting image. Please try again.');
     }
   };
 
@@ -284,9 +291,11 @@ const ImageDetail = () => {
             <div className="flex gap-3">
               <button
                 onClick={handleDelete}
-                className="bg-red-500 text-white px-6 py-2 rounded-lg font-black border-2 border-black hover:bg-red-600 transition-colors flex-1 uppercase text-sm"
+                disabled={isDeleting}
+                className="bg-red-500 text-white px-6 py-2 rounded-lg font-black border-2 border-black hover:bg-red-600 transition-colors flex-1 uppercase text-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Yes, Delete
+                {isDeleting && <Trash2 className="w-4 h-4 animate-spin" />}
+                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
               </button>
               <button
                 onClick={() => setShowDeleteModal(false)}
