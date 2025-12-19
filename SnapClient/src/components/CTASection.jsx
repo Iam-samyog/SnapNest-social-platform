@@ -14,7 +14,7 @@ const CTASection = () => {
 
   return (
     <div className=" py-20 px-6">
-      <div className="max-w-5xl mx-auto text-center">
+      <div className="max-w-5xl mx-auto text-center" data-aos="zoom-in">
         {/* Brand Name */}
         <h1 className="text-7xl font-black text-black mb-8 tracking-tight">
           SnapNest

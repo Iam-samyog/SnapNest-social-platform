@@ -132,7 +132,7 @@ const reviews = [
     <div className="bg-yellow-400 py-20 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-16" data-aos="fade-up">
           <h2 className="text-5xl font-black text-black mb-4 uppercase tracking-tight">
             User  Reviews
           </h2>

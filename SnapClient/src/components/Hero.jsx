@@ -4,7 +4,7 @@ export default function HeroPage() {
     <div className="w-full bg-white">
       <div className="container mx-auto max-w-[1600px] flex flex-col md:flex-row min-h-[500px] md:min-h-[800px]">
         {/* Left Side - SVG */}
-        <div className="hidden sm:block w-full md:w-3/5 flex items-center justify-center p-6 md:p-12 relative">
+        <div className="hidden sm:block w-full md:w-3/5 flex items-center justify-center p-6 md:p-12 relative" data-aos="fade-right">
           <div className="w-full h-full flex items-center justify-center relative z-10">
             <img 
               src="image/main.svg" 
@@ -15,7 +15,7 @@ export default function HeroPage() {
         </div>
 
         {/* Right Side - Content with Wave */}
-        <div className="bg-yellow sm:bg-white w-full md:w-2/5 relative flex items-center justify-center p-6 md:p-12">
+        <div className="bg-yellow sm:bg-white w-full md:w-2/5 relative flex items-center justify-center p-6 md:p-12" data-aos="fade-left">
           {/* Wave Background */}
           <svg 
             className="absolute inset-0 w-full h-full "

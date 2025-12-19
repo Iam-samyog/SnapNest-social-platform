@@ -39,7 +39,7 @@ const HowToSnapNest = () => {
             </div>
             <div className="relative">
               {steps.map((step, index) => (
-                <div key={index}>
+                <div key={index} data-aos="fade-up" data-aos-delay={index * 100}>
                   <div className="flex flex-col sm:flex-row justify-center items-center mb-8">
                     <div className="bg-white rounded-2xl shadow-2xl border-4 border-black p-4 sm:p-8 w-full max-w-2xl hover:scale-105 transition-transform duration-300 relative">
                       <div className="absolute -top-6 -left-6 bg-yellow-400 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center border-4 border-black shadow-xl">

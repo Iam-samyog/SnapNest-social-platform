@@ -17,6 +17,7 @@
     "@fortawesome/react-fontawesome": "^3.1.1",
     "@react-oauth/google": "^0.12.2",
     "@tailwindcss/vite": "^4.1.18",
+    "aos": "^2.3.4",
     "axios": "^1.13.2",
     "lucide-react": "^0.561.0",
     "react": "^19.2.0",
