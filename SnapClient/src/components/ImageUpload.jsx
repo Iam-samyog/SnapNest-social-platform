@@ -48,6 +48,7 @@ const ImageUpload = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setIsUrlMode(false);
       setFormData(prev => ({ ...prev, image: file, url: '' }));
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -208,6 +209,7 @@ const ImageUpload = () => {
                   )}
                 </div>
                 {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+                {errors.url && <p className="text-red-500 text-sm mt-1">{errors.url}</p>}
                 {isUrlMode && (
                     <button 
                         type="button"

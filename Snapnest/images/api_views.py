@@ -51,24 +51,35 @@ class ImageViewSet(viewsets.ModelViewSet):
             
             image_url = self.request.data['url']
             try:
-                response = requests.get(image_url, headers={'User-Agent': 'Mozilla/5.0'})
+                # Add a timeout and ensure we follow redirects
+                response = requests.get(
+                    image_url, 
+                    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'},
+                    timeout=10,
+                    allow_redirects=True
+                )
                 response.raise_for_status()
                 
                 # Get file extension or default to .jpg
                 ext = 'jpg'
-                if 'content-type' in response.headers:
-                    ext = response.headers['content-type'].split('/')[-1]
+                content_type = response.headers.get('content-type', '')
+                if 'image/' in content_type:
+                    ext = content_type.split('/')[-1]
                 
-                file_name = f"{slugify(self.request.data.get('title', 'image'))}.{ext}"
+                title = self.request.data.get('title', 'image')
+                file_name = f"{slugify(title)}.{ext}"
                 
                 serializer.save(
                     user=self.request.user, 
                     image=ContentFile(response.content, name=file_name)
                 )
+            except requests.exceptions.Timeout:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({"url": "The remote server took too long to respond. Please try another image."})
             except Exception as e:
                 from rest_framework.exceptions import ValidationError
-                print(f"Error downloading image: {e}")
-                raise ValidationError({"url": f"Failed to download image: {str(e)}"})
+                print(f"Error downloading image from {image_url}: {str(e)}")
+                raise ValidationError({"url": f"Could not download image. Error: {str(e)}"})
         else:
             serializer.save(user=self.request.user)
             
