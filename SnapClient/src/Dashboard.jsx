@@ -199,7 +199,7 @@ const Dashboard = () => {
       <div className="max-w-8xl mx-auto bg-gray-50 min-h-screen pb-8">
         <Navbar/>
         {/* Profile Header */}
-        <div className="bg-yellow-400 border-b-4 border-black p-4 mb-4 sticky top-0 z-20 shadow-lg">
+        <div className="bg-yellow-400 border-b-4 border-black p-4 py-10 mb-4 sticky top-0 z-20 shadow-lg">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               {user.photo ? (
@@ -260,7 +260,7 @@ const Dashboard = () => {
               <div>
                 <p className="text-black text-sm">
                   <strong>Tip:</strong> Drag the <strong>Bookmark</strong> button to your browser's bookmark bar for quick image sharing from any website!
-                </p>
+                  If the bookmark is not visible, click on the <strong>Cmd + shift + B</strong> to show the bookmark bar .</p>
               </div>
             </div>
             <button onClick={() => setShowAlert(false)} className="text-black hover:text-gray-700">
