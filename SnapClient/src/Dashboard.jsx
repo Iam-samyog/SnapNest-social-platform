@@ -199,60 +199,51 @@ const Dashboard = () => {
       <div className="max-w-8xl mx-auto bg-gray-50 min-h-screen pb-8">
         <Navbar/>
         {/* Profile Header */}
-        <div className="bg-yellow-400 border-b-4 border-black py-16 md:py-24 mb-6 shadow-[0px_8px_0px_0px_rgba(0,0,0,1)]">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                {user.photo ? (
-                  <img 
-                    src={getFullMediaUrl(user.photo)} 
-                    alt="Avatar" 
-                    className="w-32 h-32 md:w-40 md:h-40 rounded-full border-8 border-black object-cover shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]" 
-                  />
-                ) : (
-                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-white border-8 border-black flex items-center justify-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                    <FontAwesomeIcon icon={faUser} className="text-black text-6xl" />
-                  </div>
-                )}
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-4xl md:text-6xl font-black text-black uppercase tracking-tight leading-none italic">
-                    {user.firstName || user.username}
-                  </h1>
-                  <p className="text-xl md:text-2xl font-bold text-black uppercase flex items-center justify-center md:justify-start gap-4">
-                    <span className="bg-white border-2 border-black px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      {user.followers} <span className="text-sm">followers</span>
-                    </span>
-                    <span className="bg-white border-2 border-black px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      {user.following} <span className="text-sm">following</span>
-                    </span>
-                  </p>
+        <div className="bg-yellow-400 border-b-4 border-black p-4 py-10 mb-4 sticky top-0 z-20 shadow-lg">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              {user.photo ? (
+                <img 
+                  src={getFullMediaUrl(user.photo)} 
+                  alt="Avatar" 
+                  className="w-16 h-16 rounded-full border-4 border-black object-cover" 
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-white border-4 border-black flex items-center justify-center">
+                  <FontAwesomeIcon icon={faUser} className="text-black text-2xl" />
                 </div>
+              )}
+              <div>
+                <h5 className="text-xl font-bold text-black mb-1">{user.firstName || user.username}</h5>
+                <p className="text-black text-sm">
+                  <span className="font-semibold">{user.followers}</span> followers • 
+                  <span className="font-semibold ml-1">{user.following}</span> following
+                </p>
               </div>
-              
-              <div className="flex flex-wrap justify-center md:justify-end gap-4">
-                <a 
-                  ref={bookmarkletRef}
-                  className="bg-white border-4 border-black text-black px-8 py-4 rounded-xl font-black text-lg hover:bg-gray-100 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none flex items-center gap-3 cursor-grab active:cursor-grabbing uppercase tracking-tight italic"
-                  title="Drag me to your bookmarks bar!"
-                  href="#"
-                >
-                  <FontAwesomeIcon icon={faBookmark} className="text-xl" />
-                  <span>Bookmark Tool</span>
-                </a>
-                <button 
-                  onClick={() => navigate('/images/upload')}
-                  className="bg-black text-yellow-400 px-8 py-4 rounded-xl font-black text-lg hover:bg-gray-800 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none flex items-center gap-3 uppercase tracking-tight italic"
-                >
-                  <FontAwesomeIcon icon={faPlus} className="text-xl" />
-                  <span>Upload</span>
-                </button>
-                <button 
-                  onClick={() => navigate('/profile/edit')}
-                  className="bg-white border-4 border-black text-black px-6 py-4 rounded-xl hover:bg-gray-100 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none"
-                >
-                  <FontAwesomeIcon icon={faCog} className="text-2xl" />
-                </button>
-              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <a 
+                ref={bookmarkletRef}
+                className="bg-white border-2 border-black text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 cursor-grab active:cursor-grabbing"
+                title="Drag me to your bookmarks bar or click to test!"
+              >
+                <FontAwesomeIcon icon={faBookmark} />
+                <span className="hidden sm:inline">SnapNest Bookmark</span>
+              </a>
+              <button 
+                onClick={() => navigate('/images/upload')}
+                className="bg-black text-yellow-400 px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
+              >
+                <FontAwesomeIcon icon={faPlus} />
+                <span className="hidden sm:inline">Upload</span>
+              </button>
+              <button 
+                onClick={() => navigate('/profile/edit')}
+                className="bg-white border-2 border-black text-black px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <FontAwesomeIcon icon={faCog} className="text-xl" />
+              </button>
             </div>
           </div>
         </div>

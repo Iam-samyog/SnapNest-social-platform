@@ -120,6 +120,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
       
       setImage({ ...image, ...response.data });
       setIsEditing(false);
+      // Optional: show success toast
     } catch (error) {
       console.error('Error updating image:', error);
       alert('Failed to update image. Please try again.');
@@ -166,6 +167,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
               <FontAwesomeIcon icon={faTimes} className="w-6 h-6" />
             </button>
 
+            {/* Main responsive layout */}
             <div className="flex flex-col md:flex-row w-full h-full">
               {/* Left: Image */}
               <div className="w-full md:w-2/3 flex items-center justify-center bg-gray-100 p-4">
@@ -182,7 +184,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
                 <div className="mb-6">
                   {isEditing ? (
                     <div className="mb-4">
-                      <label className="block text-sm font-bold mb-1 uppercase tracking-tighter">Title</label>
+                      <label className="block text-sm font-bold mb-1">Title</label>
                       <input
                         type="text"
                         value={editTitle}
@@ -192,30 +194,30 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
                       />
                     </div>
                   ) : (
-                    <h1 className="text-3xl font-black text-black mb-4 uppercase">{image.title || 'Untitled'}</h1>
+                    <h1 className="text-3xl font-black text-black mb-4">{image.title || 'Untitled'}</h1>
                   )}
 
                   <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-6">
                       <button
                         onClick={handleLike}
                         disabled={isEditing}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-bold border-2 border-black transition-colors ${
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold border-2 border-black transition-colors ${
                           liked ? 'bg-red-500 text-white' : 'bg-white text-black hover:bg-gray-100'
                         } ${isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        <FontAwesomeIcon icon={faHeart} className="w-4 h-4" />
+                        <FontAwesomeIcon icon={faHeart} className={`w-5 h-5 ${liked ? 'text-white' : ''}`} />
                         <span>{likeCount}</span>
                       </button>
 
-                      <div className="flex items-center gap-2 text-black font-bold text-sm uppercase">
-                        <FontAwesomeIcon icon={faComment} className="w-4 h-4" />
-                        <span>{comments.length}</span>
+                      <div className="flex items-center gap-2 text-black font-semibold">
+                        <FontAwesomeIcon icon={faComment} className="w-5 h-5" />
+                        <span>{comments.length} comments</span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-black font-bold text-sm uppercase">
-                        <FontAwesomeIcon icon={faEye} className="w-4 h-4" />
-                        <span>{viewCount}</span>
+                      <div className="flex items-center gap-2 text-black font-semibold">
+                        <FontAwesomeIcon icon={faEye} className="w-5 h-5" />
+                        <span>{viewCount} views</span>
                       </div>
                     </div>
 
@@ -226,21 +228,21 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
                             <button
                               onClick={handleSaveEdit}
                               disabled={isSaving}
-                              className="bg-black text-yellow-400 px-3 py-2 rounded-lg font-bold border-2 border-black hover:bg-gray-800 transition-colors flex items-center gap-2 text-sm uppercase"
+                              className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-green-600 transition-colors flex items-center gap-2"
                             >
                               {isSaving ? (
-                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-400"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                               ) : (
-                                <FontAwesomeIcon icon={faSave} />
+                                <FontAwesomeIcon icon={faSave} className="w-4 h-4" />
                               )}
                               Save
                             </button>
                             <button
                               onClick={handleCancelEdit}
                               disabled={isSaving}
-                              className="bg-gray-200 text-black px-3 py-2 rounded-lg font-bold border-2 border-black hover:bg-gray-300 transition-colors flex items-center gap-2 text-sm uppercase"
+                              className="bg-gray-200 text-black px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-gray-300 transition-colors flex items-center gap-2"
                             >
-                              <FontAwesomeIcon icon={faTimesCircle} />
+                              <FontAwesomeIcon icon={faTimesCircle} className="w-4 h-4" />
                               Cancel
                             </button>
                           </>
@@ -248,16 +250,16 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
                           <>
                             <button
                               onClick={handleEditClick}
-                              className="bg-yellow-400 text-black px-3 py-2 rounded-lg font-bold border-2 border-black hover:bg-yellow-500 transition-colors flex items-center gap-2 text-sm uppercase"
+                              className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-yellow-500 transition-colors flex items-center gap-2"
                             >
-                              <FontAwesomeIcon icon={faEdit} />
+                              <FontAwesomeIcon icon={faEdit} className="w-4 h-4" />
                               Edit
                             </button>
                             <button
                               onClick={() => setShowDeleteModal(true)}
-                              className="bg-red-500 text-white px-3 py-2 rounded-lg font-bold border-2 border-black hover:bg-red-600 transition-colors flex items-center gap-2 text-sm uppercase"
+                              className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-red-600 transition-colors flex items-center gap-2"
                             >
-                              <FontAwesomeIcon icon={faTrash} />
+                              <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
                               Delete
                             </button>
                           </>
@@ -270,7 +272,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
                 {/* Description */}
                 {isEditing ? (
                   <div className="mb-6">
-                     <label className="block text-sm font-bold mb-1 uppercase tracking-tighter">Description</label>
+                     <label className="block text-sm font-bold mb-1">Description</label>
                     <textarea
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
@@ -280,67 +282,56 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
                   </div>
                 ) : (
                   image.description && (
-                    <p className="text-black mb-6 whitespace-pre-line bg-gray-50 border-2 border-black rounded-lg p-4 font-medium leading-relaxed">
+                    <p className="text-black mb-6 whitespace-pre-line bg-gray-50 border-2 border-black rounded-lg p-4">
                       {image.description}
                     </p>
                   )
                 )}
 
                 {/* Comments Section */}
-                <div className="flex-1 flex flex-col border-t-2 border-black pt-6">
-                  <h3 className="text-xl font-black text-black mb-4 uppercase italic">💬 Comments ({comments.length})</h3>
+                <div className="flex-1 flex flex-col border-t-4 border-black pt-6">
+                  <h3 className="text-2xl font-black text-black mb-4">💬 Comments</h3>
 
                   <div className="space-y-4 mb-6 flex-1">
                     {comments.length > 0 ? (
                       comments.map((comment) => (
                         <div key={comment.id} className="bg-gray-50 border-2 border-black rounded-lg p-4">
                           <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0">
-                               {comment.user_photo ? (
-                                  <img 
-                                    src={getFullMediaUrl(comment.user_photo)} 
-                                    alt={comment.user}
-                                    className="w-10 h-10 rounded-full border-2 border-black bg-white object-cover shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                                  />
-                               ) : (
-                                  <div className="w-10 h-10 rounded-full bg-yellow-400 border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                                    <FontAwesomeIcon icon={faUser} className="w-6 h-6 text-black" />
-                                  </div>
-                               )}
+                            <div className="w-10 h-10 rounded-full bg-yellow-400 border-2 border-black flex items-center justify-center flex-shrink-0">
+                              <FontAwesomeIcon icon={faUser} className="w-6 h-6 text-black" />
                             </div>
                             <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-bold text-black text-sm">@{comment.user}</span>
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-bold text-black">@{comment.user}</span>
+                                <span className="text-sm text-gray-600">
                                   {new Date(comment.created).toLocaleDateString()}
                                 </span>
                               </div>
-                              <p className="text-sm font-medium text-gray-800">{comment.body}</p>
+                              <p className="text-black">{comment.body}</p>
                             </div>
                           </div>
                         </div>
                       ))
                     ) : (
                       <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-black">
-                        <p className="text-gray-600 font-bold text-sm uppercase italic">No comments yet</p>
+                        <p className="text-gray-600">No comments yet. Be the first to comment!</p>
                       </div>
                     )}
                   </div>
 
                   {/* Comment Form */}
-                  <form onSubmit={handleComment} className="bg-yellow-400 border-2 border-black rounded-lg p-4 mt-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <h4 className="text-sm font-black text-black mb-3 uppercase italic">✍️ Add a comment</h4>
+                  <form onSubmit={handleComment} className="bg-yellow-400 border-2 border-black rounded-lg p-4 mt-auto">
+                    <h4 className="text-xl font-bold text-black mb-3">✍️ Add a comment</h4>
                     <textarea
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       placeholder="Write your comment here..."
-                      className="w-full px-4 py-2 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black mb-3 text-sm font-medium"
-                      rows="2"
+                      className="w-full px-4 py-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black mb-3"
+                      rows="3"
                     />
                     <button
                       type="submit"
-                      disabled={!commentText.trim()}
-                      className="w-full bg-black text-yellow-400 py-2 rounded-lg font-black text-sm uppercase tracking-widest hover:bg-gray-800 transition-all active:translate-y-1 active:shadow-none disabled:opacity-50"
+                      className="bg-black text-yellow-400 px-6 py-2 rounded-lg font-bold hover:bg-gray-800 transition-colors"
                     >
                       Post Comment
                     </button>
@@ -355,21 +346,21 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center">
-          <div className="bg-white border-4 border-black rounded-lg p-6 max-w-md mx-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <h3 className="text-2xl font-black text-black mb-4 uppercase">Confirm Delete</h3>
-            <p className="text-black mb-6 font-medium">
+          <div className="bg-white border-4 border-black rounded-lg p-6 max-w-md mx-4">
+            <h3 className="text-2xl font-black text-black mb-4">Confirm Delete</h3>
+            <p className="text-black mb-6">
               Are you sure you want to permanently delete <strong>{image.title}</strong>? This action cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={handleDelete}
-                className="bg-red-500 text-white px-6 py-2 rounded-lg font-black border-2 border-black hover:bg-red-600 transition-all active:translate-y-1 flex-1 uppercase text-sm"
+                className="bg-red-500 text-white px-6 py-2 rounded-lg font-bold border-2 border-black hover:bg-red-600 transition-colors flex-1"
               >
                 Yes, Delete
               </button>
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="bg-gray-200 text-black px-6 py-2 rounded-lg font-black border-2 border-black hover:bg-gray-300 transition-all active:translate-y-1 flex-1 uppercase text-sm"
+                className="bg-gray-200 text-black px-6 py-2 rounded-lg font-bold border-2 border-black hover:bg-gray-300 transition-colors flex-1"
               >
                 Cancel
               </button>
