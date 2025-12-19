@@ -37,6 +37,10 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(','
 # Strip whitespace from each host to prevent configuration errors
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
 
+# Silence warnings about dynamically added User model fields
+# The 'following' field is added via add_to_class in account/models.py
+SILENCED_SYSTEM_CHECKS = ['auth.E003', 'auth.W004']
+
 
 # Application definition
 
