@@ -292,26 +292,32 @@ const Dashboard = () => {
          
           </div>
         </div> */}
-        <div className="bg-yellow-400 border-b-4 border-black p-4 py-6 md:py-10 mb-4 sticky top-0 z-20 shadow-lg">
-  <div className="flex flex-col md:flex-row items-center md:justify-between flex-wrap gap-4">
-    <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+       <div className="bg-yellow-400 border-b-4 border-black p-4 py-6 sm:py-10 mb-4 sticky top-0 z-20 shadow-lg">
+  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    {/* Profile Section */}
+    <div className="flex items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
       {user.photo ? (
         <img 
           src={getFullMediaUrl(user.photo)} 
           alt="Avatar" 
-          className="w-24 h-24 md:w-36 md:h-36 rounded-full border-4 border-black object-cover" 
+          className="w-20 h-20 sm:w-35 sm:h-35 rounded-full border-4 border-black object-cover flex-shrink-0" 
         />
       ) : (
-        <div className="w-24 h-24 md:w-36 md:h-36 rounded-full bg-white border-4 border-black flex items-center justify-center">
-          <FontAwesomeIcon icon={faUser} className="text-black text-2xl md:text-4xl" />
+        <div className="w-20 h-20 sm:w-35 sm:h-35 rounded-full bg-white border-4 border-black flex items-center justify-center flex-shrink-0">
+          <FontAwesomeIcon icon={faUser} className="text-black text-xl sm:text-2xl" />
         </div>
       )}
-      <div className="flex-1">
-        <h5 className="text-xl md:text-2xl font-bold text-black mb-1 text-center sm:text-left">{user.firstName || user.username}</h5>
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-3 mb-3 justify-center sm:justify-start">
+      
+      <div className="flex-1 min-w-0">
+        <h5 className="text-xl sm:text-2xl font-bold text-black mb-2 sm:mb-1 truncate">
+          {user.firstName || user.username}
+        </h5>
+        
+        {/* Stats */}
+        <div className="flex gap-3 sm:gap-6 mt-2 sm:mt-3 mb-2 sm:mb-3 flex-wrap">
           <div className="text-center">
-            <div className="text-base md:text-lg font-black text-black">
-              {images.length} <span className="text-base md:text-lg font-bold text-black capitalize ml-1">posts</span>
+            <div className="text-base sm:text-lg font-black text-black">
+              {images.length} <span className="text-base sm:text-lg font-bold text-black capitalize ml-1">posts</span>
             </div>
           </div>
           <div 
@@ -321,8 +327,8 @@ const Dashboard = () => {
               setIsFollowModalOpen(true);
             }}
           >
-            <div className="text-base md:text-lg font-black text-black">
-              {user.followers} <span className="text-base md:text-lg font-bold text-black capitalize ml-1">followers</span>
+            <div className="text-base sm:text-lg font-black text-black">
+              {user.followers} <span className="text-base sm:text-lg font-bold text-black capitalize ml-1">followers</span>
             </div>
           </div>
           <div 
@@ -332,15 +338,17 @@ const Dashboard = () => {
               setIsFollowModalOpen(true);
             }}
           >
-            <div className="text-base md:text-lg font-black text-black">
-              {user.following} <span className="text-base md:text-lg font-bold text-black capitalize ml-1">following</span>
+            <div className="text-base sm:text-lg font-black text-black">
+              {user.following} <span className="text-base sm:text-lg font-bold text-black capitalize ml-1">following</span>
             </div>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 justify-center sm:justify-start">
+        
+        {/* Action Buttons */}
+        <div className="flex gap-2 flex-wrap">
           <a 
             ref={bookmarkletRef}
-            className="bg-white border-2 border-black text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 cursor-grab active:cursor-grabbing"
+            className="bg-white border-2 border-black text-black px-3 sm:px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 cursor-grab active:cursor-grabbing text-sm sm:text-base"
             title="Drag me to your bookmarks bar or click to test!"
           >
             <FontAwesomeIcon icon={faBookmark} />
@@ -348,7 +356,7 @@ const Dashboard = () => {
           </a>
           <button 
             onClick={() => navigate('/images/upload')}
-            className="bg-black text-yellow-400 px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
+            className="bg-black text-yellow-400 px-3 sm:px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2 text-sm sm:text-base"
           >
             <FontAwesomeIcon icon={faPlus} />
             <span className="hidden sm:inline">Upload</span>
@@ -357,9 +365,9 @@ const Dashboard = () => {
             onClick={() => navigate('/profile/edit')}
             className="bg-white border-2 border-black text-black px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            <FontAwesomeIcon icon={faCog} className="text-xl" />
+            <FontAwesomeIcon icon={faCog} className="text-lg sm:text-xl" />
           </button>
-        </div>
+        </div>  
       </div>
     </div>
   </div>
