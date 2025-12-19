@@ -212,12 +212,12 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
 
                       <div className="flex items-center gap-2 text-black font-semibold">
                         <FontAwesomeIcon icon={faComment} className="w-5 h-5" />
-                        <span>{comments.length} comments</span>
+                        <span>{comments.length}</span>
                       </div>
 
                       <div className="flex items-center gap-2 text-black font-semibold">
                         <FontAwesomeIcon icon={faEye} className="w-5 h-5" />
-                        <span>{viewCount} views</span>
+                        <span>{viewCount} </span>
                       </div>
                     </div>
 
