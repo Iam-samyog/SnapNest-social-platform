@@ -26,6 +26,24 @@ const userService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    getFollowers: async (username) => {
+        try {
+            const response = await axiosInstance.get(`/users/${username}/followers/`);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    getFollowing: async (username) => {
+        try {
+            const response = await axiosInstance.get(`/users/${username}/following/`);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     }
 };
 

@@ -5,6 +5,7 @@ import { faHeart, faEye, faUser, faUserPlus, faUserCheck } from '@fortawesome/fr
 import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
+import FollowListModal from './FollowListModal';
 import userService from '../utils/userService';
 
 const UserDetail = () => {
@@ -17,6 +18,8 @@ const UserDetail = () => {
   const [isCurrentUser, setIsCurrentUser] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [followModalType, setFollowModalType] = useState('followers');
+  const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -154,11 +157,23 @@ const UserDetail = () => {
                     <div className="text-2xl font-black text-black">{images.length}</div>
                     <div className="text-sm text-black">posts</div>
                   </div>
-                  <div className="text-center">
+                  <div 
+                    className="text-center cursor-pointer hover:bg-black/5 p-2 rounded-lg transition-colors"
+                    onClick={() => {
+                      setFollowModalType('followers');
+                      setIsFollowModalOpen(true);
+                    }}
+                  >
                     <div className="text-2xl font-black text-black">{userData.followers_count || 0}</div>
                     <div className="text-sm text-black">followers</div>
                   </div>
-                  <div className="text-center">
+                  <div 
+                    className="text-center cursor-pointer hover:bg-black/5 p-2 rounded-lg transition-colors"
+                    onClick={() => {
+                      setFollowModalType('following');
+                      setIsFollowModalOpen(true);
+                    }}
+                  >
                     <div className="text-2xl font-black text-black">{userData.following_count || 0}</div>
                     <div className="text-sm text-black">following</div>
                   </div>
@@ -224,6 +239,13 @@ const UserDetail = () => {
           setIsModalOpen(false);
           setSelectedImageId(null);
         }}
+      />
+
+      <FollowListModal
+        isOpen={isFollowModalOpen}
+        onClose={() => setIsFollowModalOpen(false)}
+        username={username}
+        type={followModalType}
       />
     </>
   );

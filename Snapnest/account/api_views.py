@@ -84,6 +84,24 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
             'followers_count': user_to_unfollow.rel_to_set.count()
         })
 
+    @action(detail=True, methods=['get'])
+    def followers(self, request, username=None):
+        user = self.get_object()
+        # Get users who follow this user (user_from in Contact where user_to=user)
+        followers_contacts = user.rel_to_set.all()
+        follower_users = [contact.user_from for contact in followers_contacts]
+        serializer = UserSerializer(follower_users, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def following(self, request, username=None):
+        user = self.get_object()
+        # Get users this user follows (user_to in Contact where user_from=user)
+        following_contacts = user.rel_from_set.all()
+        following_users = [contact.user_to for contact in following_contacts]
+        serializer = UserSerializer(following_users, many=True, context={'request': request})
+        return Response(serializer.data)
+
 
 # 🔹 Register API
 class RegisterAPIView(generics.CreateAPIView):

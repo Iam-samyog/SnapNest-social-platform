@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera, faPlus, faCog, faBookmark, faHeart, faEye, faTimes, faUser } from '@fortawesome/free-solid-svg-icons';
 import Navbar from './components/Navbar';
 import ImageModal from './components/ImageModal';
+import FollowListModal from './components/FollowListModal';
 import axiosInstance, { API_BASE_URL, getFullMediaUrl } from './utils/axiosInstance';
 
 const Dashboard = () => {
@@ -14,6 +15,8 @@ const Dashboard = () => {
   const [activities, setActivities] = useState([]);
   const [selectedImageId, setSelectedImageId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [followModalType, setFollowModalType] = useState('followers');
+  const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
   const navigate = useNavigate();
   const bookmarkletRef = useRef(null);
 
@@ -216,8 +219,24 @@ const Dashboard = () => {
               <div>
                 <h5 className="text-2xl font-bold text-black mb-1">{user.firstName || user.username}</h5>
                 <p className="text-black text-lg">
-                  <span className="font-semibold ">{user.followers}</span> followers • 
-                  <span className="font-semibold ml-1 ">{user.following}</span> following
+                  <span 
+                    className="font-semibold cursor-pointer hover:underline"
+                    onClick={() => {
+                      setFollowModalType('followers');
+                      setIsFollowModalOpen(true);
+                    }}
+                  >
+                    {user.followers}
+                  </span> followers • 
+                  <span 
+                    className="font-semibold ml-1 cursor-pointer hover:underline"
+                    onClick={() => {
+                      setFollowModalType('following');
+                      setIsFollowModalOpen(true);
+                    }}
+                  >
+                    {user.following}
+                  </span> following
                 </p>
                 <p className='mt-1'>
                 <div className="flex gap-2">
@@ -354,6 +373,13 @@ const Dashboard = () => {
           setIsModalOpen(false);
           setSelectedImageId(null);
         }}
+      />
+
+      <FollowListModal
+        isOpen={isFollowModalOpen}
+        onClose={() => setIsFollowModalOpen(false)}
+        username={user?.username}
+        type={followModalType}
       />
       </>
 
