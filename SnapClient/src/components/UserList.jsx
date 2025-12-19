@@ -149,7 +149,7 @@ const UserList = () => {
                     </div>
                     {/* Posts count is not currently available in user list API, hiding for now or keeping layout consistent */}
                      <div className="text-sm text-black">
-                      <span className="font-bold">0</span> posts
+                      <span className="font-bold">{user.posts_count || 0}</span> posts
                     </div>
                   </div>
                   
