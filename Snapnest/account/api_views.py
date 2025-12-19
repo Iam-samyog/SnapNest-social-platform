@@ -222,20 +222,33 @@ class FollowToggleAPIView(APIView):
         })
 
 
+from social_django.utils import load_strategy, load_backend
+from social_core.exceptions import MissingBackend
+
 class SocialLoginAPIView(APIView):
     permission_classes = [AllowAny]
 
-    @psa('social:complete')
     def post(self, request, backend):
         """
         Exchange an access_token (Google) or code (GitHub) for a JWT.
         """
         import traceback
         try:
+            # Manually load strategy and backend avoiding decorator issues
+            strategy = load_strategy(request=request)
+            try:
+                # Backend is passed from URL
+                # No redirect_uri needed for API based auth usually, or use a dummy one if required
+                backend_instance = load_backend(strategy, backend, redirect_uri=None)
+            except MissingBackend:
+                return Response({'error': f'Invalid backend: {backend}'}, status=status.HTTP_400_BAD_REQUEST)
+
+            request.social_strategy = strategy
+            request.backend = backend_instance
+
             token = request.data.get('access_token')
             code = request.data.get('code')
 
-            # ... (rest of logic)
             if not token and not code:
                 return Response({'error': 'No access token or code provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
