@@ -75,11 +75,11 @@ class ImageViewSet(viewsets.ModelViewSet):
                 )
             except requests.exceptions.Timeout:
                 from rest_framework.exceptions import ValidationError
-                raise ValidationError({"url": "The remote server took too long to respond. Please try another image."})
+                raise ValidationError({"url": "This image could not be bookmarked, sorry."})
             except Exception as e:
                 from rest_framework.exceptions import ValidationError
                 print(f"Error downloading image from {image_url}: {str(e)}")
-                raise ValidationError({"url": f"Could not download image. Error: {str(e)}"})
+                raise ValidationError({"url": "This image could not be bookmarked, sorry."})
         else:
             serializer.save(user=self.request.user)
             
