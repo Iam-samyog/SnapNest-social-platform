@@ -5,7 +5,6 @@ import { faHeart, faEye, faUser, faUserPlus, faUserCheck } from '@fortawesome/fr
 import axiosInstance from '../utils/axiosInstance';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
-import userService from '../utils/userService';
 
 const UserDetail = () => {
   const { username } = useParams();
@@ -24,13 +23,16 @@ const UserDetail = () => {
 
   const fetchUserData = async () => {
     try {
-      // Fetch specific user by username using the new lookup
-      const user = await userService.getUserProfile(username);
+      // Fetch specific user by username using the new filter
+      const usersRes = await axiosInstance.get(`users/?username=${username}`);
+      const users = usersRes.data.results || usersRes.data || [];
+      const user = users.length > 0 ? users[0] : null;
       
       if (user) {
         setUserData(user);
         setIsFollowing(user.is_following || false);
         
+        // Check if this is the current user
         // Check if this is the current user
         const profileRes = await axiosInstance.get('profile/');
         setIsCurrentUser(profileRes.data.user?.username?.toLowerCase() === username?.toLowerCase());
@@ -39,6 +41,10 @@ const UserDetail = () => {
         const imagesRes = await axiosInstance.get(`images/?user=${username}`);
         let userImages = imagesRes.data.results || imagesRes.data || [];
         
+        // If the backend doesn't support filtering yet (fallback or older version cached), filter manually
+        // But the new backend change should support ?user=username
+        // We can double check if we got all images or just my own stream if filter failed
+        // For now trusting the backend filter we just added.
         setImages(userImages);
       }
     } catch (error) {
@@ -53,24 +59,25 @@ const UserDetail = () => {
 
   const handleFollow = async () => {
     try {
-      let response;
-      if (isFollowing) {
-          response = await userService.unfollowUser(userData.username);
-      } else {
-          response = await userService.followUser(userData.username);
-      }
-      
-      const newFollowingState = !isFollowing;
+      const response = await axiosInstance.post(`users/${userData.id}/follow/`);
+      const newFollowingState = response.data.following !== undefined ? response.data.following : !isFollowing;
       setIsFollowing(newFollowingState);
       
-      // Update follower count locally as a fallback or if API doesn't return it
-      setUserData(prev => ({
-        ...prev,
-        followers_count: newFollowingState ? prev.followers_count + 1 : Math.max(0, prev.followers_count - 1)
-      }));
-
+      // Update follower count from API response (most accurate)
+      if (response.data.followers_count !== undefined) {
+        setUserData(prev => ({
+          ...prev,
+          followers_count: response.data.followers_count
+        }));
+      } else {
+        // Fallback: calculate based on action
+        setUserData(prev => ({
+          ...prev,
+          followers_count: newFollowingState ? prev.followers_count + 1 : Math.max(0, prev.followers_count - 1)
+        }));
+      }
     } catch (error) {
-      console.error('Error following/unfollowing user:', error);
+      console.error('Error following user:', error);
       if (error.response?.data?.error) {
         alert(error.response.data.error);
       } else if (error.response?.data?.detail) {
@@ -230,4 +237,3 @@ const UserDetail = () => {
 };
 
 export default UserDetail;
-
