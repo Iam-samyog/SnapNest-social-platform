@@ -15,6 +15,7 @@ const AuthPages = () => {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -64,6 +65,7 @@ const AuthPages = () => {
     }
 
     setLoading(true);
+    setLoadingMessage(isForgotPassword ? 'Sending reset link...' : (isSignIn ? 'Verifying credentials...' : 'Creating your account...'));
     setErrors({});
     
     try {
@@ -79,24 +81,36 @@ const AuthPages = () => {
           username: formData.username,
           password: formData.password,
         });
+        
+        setLoadingMessage('Success! Prepping dashboard...');
         localStorage.setItem('access', res.data.access);
         localStorage.setItem('refresh', res.data.refresh);
-        navigate('/dashboard');
+        
+        setTimeout(() => {
+            navigate('/dashboard');
+        }, 800);
       } else {
         // Register: use register endpoint
+        setLoadingMessage('Finalizing registration...');
         await axiosInstance.post('auth/register/', {
           username: formData.username,
           email: formData.email,
           password: formData.password,
         });
         // After registration, log in automatically
+        setLoadingMessage('Syncing your profile...');
         const res = await axiosInstance.post('auth/token/', {
           username: formData.username,
           password: formData.password,
         });
+        
+        setLoadingMessage('Welcome to SnapNest! Redirecting...');
         localStorage.setItem('access', res.data.access);
         localStorage.setItem('refresh', res.data.refresh);
-        navigate('/dashboard');
+        
+        setTimeout(() => {
+            navigate('/dashboard');
+        }, 1000);
       }
     } catch (error) {
       // ... error handling ...
@@ -116,8 +130,8 @@ const AuthPages = () => {
       } else {
         setErrors({ general: 'Server error. Try again.' });
       }
-    } finally {
-        setLoading(false);
+      setLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -348,12 +362,18 @@ const AuthPages = () => {
                     <button
                       onClick={handleSubmit}
                       disabled={loading}
-                      className={`w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide transition-colors duration-300 border-2 border-black ${
+                      className={`w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide transition-colors duration-300 border-2 border-black flex items-center justify-center gap-2 ${
                         loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'
                       }`}
                     >
+                        {loading && (
+                            <svg className="animate-spin h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        )}
                         {loading 
-                            ? 'Processing...' 
+                            ? loadingMessage 
                             : (isSignIn ? 'Log-in' : 'Sign Up')
                         }
                     </button>

@@ -8,6 +8,7 @@ const GitHubCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [error, setError] = useState(null);
+    const [loadingMessage, setLoadingMessage] = useState('Validating GitHub code...');
     const code = searchParams.get('code');
 
     useEffect(() => {
@@ -21,6 +22,7 @@ const GitHubCallback = () => {
 
     const handleGitHubCallback = async () => {
         try {
+            setLoadingMessage('Handshaking with SnapNest...');
             const response = await axiosInstance.post('auth/social/github/', {
                 code: code
             });
@@ -29,7 +31,10 @@ const GitHubCallback = () => {
             localStorage.setItem('access', response.data.access);
             localStorage.setItem('refresh', response.data.refresh);
             
-            navigate('/dashboard');
+            setLoadingMessage('Identity verified! Redirecting...');
+            setTimeout(() => {
+                navigate('/dashboard');
+            }, 1000);
         } catch (err) {
             console.error('GitHub Callback Error:', err);
             setError(err.response?.data?.error || 'GitHub login failed.');
@@ -49,8 +54,8 @@ const GitHubCallback = () => {
                     </div>
                 ) : (
                     <div>
-                        <h2 className="text-xl font-bold mb-2">Authenticating...</h2>
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
+                        <h2 className="text-xl font-bold mb-2 uppercase tracking-tight">{loadingMessage}</h2>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mt-4"></div>
                     </div>
                 )}
             </div>

@@ -6,14 +6,17 @@ import { useNavigate } from 'react-router-dom';
 const SocialLogin = ({ onSuccess, onError }) => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // Google Login Hook for Custom UI
     const loginGoogle = useGoogleLogin({
         onSuccess: async (tokenResponse) => {
             setLoading(true);
+            setLoadingMessage('Authenticating with Google...');
             try {
                 // useGoogleLogin returns an access_token by default (Implicit Flow)
                 // This matches what python-social-auth 'google-oauth2' expects.
+                setLoadingMessage('Syncing with SnapNest...');
                 const response = await axiosInstance.post('auth/social/google-oauth2/', {
                     access_token: tokenResponse.access_token
                 });
@@ -22,12 +25,16 @@ const SocialLogin = ({ onSuccess, onError }) => {
                 localStorage.setItem('refresh', response.data.refresh);
                 
                 if (onSuccess) onSuccess(response.data);
-                navigate('/dashboard');
+                
+                setLoadingMessage('Success! Redirecting...');
+                setTimeout(() => {
+                    navigate('/dashboard');
+                }, 800);
             } catch (error) {
                 console.error('Google Login Error:', error);
                 if (onError) onError(error.response?.data?.error || 'Google login failed');
-            } finally {
                 setLoading(false);
+                setLoadingMessage('');
             }
         },
         onError: () => onError && onError('Google Login Failed'),
@@ -88,7 +95,12 @@ const SocialLogin = ({ onSuccess, onError }) => {
                 Sign in with GitHub
             </button>
             
-            {loading && <p className="text-center text-sm text-gray-500">Authenticating...</p>}
+            {loading && (
+                <div className="flex flex-col items-center gap-2 mt-4">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+                    <p className="text-center text-sm font-bold text-black uppercase tracking-tight">{loadingMessage || 'Authenticating...'}</p>
+                </div>
+            )}
         </div>
     );
 };
