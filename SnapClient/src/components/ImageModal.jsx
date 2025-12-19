@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment, faTrash, faEdit, faTimes, faUser, faEye, faSave, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 
 const ImageModal = ({ imageId, isOpen, onClose }) => {
+  const navigate = useNavigate();
   const [image, setImage] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -196,6 +198,27 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
                   ) : (
                     <h1 className="text-3xl font-black text-black mb-4">{image.title || 'Untitled'}</h1>
                   )}
+                  {/* Uploader Info */}
+                  <div 
+                    onClick={() => {
+                      onClose();
+                      navigate(`/users/${image.user}`);
+                    }}
+                    className="flex items-center gap-2 mb-4 bg-gray-50 p-2 rounded-lg border-2 border-black cursor-pointer hover:bg-yellow-400 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none w-fit"
+                  >
+                    {image.user_photo ? (
+                      <img 
+                        src={getFullMediaUrl(image.user_photo)} 
+                        alt={image.user}
+                        className="w-8 h-8 rounded-full border-2 border-black object-cover" 
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-white border-2 border-black flex items-center justify-center">
+                        <FontAwesomeIcon icon={faUser} className="text-black text-xs" />
+                      </div>
+                    )}
+                    <span className="font-bold text-black text-sm uppercase tracking-tight">@{image.user}</span>
+                  </div>
 
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-6">
@@ -297,12 +320,28 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
                       comments.map((comment) => (
                         <div key={comment.id} className="bg-gray-50 border-2 border-black rounded-lg p-4">
                           <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-full bg-yellow-400 border-2 border-black flex items-center justify-center flex-shrink-0">
-                              <FontAwesomeIcon icon={faUser} className="w-6 h-6 text-black" />
+                            <div className="w-10 h-10 rounded-full bg-yellow-400 border-2 border-black flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              {comment.user_photo ? (
+                                <img 
+                                  src={getFullMediaUrl(comment.user_photo)} 
+                                  alt={comment.user}
+                                  className="w-full h-full object-cover" 
+                                />
+                              ) : (
+                                <FontAwesomeIcon icon={faUser} className="w-6 h-6 text-black" />
+                              )}
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="font-bold text-black">@{comment.user}</span>
+                                <span 
+                                  onClick={() => {
+                                    onClose();
+                                    navigate(`/users/${comment.user}`);
+                                  }}
+                                  className="font-bold text-black cursor-pointer hover:underline"
+                                >
+                                  @{comment.user}
+                                </span>
                                 <span className="text-sm text-gray-600">
                                   {new Date(comment.created).toLocaleDateString()}
                                 </span>

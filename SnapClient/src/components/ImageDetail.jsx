@@ -125,6 +125,28 @@ const ImageDetail = () => {
           <div className="bg-white border-4 border-black rounded-lg shadow-2xl p-6 mb-6">
             <h1 className="text-3xl font-black text-black mb-4 uppercase">{image.title || 'Untitled'}</h1>
             
+            {/* Uploader Info */}
+            <div 
+              onClick={() => navigate(`/users/${image.user}`)}
+              className="flex items-center gap-2 mb-6 bg-gray-50 p-2 rounded-lg border-2 border-black cursor-pointer hover:bg-yellow-400 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none w-fit"
+            >
+              {image.user_photo ? (
+                <img 
+                  src={getFullMediaUrl(image.user_photo)} 
+                  alt={image.user}
+                  className="w-10 h-10 rounded-full border-2 border-black object-cover" 
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-white border-2 border-black flex items-center justify-center">
+                  <User className="w-6 h-6 text-black" />
+                </div>
+              )}
+              <div className="flex flex-col">
+                <span className="font-black text-black text-sm uppercase tracking-tight leading-none">@{image.user}</span>
+                <span className="text-[10px] font-bold text-gray-500 uppercase">View Profile</span>
+              </div>
+            </div>
+            
             <div className="mb-6">
               <img
                 src={getFullMediaUrl(image.image || image.url)}
@@ -194,12 +216,25 @@ const ImageDetail = () => {
                       className="bg-gray-50 border-2 border-black rounded-lg p-4"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-yellow-400 border-2 border-black flex items-center justify-center flex-shrink-0">
-                          <User className="w-6 h-6 text-black" />
+                        <div className="w-10 h-10 rounded-full bg-yellow-400 border-2 border-black flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {comment.user_photo ? (
+                            <img 
+                              src={getFullMediaUrl(comment.user_photo)} 
+                              alt={comment.user}
+                              className="w-full h-full object-cover" 
+                            />
+                          ) : (
+                            <User className="w-6 h-6 text-black" />
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-black text-sm">@{comment.user}</span>
+                            <span 
+                              onClick={() => navigate(`/users/${comment.user}`)}
+                              className="font-bold text-black text-sm cursor-pointer hover:underline"
+                            >
+                              @{comment.user}
+                            </span>
                             <span className="text-xs text-gray-600 font-bold uppercase tracking-tight">
                               {new Date(comment.created).toLocaleDateString()}
                             </span>
