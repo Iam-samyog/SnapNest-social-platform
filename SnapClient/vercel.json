@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://<YOUR_RENDER_URL>/api/:path*"
+      "destination": "https://snapnest-backend-sbse.onrender.com/api/:path*"
     },
     {
       "source": "/media/:path*",
-      "destination": "https://<YOUR_RENDER_URL>/media/:path*"
+      "destination": "https://snapnest-backend-sbse.onrender.com/media/:path*"
     },
     {
       "source": "/(.*)",

@@ -23,8 +23,11 @@ ENV/
 local_settings.py
 settings/local.py
 settings/.env
+!.env.example
 .env
-.env.*
+.env.local
+.env.production
+.env.development
 
 # SQLite / DB
 db.sqlite3

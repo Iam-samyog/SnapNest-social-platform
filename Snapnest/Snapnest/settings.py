@@ -34,6 +34,8 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-c#*h=m7tb&10lvrx%-p2*
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+# Strip whitespace from each host to prevent configuration errors
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
 
 
 # Application definition
