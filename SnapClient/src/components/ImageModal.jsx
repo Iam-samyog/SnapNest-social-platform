@@ -197,70 +197,72 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
                     <h1 className="text-3xl font-black text-black mb-4">{image.title || 'Untitled'}</h1>
                   )}
 
-                  <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex items-center gap-6">
+                  <div className="flex flex-col gap-4">
+                    {/* Stats Panel */}
+                    <div className="grid grid-cols-3 bg-gray-50 border-4 border-black rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                       <button
                         onClick={handleLike}
                         disabled={isEditing}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold border-2 border-black transition-colors ${
-                          liked ? 'bg-red-500 text-white' : 'bg-white text-black hover:bg-gray-100'
-                        } ${isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`flex flex-col items-center justify-center p-3 border-r-4 border-black transition-all ${
+                          liked ? 'bg-red-500 text-white' : 'bg-white text-black hover:bg-yellow-400'
+                        } ${isEditing ? 'opacity-50 cursor-not-allowed' : 'active:translate-y-1 active:shadow-none'}`}
                       >
-                        <FontAwesomeIcon icon={faHeart} className={`w-5 h-5 ${liked ? 'text-white' : ''}`} />
-                        <span>{likeCount}</span>
+                        <FontAwesomeIcon icon={faHeart} className="text-xl mb-1" />
+                        <span className="font-black text-sm uppercase">{likeCount} Likes</span>
                       </button>
 
-                      <div className="flex items-center gap-2 text-black font-semibold">
-                        <FontAwesomeIcon icon={faComment} className="w-5 h-5" />
-                        <span>{comments.length} comments</span>
+                      <div className="flex flex-col items-center justify-center p-3 bg-white border-r-4 border-black text-black">
+                        <FontAwesomeIcon icon={faComment} className="text-xl mb-1" />
+                        <span className="font-black text-sm uppercase">{comments.length} Comments</span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-black font-semibold">
-                        <FontAwesomeIcon icon={faEye} className="w-5 h-5" />
-                        <span>{viewCount} views</span>
+                      <div className="flex flex-col items-center justify-center p-3 bg-white text-black">
+                        <FontAwesomeIcon icon={faEye} className="text-xl mb-1" />
+                        <span className="font-black text-sm uppercase">{viewCount} Views</span>
                       </div>
                     </div>
 
+                    {/* Owner Actions */}
                     {isOwner && (
-                      <div className="flex gap-2">
+                      <div className="flex justify-end gap-3">
                         {isEditing ? (
                           <>
                             <button
                               onClick={handleSaveEdit}
                               disabled={isSaving}
-                              className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-green-600 transition-colors flex items-center gap-2"
+                              className="bg-green-500 text-white px-6 py-3 rounded-lg font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-green-600 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                             >
                               {isSaving ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                               ) : (
-                                <FontAwesomeIcon icon={faSave} className="w-4 h-4" />
+                                <FontAwesomeIcon icon={faSave} />
                               )}
-                              Save
+                              SAVE
                             </button>
                             <button
                               onClick={handleCancelEdit}
                               disabled={isSaving}
-                              className="bg-gray-200 text-black px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-gray-300 transition-colors flex items-center gap-2"
+                              className="bg-gray-200 text-black px-6 py-3 rounded-lg font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-300 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                             >
-                              <FontAwesomeIcon icon={faTimesCircle} className="w-4 h-4" />
-                              Cancel
+                              <FontAwesomeIcon icon={faTimesCircle} />
+                              CANCEL
                             </button>
                           </>
                         ) : (
                           <>
                             <button
                               onClick={handleEditClick}
-                              className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-yellow-500 transition-colors flex items-center gap-2"
+                              className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-500 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                             >
-                              <FontAwesomeIcon icon={faEdit} className="w-4 h-4" />
-                              Edit
+                              <FontAwesomeIcon icon={faEdit} />
+                              EDIT
                             </button>
                             <button
                               onClick={() => setShowDeleteModal(true)}
-                              className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-red-600 transition-colors flex items-center gap-2"
+                              className="bg-red-500 text-white px-6 py-3 rounded-lg font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-red-600 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                             >
-                              <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
-                              Delete
+                              <FontAwesomeIcon icon={faTrash} />
+                              DELETE
                             </button>
                           </>
                         )}
@@ -271,67 +273,85 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
 
                 {/* Description */}
                 {isEditing ? (
-                  <div className="mb-6">
-                     <label className="block text-sm font-bold mb-1">Description</label>
+                  <div className="mb-8">
+                     <label className="block text-lg font-black mb-2 uppercase italic">📝 Description</label>
                     <textarea
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
-                      className="w-full px-3 py-2 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 min-h-[100px]"
+                      className="w-full px-4 py-3 border-4 border-black rounded-xl focus:outline-none focus:ring-4 focus:ring-yellow-400 min-h-[120px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                       placeholder="Image Description"
                     />
                   </div>
                 ) : (
                   image.description && (
-                    <p className="text-black mb-6 whitespace-pre-line bg-gray-50 border-2 border-black rounded-lg p-4">
-                      {image.description}
-                    </p>
+                    <div className="mb-8 p-6 bg-gray-50 border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                       <h3 className="font-black text-sm uppercase text-gray-400 mb-2">Description</h3>
+                       <p className="text-lg font-bold text-black leading-relaxed whitespace-pre-line">
+                        {image.description}
+                      </p>
+                    </div>
                   )
                 )}
 
                 {/* Comments Section */}
-                <div className="flex-1 flex flex-col border-t-4 border-black pt-6">
-                  <h3 className="text-2xl font-black text-black mb-4">💬 Comments</h3>
+                <div className="flex-1 flex flex-col pt-8">
+                  <h3 className="text-3xl font-black text-black mb-6 uppercase flex items-center gap-2">
+                    <span className="bg-yellow-400 px-2 border-2 border-black italic">COMMENTS</span>
+                    <span className="text-2xl">💬</span>
+                  </h3>
 
-                  <div className="space-y-4 mb-6 flex-1">
+                  <div className="space-y-6 mb-8 flex-1">
                     {comments.length > 0 ? (
                       comments.map((comment) => (
-                        <div key={comment.id} className="bg-gray-50 border-2 border-black rounded-lg p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-full bg-yellow-400 border-2 border-black flex items-center justify-center flex-shrink-0">
-                              <FontAwesomeIcon icon={faUser} className="w-6 h-6 text-black" />
+                        <div key={comment.id} className="group relative">
+                          <div className="flex gap-4">
+                            <div className="flex-shrink-0">
+                               {comment.user_photo ? (
+                                  <img 
+                                    src={getFullMediaUrl(comment.user_photo)} 
+                                    alt={comment.user}
+                                    className="w-12 h-12 rounded-full border-4 border-black bg-white object-cover shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                  />
+                               ) : (
+                                  <div className="w-12 h-12 rounded-full bg-yellow-400 border-4 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                    <FontAwesomeIcon icon={faUser} className="w-6 h-6 text-black" />
+                                  </div>
+                               )}
                             </div>
-                            <div className="flex-1">
+                            <div className="flex-1 bg-white border-4 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-transform group-hover:-translate-y-1">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="font-bold text-black">@{comment.user}</span>
-                                <span className="text-sm text-gray-600">
-                                  {new Date(comment.created).toLocaleDateString()}
+                                <span className="font-black text-black bg-yellow-400 px-2 border-2 border-black text-sm uppercase">@{comment.user}</span>
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                  {new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short' }).format(new Date(comment.created))}
                                 </span>
                               </div>
-                              <p className="text-black">{comment.body}</p>
+                              <p className="font-bold text-gray-800 leading-snug">{comment.body}</p>
                             </div>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-black">
-                        <p className="text-gray-600">No comments yet. Be the first to comment!</p>
+                      <div className="text-center py-12 bg-white border-4 border-black border-dashed rounded-xl">
+                        <p className="text-xl font-black text-gray-400 uppercase italic">No comments yet</p>
+                        <p className="text-gray-400 font-bold">Be the first to break the silence!</p>
                       </div>
                     )}
                   </div>
 
                   {/* Comment Form */}
-                  <form onSubmit={handleComment} className="bg-yellow-400 border-2 border-black rounded-lg p-4 mt-auto">
-                    <h4 className="text-xl font-bold text-black mb-3">✍️ Add a comment</h4>
+                  <form onSubmit={handleComment} className="bg-yellow-400 border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sticky bottom-0">
+                    <h4 className="text-xl font-black text-black mb-4 uppercase italic">✍️ Join the chatter</h4>
                     <textarea
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
-                      placeholder="Write your comment here..."
-                      className="w-full px-4 py-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black mb-3"
-                      rows="3"
+                      placeholder="Write something cool..."
+                      className="w-full px-4 py-3 border-4 border-black rounded-xl focus:outline-none focus:ring-4 focus:ring-black mb-4 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                      rows="2"
                     />
                     <button
                       type="submit"
-                      className="bg-black text-yellow-400 px-6 py-2 rounded-lg font-bold hover:bg-gray-800 transition-colors"
+                      disabled={!commentText.trim()}
+                      className="w-full bg-black text-yellow-400 py-3 rounded-xl font-black text-lg uppercase tracking-widest hover:bg-gray-800 active:translate-y-1 active:shadow-none transition-all disabled:opacity-50"
                     >
                       Post Comment
                     </button>

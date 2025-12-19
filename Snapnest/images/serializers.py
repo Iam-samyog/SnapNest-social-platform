@@ -4,10 +4,19 @@ from .models import Image, Comment
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
+    user_photo = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'body', 'created']
+        fields = ['id', 'user', 'user_photo', 'body', 'created']
+    
+    def get_user_photo(self, obj):
+        try:
+            if obj.user.profile.photo:
+                return obj.user.profile.photo.url
+        except:
+            pass
+        return None
 
 
 class ImageSerializer(serializers.ModelSerializer):
