@@ -155,7 +155,7 @@ const UserDetail = () => {
                 <div className="flex gap-6 justify-center md:justify-start mb-4 items-center">
                   <div className="text-center p-2 rounded-lg">
                     <div className="text-2xl font-black text-black">{images.length}</div>
-                    <div className="text-sm text-black">posts</div>
+                    <span className="text-sm text-black ml-1">posts</span>
                   </div>
                   <div 
                     className="text-center cursor-pointer hover:bg-black/5 p-2 rounded-lg transition-colors"
@@ -165,7 +165,7 @@ const UserDetail = () => {
                     }}
                   >
                     <div className="text-2xl text-center font-black text-black">{userData.followers_count || 0}</div>
-                    <div className="text-sm text-center text-black">followers</div>
+                    <span className="text-sm text-center text-black ml-1">followers</span>
                   </div>
                   <div 
                     className="text-center cursor-pointer hover:bg-black/5 p-2 rounded-lg transition-colors"
@@ -175,7 +175,7 @@ const UserDetail = () => {
                     }}
                   >
                     <div className="text-2xl font-black text-black">{userData.following_count || 0}</div>
-                    <div className="text-sm text-black">following</div>
+                    <span className="text-sm text-black ml-1">following</span>
                   </div>
                 </div>
                 
