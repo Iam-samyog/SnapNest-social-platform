@@ -49,13 +49,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    first_name = serializers.CharField(source='user.first_name', required=False)
+    last_name = serializers.CharField(source='user.last_name', required=False)
+    email = serializers.EmailField(source='user.email', required=False)
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     posts_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Profile
-        fields = ['date_of_birth', 'photo', 'user', 'followers_count', 'following_count', 'posts_count']
+        fields = ['date_of_birth', 'photo', 'user', 'first_name', 'last_name', 'email', 'followers_count', 'following_count', 'posts_count']
     
     def get_followers_count(self, obj):
         # Use Contact model's reverse relationship instead of removed 'followers' field
@@ -67,6 +70,25 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_posts_count(self, obj):
         return obj.user.images_created.count()
+
+    def validate_email(self, value):
+        user = self.instance.user if self.instance else None
+        if User.objects.filter(email=value).exclude(pk=user.pk if user else None).exists():
+            raise serializers.ValidationError("Another user is already using this email.")
+        return value
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+        
+        # Update User fields if any are present
+        user = instance.user
+        if user_data:
+            for attr, value in user_data.items():
+                setattr(user, attr, value)
+            user.save()
+
+        # Update Profile fields
+        return super().update(instance, validated_data)
 
 
 class RegisterSerializer(serializers.ModelSerializer):
