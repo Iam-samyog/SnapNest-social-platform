@@ -169,3 +169,16 @@ class PasswordResetConfirmAPIView(views.APIView):
         user.save()
         
         return Response({'message': 'Password has been reset successfully'})
+
+
+class FollowToggleAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, username):
+        target_user = User.objects.get(username=username)
+        contact, created = Contact.objects.get_or_create(user_from=request.user, user_to=target_user)
+        if not created:
+            # Already following, so unfollow
+            contact.delete()
+            return Response({'status': 'unfollowed'})
+        return Response({'status': 'followed'})

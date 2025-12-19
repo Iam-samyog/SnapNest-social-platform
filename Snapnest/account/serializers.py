@@ -80,3 +80,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         Profile.objects.get_or_create(user=user)
         return user
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Contact
+        fields=['user_from','user_to','created']

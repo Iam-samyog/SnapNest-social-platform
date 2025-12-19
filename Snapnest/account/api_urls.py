@@ -11,7 +11,7 @@ from .api_views import (
     PasswordResetRequestAPIView,
     PasswordResetConfirmAPIView
 )
-
+from .api_views import FollowToggleAPIView
 router = DefaultRouter()
 router.register('users', UserViewSet, basename='user')
 
@@ -21,6 +21,8 @@ urlpatterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view()),
     path('auth/password-reset/', PasswordResetRequestAPIView.as_view(), name='password_reset'),
     path('auth/password-reset-confirm/', PasswordResetConfirmAPIView.as_view(), name='password_reset_confirm'),
+    path('users/<str:username>/follow/', FollowToggleAPIView.as_view(), name='user_follow_toggle'),
+
     path('profile/', ProfileAPIView.as_view()),
     path('', include(router.urls)),
 ]
