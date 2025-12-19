@@ -209,7 +209,7 @@ const Dashboard = () => {
                   className="w-50 h-50 rounded-full border-4 border-black object-cover" 
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-white border-4 border-black flex items-center justify-center">
+                <div className="w-50 h-50 rounded-full bg-white border-4 border-black flex items-center justify-center">
                   <FontAwesomeIcon icon={faUser} className="text-black text-2xl" />
                 </div>
               )}
