@@ -4,7 +4,7 @@ import Hero from './components/Hero'
 import HowToSnapNest from './components/HowToSnapNest'
 import Footer from './components/Footer'
 import Review from './components/Reviews'
-import CTASection from './components/CTAsection'
+import CTASection from './components/CTASection'
 
 const MainPage = () => {
   return (
