@@ -216,8 +216,8 @@ const Dashboard = () => {
               <div>
                 <h5 className="text-2xl font-bold text-black mb-1">{user.firstName || user.username}</h5>
                 <p className="text-black text-sm">
-                  <span className="font-semibold">{user.followers}</span> followers • 
-                  <span className="font-semibold ml-1">{user.following}</span> following
+                  <span className="font-semibold text-xl">{user.followers}</span> followers • 
+                  <span className="font-semibold ml-1 text-xl">{user.following}</span> following
                 </p>
                 <p>
                 <div className="flex gap-2">
