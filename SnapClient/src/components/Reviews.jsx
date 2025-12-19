@@ -3,56 +3,73 @@ import React, { useState } from 'react';
 const Review = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const reviews = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      position: "CEO, Tech Solutions",
-      rating: 5,
-      text: "Exceptional service! The team went above and beyond to deliver outstanding results. Their professionalism and attention to detail made all the difference in our project.",
-      image: "SJ"
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      position: "Marketing Director",
-      rating: 5,
-      text: "Working with this team has been an absolute pleasure. They understood our vision perfectly and brought it to life with incredible precision and creativity.",
-      image: "MC"
-    },
-    {
-      id: 3,
-      name: "Emily Rodriguez",
-      position: "Founder, StartupHub",
-      rating: 5,
-      text: "I highly recommend their services! They delivered beyond our expectations and the results speak for themselves. Professional, responsive, and truly talented.",
-      image: "ER"
-    },
-    {
-      id: 4,
-      name: "David Thompson",
-      position: "Product Manager",
-      rating: 5,
-      text: "Outstanding work from start to finish. The attention to detail and commitment to quality is unmatched. They made the entire process smooth and enjoyable.",
-      image: "DT"
-    },
-    {
-      id: 5,
-      name: "Lisa Anderson",
-      position: "Creative Director",
-      rating: 5,
-      text: "Simply amazing! Their creativity and technical expertise transformed our brand. The team is responsive, professional, and delivers exceptional quality every time.",
-      image: "LA"
-    },
-    {
-      id: 6,
-      name: "James Wilson",
-      position: "Operations Lead",
-      rating: 5,
-      text: "Best decision we made for our business! The results exceeded all expectations and the ROI has been incredible. Highly professional and truly dedicated team.",
-      image: "JW"
-    }
-  ];
+const reviews = [
+  {
+    id: 1,
+    name: "Anupa Pandey",
+    position: "University Student",
+    rating: 5,
+    text: "SnapNest feels incredibly smooth and intuitive. The UI is clean, modern, and easy to navigate. Infinite scrolling and image layouts are well thought out, making the overall user experience very engaging.",
+    image: "AP"
+  },
+  {
+    id: 2,
+    name: "Samrakhsyan",
+    position: "University Student",
+    rating: 5,
+    text: "The technical quality behind SnapNest is impressive. Features like Redis-powered image ranking and Django authentication work seamlessly, making the platform both scalable and reliable.",
+    image: "SM"
+  },
+  {
+    id: 3,
+    name: "Abhinav",
+    position: "University Student",
+    rating: 5,
+    text: "SnapNest is well-architected and polished. The integration of Google OAuth, activity feeds, and bookmarking is smooth and secure. It feels like a production-ready social platform.",
+    image: "AB"
+  },
+  {
+    id: 4,
+    name: "Sujan",
+    position: "University Student",
+    rating: 5,
+    text: "The overall quality of SnapNest stands out. From performance to usability, everything feels refined. It’s clear a lot of thought went into both the user journey and technical implementation.",
+    image: "SJ"
+  },
+  {
+    id: 5,
+    name: "Arjit",
+    position: "University Student",
+    rating: 5,
+    text: "SnapNest delivers a premium experience. Image loading is fast, interactions are smooth, and the platform remains stable even with continuous scrolling and heavy usage.",
+    image: "AR"
+  },
+  {
+    id: 6,
+    name: "Krishal",
+    position: "University Student",
+    rating: 5,
+    text: "As a user, SnapNest feels intuitive and enjoyable. The bookmarking and sharing features are easy to use, and the clean design makes browsing images a great experience.",
+    image: "KR"
+  },
+  {
+    id: 7,
+    name: "Prayash",
+    position: "University Student",
+    rating: 5,
+    text: "SnapNest showcases strong full-stack engineering. The Django backend pairs nicely with the frontend, and features like activity feeds and rankings feel smooth and well-optimized.",
+    image: "PR"
+  },
+  {
+    id: 8,
+    name: "Grishma",
+    position: "University Student",
+    rating: 5,
+    text: "I love how easy SnapNest makes it to discover and save images. The design is elegant, the experience is seamless, and it feels like a modern social platform built with care.",
+    image: "GR"
+  }
+];
+
 
   const reviewsPerPage = 3;
   const totalPages = Math.ceil(reviews.length / reviewsPerPage);

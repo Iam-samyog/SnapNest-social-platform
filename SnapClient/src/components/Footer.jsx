@@ -10,9 +10,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
           {/* About Us - spans 1 column */}
           <div className="lg:col-span-1">
-            <h3 className="text-xl font-semibold uppercase tracking-wider mb-5">About Us</h3>
+            <h3 className="text-xl font-semibold uppercase tracking-wider mb-5">About Developer</h3>
             <p className="leading-relaxed mb-4 opacity-90">
-              We are dedicated to providing exceptional services and creating lasting relationships with our clients. Excellence is our standard.
+              Samyog is developer of this platform. He is a student of University of Texas at Arlington. He want to make a platform where users can bookmark their favorite images and share them with their friends.
             </p>
             <div className="flex space-x-4 mt-6">
               <a
@@ -88,7 +88,7 @@ const Footer = () => {
 
         {/* Footer Bottom */}
         <div className="border-t-2 border-black pt-8 flex flex-col sm:flex-row justify-between items-center gap-5">
-          <p className="opacity-90">© 2024 Your Company Name. All rights reserved.</p>
+          <p className="opacity-90">© 2026 Your Company Name. All rights reserved.</p>
           <div className="flex space-x-7">
             <a href="#" className="hover:opacity-70 transition-opacity duration-300">
               Privacy Policy

@@ -7,19 +7,19 @@ const HowToSnapNest = () => {
     {
       number: "01",
       title: "Create Your Account",
-      description: "Sign up in seconds with your email or social media. No complicated forms, just quick and easy registration.",
+      description: "Sign up in seconds with your Gmail/Github or mail account. No complicated forms, just quick and easy registration.",
       icon: faUserPlus
     },
     {
       number: "02",
-      title: "Upload Your Memories",
-      description: "Drag and drop your photos and videos. SnapNest automatically organizes them by date, location, and people.",
+      title: "Upload/BookMark Pictures",
+      description: "Drag and drop your photos or Bookmark the images you see on the internet. SnapNest automatically organizes them by people.",
       icon: faCloudArrowUp
     },
     {
       number: "03",
-      title: "Organize & Create Albums",
-      description: "Create custom albums for different occasions. Tag people, add descriptions, and relive your favorite moments.",
+      title: "Like,Comment and Rank",
+      description: "SnapNest Ranks the top images based on the number of views it got. Users can like and comment on the images",
       icon: faBookBookmark
     },
   ];
