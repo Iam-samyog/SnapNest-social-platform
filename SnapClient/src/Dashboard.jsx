@@ -238,7 +238,7 @@ const Dashboard = () => {
                 <h5 className="text-2xl font-bold text-black mb-1">{user.firstName || user.username}</h5>
                 <div className="flex gap-6 mt-3 mb-3">
                   <div className="text-center">
-                    <div className="text-xl font-black text-black">{images.length} posts</div>
+                    <div className="text-xl font-black text-black">{images.length} <span className="text-xs font-bold text-black uppercase">posts</span></div>
                    
                   </div>
                   <div 
@@ -248,7 +248,7 @@ const Dashboard = () => {
                       setIsFollowModalOpen(true);
                     }}
                   >
-                    <div className="text-xl font-black text-black">{user.followers}followers</div>
+                    <div className="text-xl font-black text-black">{user.followers} <span className="text-xs font-bold text-black uppercase">followers</span></div>
     
                   </div>
                   <div 
@@ -258,7 +258,7 @@ const Dashboard = () => {
                       setIsFollowModalOpen(true);
                     }}
                   >
-                    <div className="text-xl font-black text-black">{user.following} following</div>
+                    <div className="text-xl font-black text-black">{user.following} <span className="text-xs font-bold text-black uppercase">following</span></div>
             
                   </div>
                 </div>
