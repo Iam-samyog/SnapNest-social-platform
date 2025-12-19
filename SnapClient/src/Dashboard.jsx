@@ -220,7 +220,7 @@ const Dashboard = () => {
       <div className="max-w-8xl mx-auto bg-gray-50 min-h-screen pb-8">
         <Navbar/>
         {/* Profile Header */}
-        <div className="bg-yellow-400 border-b-4 border-black p-4 py-10 mb-4 sticky top-0 z-20 shadow-lg">
+        {/* <div className="bg-yellow-400 border-b-4 border-black p-4 py-10 mb-4 sticky top-0 z-20 shadow-lg">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               {user.photo ? (
@@ -291,7 +291,79 @@ const Dashboard = () => {
             
          
           </div>
+        </div> */}
+        <div className="bg-yellow-400 border-b-4 border-black p-4 py-6 md:py-10 mb-4 sticky top-0 z-20 shadow-lg">
+  <div className="flex flex-col md:flex-row items-center md:justify-between flex-wrap gap-4">
+    <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+      {user.photo ? (
+        <img 
+          src={getFullMediaUrl(user.photo)} 
+          alt="Avatar" 
+          className="w-24 h-24 md:w-36 md:h-36 rounded-full border-4 border-black object-cover" 
+        />
+      ) : (
+        <div className="w-24 h-24 md:w-36 md:h-36 rounded-full bg-white border-4 border-black flex items-center justify-center">
+          <FontAwesomeIcon icon={faUser} className="text-black text-2xl md:text-4xl" />
         </div>
+      )}
+      <div className="flex-1">
+        <h5 className="text-xl md:text-2xl font-bold text-black mb-1 text-center sm:text-left">{user.firstName || user.username}</h5>
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-3 mb-3 justify-center sm:justify-start">
+          <div className="text-center">
+            <div className="text-base md:text-lg font-black text-black">
+              {images.length} <span className="text-base md:text-lg font-bold text-black capitalize ml-1">posts</span>
+            </div>
+          </div>
+          <div 
+            className="text-center cursor-pointer hover:opacity-75 transition-opacity"
+            onClick={() => {
+              setFollowModalType('followers');
+              setIsFollowModalOpen(true);
+            }}
+          >
+            <div className="text-base md:text-lg font-black text-black">
+              {user.followers} <span className="text-base md:text-lg font-bold text-black capitalize ml-1">followers</span>
+            </div>
+          </div>
+          <div 
+            className="text-center cursor-pointer hover:opacity-75 transition-opacity"
+            onClick={() => {
+              setFollowModalType('following');
+              setIsFollowModalOpen(true);
+            }}
+          >
+            <div className="text-base md:text-lg font-black text-black">
+              {user.following} <span className="text-base md:text-lg font-bold text-black capitalize ml-1">following</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 justify-center sm:justify-start">
+          <a 
+            ref={bookmarkletRef}
+            className="bg-white border-2 border-black text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 cursor-grab active:cursor-grabbing"
+            title="Drag me to your bookmarks bar or click to test!"
+          >
+            <FontAwesomeIcon icon={faBookmark} />
+            <span className="hidden sm:inline">SnapNest Bookmark</span>
+          </a>
+          <button 
+            onClick={() => navigate('/images/upload')}
+            className="bg-black text-yellow-400 px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
+          >
+            <FontAwesomeIcon icon={faPlus} />
+            <span className="hidden sm:inline">Upload</span>
+          </button>
+          <button 
+            onClick={() => navigate('/profile/edit')}
+            className="bg-white border-2 border-black text-black px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <FontAwesomeIcon icon={faCog} className="text-xl" />
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* Alert */}
         {showAlert && (
