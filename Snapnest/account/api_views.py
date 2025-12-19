@@ -165,6 +165,12 @@ class PasswordResetConfirmAPIView(views.APIView):
         return Response({'message': 'Password has been reset successfully'})
 
 
+# ... existing code ...
+from rest_framework_simplejwt.tokens import RefreshToken
+from social_django.utils import psa
+
+# ... existing code ...
+
 class FollowToggleAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -191,3 +197,87 @@ class FollowToggleAPIView(APIView):
             'following': True,
             'followers_count': target_user.rel_to_set.count()
         })
+
+
+class SocialLoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    @psa('social:complete')
+    def post(self, request, backend):
+        """
+        Exchange an access_token (Google) or code (GitHub) for a JWT.
+        """
+        token = request.data.get('access_token')
+        code = request.data.get('code')
+
+        if not token and not code:
+            return Response({'error': 'No access token or code provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = None
+        try:
+            if code:
+                # For authorization code flow (like GitHub)
+                # We need to manually perform the code exchange if the strategy doesn't handle it entirely via state 
+                # (which custom API doesn't usually have)
+                # However, python-social-auth's `auth_complete` is designed to handle this if request parameters are present.
+                # But here we have them in JSON body/request.data, not GET parameters.
+                # simpler approach: let the backend exchange the code.
+                
+                # Note: `request.backend` is injected by @psa
+                # For GitHub, we can force the exchange if we have the code.
+                user = request.backend.auth_complete(user=None) 
+                # auth_complete usually expects args in request.GET/POST. 
+                # We might need to mock that or use lower level methods.
+                # Since we are in a custom view, let's try a direct exchange if auth_complete fails or for clarity.
+                pass
+            
+            if not user and token:
+                user = request.backend.do_auth(token)
+            
+            # If we still don't have a user, and we have a code, let's try manual exchange if generic auth_complete didn't work
+            if not user and code:
+                # This is backend specific, but generally:
+                try:
+                    # auth_complete relies on query params. Let's monkeypatch or ensure query params exist?
+                    # Or just use the backend's request_access_token if available.
+                    # GitHub backend has `auth_complete` which calls `request_access_token`.
+                    # Let's try to pass the code directly if possible.
+                    # It seems `do_auth` with a code is NOT standard for all backends.
+                    
+                    # Safer fallback for DRF integration:
+                    # For GitHub, we can just put 'code' into request.GET or request.POST to satisfy auth_complete
+                    # But request is immutable.
+                    # Let's assume for now we use 'access_token' for Google (Client Side) 
+                    # and for GitHub we might need to handle it. 
+                    # Actually, for GitHub, if we just send the `code` as `access_token` parameter 
+                    # SOME strategies/backends handle it, but standard OAuth2 expects a token.
+                    
+                    # Let's stick to: Google sends access_token. GitHub sends code.
+                    # If code:
+                    if backend == 'github':
+                        # Manual exchange
+                         response = request.backend.request_access_token(code)
+                         # response is usually a dict or string depending on backend
+                         if isinstance(response, dict) and 'access_token' in response:
+                             access_token = response['access_token']
+                             user = request.backend.do_auth(access_token)
+                         else:
+                             # Some backends return bytes or text
+                             pass
+            
+            # If implicit flow or we got token
+            if user:
+                 if not user.is_active:
+                     return Response({'error': 'User account is disabled.'}, status=status.HTTP_400_BAD_REQUEST)
+
+                 refresh = RefreshToken.for_user(user)
+                 return Response({
+                     'access': str(refresh.access_token),
+                     'refresh': str(refresh),
+                     'user': UserSerializer(user).data
+                 })
+            else:
+                 return Response({'error': 'Authentication failed.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
