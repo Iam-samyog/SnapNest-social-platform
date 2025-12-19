@@ -152,8 +152,8 @@ const UserDetail = () => {
                   )}
                 </div>
                 
-                <div className="flex gap-6 justify-center md:justify-start mb-4">
-                  <div className="text-center">
+                <div className="flex gap-6 justify-center md:justify-start mb-4 items-center">
+                  <div className="text-center p-2 rounded-lg">
                     <div className="text-2xl font-black text-black">{images.length}</div>
                     <div className="text-sm text-black">posts</div>
                   </div>
