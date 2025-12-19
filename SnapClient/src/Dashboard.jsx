@@ -244,8 +244,8 @@ const Dashboard = () => {
                       setIsFollowModalOpen(true);
                     }}
                   >
-                    {user.followers}
-                  </span> followers • 
+                    {user.followers} followers • 
+                  </span> 
                   <span 
                     className="font-semibold ml-1 cursor-pointer hover:underline"
                     onClick={() => {
@@ -253,8 +253,8 @@ const Dashboard = () => {
                       setIsFollowModalOpen(true);
                     }}
                   >
-                    {user.following}
-                  </span> following
+                    {user.following} following
+                  </span> 
                 </p>
                 <p className='mt-1'>
                 <div className="flex gap-2">
