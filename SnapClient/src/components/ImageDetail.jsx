@@ -128,14 +128,14 @@ const ImageDetail = () => {
     <>
       <Navbar />
       <div className="bg-yellow min-h-screen bg-gray-50 pb-8">
-        <div className="max-w-4xl mx-auto px-4 pt-8">
-          <div className="bg-white border-4 border-black rounded-lg shadow-2xl p-6 mb-6">
-            <h1 className="text-3xl font-black text-black mb-4 uppercase">{image.title || 'Untitled'}</h1>
+        <div className="max-w-4xl mx-auto px-2 sm:px-4 pt-4 md:pt-8">
+          <div className="bg-white border-4 border-black rounded-lg shadow-2xl p-4 md:p-8 mb-6">
+            <h1 className="text-2xl md:text-4xl font-black text-black mb-4 uppercase leading-tight">{image.title || 'Untitled'}</h1>
             
             {/* Uploader Info */}
             <div 
               onClick={() => navigate(`/users/${image.user}`)}
-              className="flex items-center gap-2 mb-6 bg-gray-50 p-2 rounded-lg border-2 border-black cursor-pointer hover:bg-yellow-400 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none w-fit"
+              className="flex items-center gap-2 mb-6 bg-gray-50 hover:bg-yellow-400 p-2 pr-4 rounded-lg border-2 border-black cursor-pointer transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none w-fit"
             >
               {image.user_photo ? (
                 <img 
@@ -149,7 +149,7 @@ const ImageDetail = () => {
                 </div>
               )}
               <div className="flex flex-col">
-                <span className="font-black text-black text-sm uppercase tracking-tight leading-none">@{image.user}</span>
+                <span className="font-black text-black text-xs md:text-sm uppercase tracking-tight leading-none">@{image.user}</span>
                 <span className="text-[10px] font-bold text-gray-500 uppercase">View Profile</span>
               </div>
             </div>
@@ -162,41 +162,41 @@ const ImageDetail = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-gray-50 p-4 rounded-xl border-2 border-black border-dashed">
+              <div className="flex flex-wrap items-center gap-4 md:gap-6 justify-between md:justify-start">
                 <button
                   onClick={handleLike}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold border-2 border-black transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-black border-2 border-black transition-all active:scale-95 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
                     liked
                       ? 'bg-red-500 text-white'
-                      : 'bg-white text-black hover:bg-gray-100'
+                      : 'bg-white text-black hover:bg-red-50'
                   }`}
                 >
                   <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
                   <span>{likeCount}</span>
                 </button>
-                <div className="flex items-center gap-2 text-black font-semibold uppercase">
+                <div className="flex items-center gap-2 text-black font-black uppercase text-xs md:text-sm tracking-tighter">
                   <MessageCircle className="w-5 h-5" />
-                  <span>{comments.length} comments</span>
+                  <span>{comments.length} <span className="hidden sm:inline">comments</span><span className="sm:hidden">cmds</span></span>
                 </div>
-                <div className="flex items-center gap-2 text-black font-semibold uppercase">
+                <div className="flex items-center gap-2 text-black font-black uppercase text-xs md:text-sm tracking-tighter">
                   <Eye className="w-5 h-5" />
-                  <span>{viewCount} views</span>
+                  <span>{viewCount} <span className="hidden sm:inline">views</span><span className="sm:hidden">view</span></span>
                 </div>
               </div>
 
               {isOwner && (
-                <div className="flex gap-2">
+                <div className="flex gap-3 w-full md:w-auto">
                   <button
                     onClick={() => navigate(`/images/${id}/edit`)}
-                    className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-yellow-500 transition-colors flex items-center gap-2"
+                    className="flex-1 md:flex-none bg-yellow-400 text-black px-6 py-2.5 rounded-lg font-black border-2 border-black hover:bg-yellow-500 transition-all active:translate-y-0.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none flex items-center justify-center gap-2 uppercase text-sm"
                   >
                     <Edit className="w-4 h-4" />
                     Edit
                   </button>
                   <button
                     onClick={() => setShowDeleteModal(true)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-red-600 transition-colors flex items-center gap-2"
+                    className="flex-1 md:flex-none bg-red-500 text-white px-6 py-2.5 rounded-lg font-black border-2 border-black hover:bg-red-600 transition-all active:translate-y-0.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none flex items-center justify-center gap-2 uppercase text-sm"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete
@@ -234,19 +234,19 @@ const ImageDetail = () => {
                             <User className="w-6 h-6 text-black" />
                           )}
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 mb-1">
                             <span 
                               onClick={() => navigate(`/users/${comment.user}`)}
-                              className="font-bold text-black text-sm cursor-pointer hover:underline"
+                              className="font-bold text-black text-sm cursor-pointer hover:underline truncate"
                             >
                               @{comment.user}
                             </span>
-                            <span className="text-xs text-gray-600 font-bold uppercase tracking-tight">
+                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tight whitespace-nowrap">
                               {new Date(comment.created).toLocaleDateString()}
                             </span>
                           </div>
-                          <p className="text-black text-sm leading-snug">{comment.body}</p>
+                          <p className="text-black text-sm leading-snug break-words">{comment.body}</p>
                         </div>
                       </div>
                     </div>
