@@ -56,7 +56,7 @@ const ImageRanking = () => {
                 <li
                   key={image.id}
                   onClick={() => navigate(`/images/${image.id}`)}
-                  className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-gray-50 border-2 border-black rounded-lg cursor-pointer hover:bg-yellow-400 hover:scale-[1.02] transition-all duration-300"
+                  className="flex items-center gap-4 p-4 bg-gray-50 border-2 border-black rounded-lg cursor-pointer hover:bg-yellow-400 hover:scale-105 transition-all duration-300"
                 >
                   <div className="flex-shrink-0 w-12 h-12 bg-yellow-400 border-4 border-black rounded-full flex items-center justify-center font-black text-2xl text-black">
                     {index + 1}
