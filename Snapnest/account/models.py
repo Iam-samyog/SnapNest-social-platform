@@ -52,13 +52,18 @@ class Contact(models.Model):
         def __str__(self):
             return f'{self.user_from} follow {self.user_to}'
         
-user_model=get_user_model()
-user_model.add_to_class(
-        'following',
-        models.ManyToManyField(
-            'self',
-            through=Contact,
-            related_name='followers',
-            symmetrical=False
-        )
-    )
+# Note: The 'following' relationship is accessed through the Contact model
+# Users can access followers via: user.rel_to_set.all()
+# Users can access following via: user.rel_from_set.all()
+# This avoids the need for add_to_class which causes migration warnings
+
+# user_model=get_user_model()
+# user_model.add_to_class(
+#         'following',
+#         models.ManyToManyField(
+#             'self',
+#             through=Contact,
+#             related_name='followers',
+#             symmetrical=False
+#         )
+#     )
