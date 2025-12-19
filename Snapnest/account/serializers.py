@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     posts_count = serializers.SerializerMethodField()
+    profile = serializers.SerializerMethodField()
     
     class Meta:
         model = User
