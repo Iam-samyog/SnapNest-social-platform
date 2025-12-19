@@ -206,10 +206,10 @@ const Dashboard = () => {
                 <img 
                   src={getFullMediaUrl(user.photo)} 
                   alt="Avatar" 
-                  className="w-25 h-25 rounded-full border-4 border-black object-cover" 
+                  className="w-35 h-35 rounded-full border-4 border-black object-cover" 
                 />
               ) : (
-                <div className="w-25 h-25 rounded-full bg-white border-4 border-black flex items-center justify-center">
+                <div className="w-35 h-35 rounded-full bg-white border-4 border-black flex items-center justify-center">
                   <FontAwesomeIcon icon={faUser} className="text-black text-2xl" />
                 </div>
               )}
@@ -220,7 +220,7 @@ const Dashboard = () => {
                   <span className="font-semibold ml-1">{user.following}</span> following
                 </p>
                 <p>
-                       <div className="flex gap-2">
+                <div className="flex gap-2">
               <a 
                 ref={bookmarkletRef}
                 className="bg-white border-2 border-black text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 cursor-grab active:cursor-grabbing"
