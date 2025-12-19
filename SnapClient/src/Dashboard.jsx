@@ -206,10 +206,10 @@ const Dashboard = () => {
                 <img 
                   src={getFullMediaUrl(user.photo)} 
                   alt="Avatar" 
-                  className="w-50 h-50 rounded-full border-4 border-black object-cover" 
+                  className="w-25 h-25 rounded-full border-4 border-black object-cover" 
                 />
               ) : (
-                <div className="w-50 h-50 rounded-full bg-white border-4 border-black flex items-center justify-center">
+                <div className="w-25 h-25 rounded-full bg-white border-4 border-black flex items-center justify-center">
                   <FontAwesomeIcon icon={faUser} className="text-black text-2xl" />
                 </div>
               )}
