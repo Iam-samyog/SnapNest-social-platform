@@ -152,156 +152,183 @@ const AuthPages = () => {
             {isForgotPassword ? 'Reset Password' : (isSignIn ? 'Log-in' : 'Sign Up')}
           </h2>
 
-          {/* Success Message */}
-          {successMessage && (
-            <div className="bg-green-100 border-2 border-green-500 text-green-700 px-4 py-3 rounded mb-4">
-              <p className="font-semibold">{successMessage}</p>
-            </div>
-          )}
-
-          {/* Error Message */}
-          {errors.general && (
-            <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
-              <p className="font-semibold">{errors.general}</p>
-            </div>
-          )}
-          {Object.keys(errors).length > 0 && isSignIn && !isForgotPassword && !errors.general && (
-            <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
-              <p className="font-semibold">
-                Your username and password didn't match. Please try again.
+          {/* Success Interface for Forgot Password */}
+          {isForgotPassword && successMessage ? (
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-green-500">
+                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-black mb-2">Check Your Email</h3>
+              <div className="bg-green-50 border-2 border-green-200 text-green-800 px-4 py-3 rounded mb-6">
+                 <p>{successMessage}</p>
+              </div>
+              <p className="text-gray-600 mb-6">
+                We've sent a password reset link to your email address. Please follow the link to reset your password.
               </p>
-            </div>
-          )}
-
-          {/* Description */}
-          <p className="text-black mb-6">
-            {isForgotPassword ? (
-               <>
-                Enter your email address and we'll send you a link to reset your password.{' '}
-                <button
-                  onClick={toggleForgotPassword}
-                  className="text-black font-bold underline hover:opacity-70"
-                >
-                  Back to Log-in
-                </button>
-              </>
-            ) : isSignIn ? (
-              <>
-                Please use the following form to log-in. If you don't have an account{' '}
-                <button
-                  onClick={toggleAuthMode}
-                  className="text-black font-bold underline hover:opacity-70"
-                >
-                  Register Here
-                </button>
-              </>
-            ) : (
-              <>
-                Create your account to get started. Already have an account?{' '}
-                <button
-                  onClick={toggleAuthMode}
-                  className="text-black font-bold underline hover:opacity-70"
-                >
-                  Sign In Here
-                </button>
-              </>
-            )}
-          </p>
-
-          <div className="space-y-4 mb-6">
-            {/* Username - Hidden in Forgot Password */}
-            {!isForgotPassword && (
-              <div>
-                <label className="block text-black font-semibold mb-2">Username:</label>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border-2 ${
-                    errors.username ? 'border-red-500' : 'border-black'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
-                  placeholder="Enter your username"
-                />
-                {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
-              </div>
-            )}
-
-            {/* Email (Sign Up only OR Forgot Password) */}
-            {(!isSignIn || isForgotPassword) && (
-              <div>
-                <label className="block text-black font-semibold mb-2">Email:</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border-2 ${
-                    errors.email ? 'border-red-500' : 'border-black'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
-                  placeholder="Enter your email"
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-              </div>
-            )}
-
-            {/* Password - Hidden in Forgot Password */}
-            {!isForgotPassword && (
-              <div>
-                <label className="block text-black font-semibold mb-2">Password:</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border-2 ${
-                    errors.password ? 'border-red-500' : 'border-black'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
-                  placeholder="Enter your password"
-                />
-                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-              </div>
-            )}
-
-            {/* Confirm Password (Sign Up only) */}
-            {!isSignIn && !isForgotPassword && (
-              <div>
-                <label className="block text-black font-semibold mb-2">Confirm Password:</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border-2 ${
-                    errors.confirmPassword ? 'border-red-500' : 'border-black'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
-                  placeholder="Confirm your password"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
-                )}
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black"
-            >
-              {isForgotPassword ? 'Send Reset Link' : (isSignIn ? 'Log-in' : 'Sign Up')}
-            </button>
-          </div>
-
-          {/* Forgot Password Link */}
-          {isSignIn && !isForgotPassword && (
-            <div className="text-center mb-6">
-              <button 
-                onClick={toggleForgotPassword} 
-                className="text-black underline hover:opacity-70"
+              <button
+                onClick={toggleAuthMode}
+                className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black"
               >
-                Forgotten your password?
+                Back to Sign In
               </button>
             </div>
+          ) : (
+            <>
+              {/* Standard Form Content */}
+              {/* Success Message for other actions */}
+              {!isForgotPassword && successMessage && (
+                <div className="bg-green-100 border-2 border-green-500 text-green-700 px-4 py-3 rounded mb-4">
+                  <p className="font-semibold">{successMessage}</p>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {errors.general && (
+                <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
+                  <p className="font-semibold">{errors.general}</p>
+                </div>
+              )}
+              {Object.keys(errors).length > 0 && isSignIn && !isForgotPassword && !errors.general && (
+                <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
+                  <p className="font-semibold">
+                    Your username and password didn't match. Please try again.
+                  </p>
+                </div>
+              )}
+
+              {/* Description */}
+              <p className="text-black mb-6">
+                {isForgotPassword ? (
+                   <>
+                    Enter your email address and we'll send you a link to reset your password.{' '}
+                    <button
+                      onClick={toggleForgotPassword}
+                      className="text-black font-bold underline hover:opacity-70"
+                    >
+                      Back to Log-in
+                    </button>
+                  </>
+                ) : isSignIn ? (
+                  <>
+                    Please use the following form to log-in. If you don't have an account{' '}
+                    <button
+                      onClick={toggleAuthMode}
+                      className="text-black font-bold underline hover:opacity-70"
+                    >
+                      Register Here
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Create your account to get started. Already have an account?{' '}
+                    <button
+                      onClick={toggleAuthMode}
+                      className="text-black font-bold underline hover:opacity-70"
+                    >
+                      Sign In Here
+                    </button>
+                  </>
+                )}
+              </p>
+
+              <div className="space-y-4 mb-6">
+                {/* Username - Hidden in Forgot Password */}
+                {!isForgotPassword && (
+                  <div>
+                    <label className="block text-black font-semibold mb-2">Username:</label>
+                    <input
+                      type="text"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 border-2 ${
+                        errors.username ? 'border-red-500' : 'border-black'
+                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
+                      placeholder="Enter your username"
+                    />
+                    {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
+                  </div>
+                )}
+
+                {/* Email (Sign Up only OR Forgot Password) */}
+                {(!isSignIn || isForgotPassword) && (
+                  <div>
+                    <label className="block text-black font-semibold mb-2">Email:</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 border-2 ${
+                        errors.email ? 'border-red-500' : 'border-black'
+                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
+                      placeholder="Enter your email"
+                    />
+                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                  </div>
+                )}
+
+                {/* Password - Hidden in Forgot Password */}
+                {!isForgotPassword && (
+                  <div>
+                    <label className="block text-black font-semibold mb-2">Password:</label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 border-2 ${
+                        errors.password ? 'border-red-500' : 'border-black'
+                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
+                      placeholder="Enter your password"
+                    />
+                    {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                  </div>
+                )}
+
+                {/* Confirm Password (Sign Up only) */}
+                {!isSignIn && !isForgotPassword && (
+                  <div>
+                    <label className="block text-black font-semibold mb-2">Confirm Password:</label>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 border-2 ${
+                        errors.confirmPassword ? 'border-red-500' : 'border-black'
+                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
+                      placeholder="Confirm your password"
+                    />
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  onClick={handleSubmit}
+                  className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black"
+                >
+                  {isForgotPassword ? 'Send Reset Link' : (isSignIn ? 'Log-in' : 'Sign Up')}
+                </button>
+              </div>
+
+              {/* Forgot Password Link */}
+              {isSignIn && !isForgotPassword && (
+                <div className="text-center mb-6">
+                  <button 
+                    onClick={toggleForgotPassword} 
+                    className="text-black underline hover:opacity-70"
+                  >
+                    Forgotten your password?
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           <div className="relative my-6">
