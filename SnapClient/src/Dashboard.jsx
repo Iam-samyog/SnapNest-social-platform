@@ -237,8 +237,9 @@ const Dashboard = () => {
               <div>
                 <h5 className="text-2xl font-bold text-black mb-1">{user.firstName || user.username}</h5>
                 <p className="text-black text-lg">
+                  <span className="font-semibold">{images.length} posts • </span> 
                   <span 
-                    className="font-semibold cursor-pointer hover:underline"
+                    className="font-semibold ml-1 cursor-pointer hover:underline"
                     onClick={() => {
                       setFollowModalType('followers');
                       setIsFollowModalOpen(true);
