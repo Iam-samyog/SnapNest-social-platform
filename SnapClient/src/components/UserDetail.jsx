@@ -164,8 +164,8 @@ const UserDetail = () => {
                       setIsFollowModalOpen(true);
                     }}
                   >
-                    <div className="text-2xl font-black text-black">{userData.followers_count || 0}</div>
-                    <div className="text-sm text-black">followers</div>
+                    <div className="text-2xl text-center font-black text-black">{userData.followers_count || 0}</div>
+                    <div className="text-sm text-center text-black">followers</div>
                   </div>
                   <div 
                     className="text-center cursor-pointer hover:bg-black/5 p-2 rounded-lg transition-colors"
