@@ -67,8 +67,41 @@ const reviews = [
     rating: 5,
     text: "I love how easy SnapNest makes it to discover and save images. The design is elegant, the experience is seamless, and it feels like a modern social platform built with care.",
     image: "GR"
+  },
+  {
+    id: 9,
+    name: "Shreyak",
+    position: "University Student",
+    rating: 5,
+    text: "SnapNest stands out for its clean design and smooth performance. Browsing, saving, and discovering images feels effortless and well-optimized.",
+    image: "SH"
+  },
+  {
+    id: 10,
+    name: "Jeetan",
+    position: "University Student",
+    rating: 5,
+    text: "The platform feels fast and reliable. SnapNest handles infinite scrolling and image loading really well without any lag or clutter.",
+    image: "JE"
+  },
+  {
+    id: 11,
+    name: "Kriti",
+    position: "University Student",
+    rating: 5,
+    text: "SnapNest offers a very pleasant user experience. The layout is minimal yet powerful, and the features feel thoughtfully designed for everyday use.",
+    image: "KR"
+  },
+  {
+    id: 12,
+    name: "Anamika",
+    position: "University Student",
+    rating: 5,
+    text: "I really enjoy using SnapNest. The interface is modern, the interactions are smooth, and the platform feels both creative and professional.",
+    image: "AN"
   }
 ];
+
 
 
   const reviewsPerPage = 3;
