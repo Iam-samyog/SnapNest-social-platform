@@ -112,6 +112,7 @@ class ImageViewSet(viewsets.ModelViewSet):
         serializer = CommentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user, image=image)
+        create_action(request.user, 'commented on', image)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['get'])

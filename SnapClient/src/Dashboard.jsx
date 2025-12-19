@@ -161,8 +161,26 @@ const Dashboard = () => {
           setImages([]);
         }
 
-        // For now, activities will be empty until we have an actions API
-        setActivities([]);
+        // Fetch activities
+        try {
+          const actionsRes = await axiosInstance.get('actions/');
+          const actionsData = actionsRes.data || [];
+          
+          const transformedActivities = actionsData.map(action => ({
+            id: action.id,
+            verb: action.verb,
+            user: {
+              username: action.user?.username,
+              firstName: action.user?.first_name || action.user?.username,
+              photo: action.user?.profile?.photo
+            }
+          }));
+          setActivities(transformedActivities);
+        } catch (actionError) {
+          console.error('Error fetching activities:', actionError);
+          setActivities([]);
+        }
+
         setUser(userData);
         setLoading(false);
       } catch (error) {
@@ -299,16 +317,18 @@ const Dashboard = () => {
             {activities.length > 0 ? (
               activities.map((action) => (
                 <div key={action.id} className="flex-shrink-0 text-center" style={{ minWidth: '80px' }}>
-                  <div className="w-16 h-16 rounded-full border-4 border-yellow-400 p-1 mx-auto mb-2">
+                  <div className="w-16 h-16 rounded-full border-4 border-yellow-400 p-1 mx-auto mb-2 cursor-pointer hover:scale-105 transition-transform"
+                    onClick={() => navigate(`/users/${action.user.username}`)}
+                  >
                     {action.user.photo ? (
-                      <img src={action.user.photo} alt="User" className="w-full h-full rounded-full object-cover" />
+                      <img src={getFullMediaUrl(action.user.photo)} alt="User" className="w-full h-full rounded-full object-cover" />
                     ) : (
                       <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
                         <FontAwesomeIcon icon={faUser} className="text-gray-500" />
                       </div>
                     )}
                   </div>
-                  <p className="text-xs font-semibold text-black truncate">{action.user.firstName}</p>
+                  <p className="text-xs font-bold text-black truncate">@{action.user.username}</p>
                   <p className="text-xs text-gray-600">{action.verb}</p>
                 </div>
               ))
