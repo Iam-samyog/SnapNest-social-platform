@@ -155,41 +155,41 @@ const ImageDetail = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+              <div className="flex flex-wrap items-center gap-4">
                 <button
                   onClick={handleLike}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold border-2 border-black transition-colors ${
+                  className={`flex items-center gap-2 px-6 py-2 rounded-lg font-bold border-2 border-black transition-all active:scale-95 ${
                     liked
                       ? 'bg-red-500 text-white'
                       : 'bg-white text-black hover:bg-gray-100'
-                  }`}
+                  } shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none`}
                 >
                   <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
                   <span>{likeCount}</span>
                 </button>
-                <div className="flex items-center gap-2 text-black font-semibold uppercase">
-                  <MessageCircle className="w-5 h-5" />
+                <div className="flex items-center gap-2 text-black font-black uppercase text-xs tracking-widest border-2 border-black px-4 py-2 rounded-lg bg-gray-50">
+                  <MessageCircle className="w-4 h-4" />
                   <span>{comments.length} comments</span>
                 </div>
-                <div className="flex items-center gap-2 text-black font-semibold uppercase">
-                  <Eye className="w-5 h-5" />
+                <div className="flex items-center gap-2 text-black font-black uppercase text-xs tracking-widest border-2 border-black px-4 py-2 rounded-lg bg-gray-50">
+                  <Eye className="w-4 h-4" />
                   <span>{viewCount} views</span>
                 </div>
               </div>
 
               {isOwner && (
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={() => navigate(`/images/${id}/edit`)}
-                    className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-yellow-500 transition-colors flex items-center gap-2"
+                    className="flex-1 sm:flex-none bg-yellow-400 text-black px-6 py-2 rounded-lg font-black border-2 border-black hover:bg-yellow-500 transition-all flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-0.5"
                   >
                     <Edit className="w-4 h-4" />
                     Edit
                   </button>
                   <button
                     onClick={() => setShowDeleteModal(true)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold border-2 border-black hover:bg-red-600 transition-colors flex items-center gap-2"
+                    className="flex-1 sm:flex-none bg-red-500 text-white px-6 py-2 rounded-lg font-black border-2 border-black hover:bg-red-600 transition-all flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-0.5"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete

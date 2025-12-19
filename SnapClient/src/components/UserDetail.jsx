@@ -188,12 +188,12 @@ const UserDetail = () => {
 
           {/* Images Grid */}
           {/* Images Grid */}
-          <div className="mt-8">
-            <h3 className="text-2xl font-black text-black mb-6 flex items-center gap-2">
-              <FontAwesomeIcon icon={faUser} /> Posts
+          <div className="mt-12 pb-20">
+            <h3 className="text-3xl font-black text-black mb-8 flex items-center gap-3 uppercase tracking-tight">
+              <FontAwesomeIcon icon={faCamera} /> My Gallery
             </h3>
             {images.length > 0 ? (
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {images.map((image) => (
                   <div
                     key={image.id}
