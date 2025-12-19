@@ -236,28 +236,32 @@ const Dashboard = () => {
               )}
               <div>
                 <h5 className="text-2xl font-bold text-black mb-1">{user.firstName || user.username}</h5>
-                <p className="text-black text-lg">
-                  <span className="font-semibold">{images.length} posts • </span> 
-                  <span 
-                    className="font-semibold ml-1 cursor-pointer hover:underline"
+                <div className="flex gap-6 mt-3 mb-3">
+                  <div className="text-center">
+                    <div className="text-xl font-black text-black">{images.length}</div>
+                    <div className="text-xs font-bold text-black uppercase">posts</div>
+                  </div>
+                  <div 
+                    className="text-center cursor-pointer hover:opacity-75 transition-opacity"
                     onClick={() => {
                       setFollowModalType('followers');
                       setIsFollowModalOpen(true);
                     }}
                   >
-                    {user.followers} followers • 
-                  </span> 
-                  <span 
-                    className="font-semibold ml-1 cursor-pointer hover:underline"
+                    <div className="text-xl font-black text-black">{user.followers}</div>
+                    <div className="text-xs font-bold text-black uppercase">followers</div>
+                  </div>
+                  <div 
+                    className="text-center cursor-pointer hover:opacity-75 transition-opacity"
                     onClick={() => {
                       setFollowModalType('following');
                       setIsFollowModalOpen(true);
                     }}
                   >
-                    {user.following} following
-                  </span> 
-                </p>
-                <p className='mt-1'>
+                    <div className="text-xl font-black text-black">{user.following}</div>
+                    <div className="text-xs font-bold text-black uppercase">following</div>
+                  </div>
+                </div>
                 <div className="flex gap-2">
               <a 
                 ref={bookmarkletRef}
@@ -281,7 +285,6 @@ const Dashboard = () => {
                 <FontAwesomeIcon icon={faCog} className="text-xl" />
               </button>
             </div>  
-                </p>
               </div>
               
             </div>

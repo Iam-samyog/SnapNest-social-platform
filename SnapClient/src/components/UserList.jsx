@@ -143,11 +143,12 @@ const UserList = () => {
                     <p className="text-sm text-gray-600 mb-4">@{user.username}</p>
                   </div>
                   
-                  <div className="mb-4 space-y-1">
+                  <div className="mb-4 flex justify-center gap-4">
                     <div className="text-sm text-black">
                       <span className="font-bold">{user.followers_count || 0}</span> followers
                     </div>
-                    <div className="text-sm text-black">
+                    {/* Posts count is not currently available in user list API, hiding for now or keeping layout consistent */}
+                     <div className="text-sm text-black">
                       <span className="font-bold">0</span> posts
                     </div>
                   </div>
