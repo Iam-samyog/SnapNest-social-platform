@@ -15,14 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
     is_following = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
+    posts_count = serializers.SerializerMethodField()
     
     class Meta:
         model = User
-    profile = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_following', 'followers_count', 'following_count', 'profile']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_following', 'followers_count', 'following_count', 'posts_count', 'profile']
     
     def get_is_following(self, obj):
         request = self.context.get('request')
@@ -41,6 +38,9 @@ class UserSerializer(serializers.ModelSerializer):
         # Use Contact model's reverse relationship instead of removed 'following' field
         return obj.rel_from_set.count()
 
+    def get_posts_count(self, obj):
+        return obj.images_created.count()
+
     def get_profile(self, obj):
         if hasattr(obj, 'profile'):
             return SimpleProfileSerializer(obj.profile, context=self.context).data
@@ -51,10 +51,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
+    posts_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Profile
-        fields = ['date_of_birth', 'photo', 'user', 'followers_count', 'following_count']
+        fields = ['date_of_birth', 'photo', 'user', 'followers_count', 'following_count', 'posts_count']
     
     def get_followers_count(self, obj):
         # Use Contact model's reverse relationship instead of removed 'followers' field
@@ -63,6 +64,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_following_count(self, obj):
         # Use Contact model's reverse relationship instead of removed 'following' field
         return obj.user.rel_from_set.count()
+
+    def get_posts_count(self, obj):
+        return obj.user.images_created.count()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
