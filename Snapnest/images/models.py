@@ -15,8 +15,8 @@ class Image(models.Model):
     total_likes=models.PositiveIntegerField(default=0)
 
     slug=models.SlugField(max_length=250,blank=True)
-    url=models.URLField(max_length=2000)
-    image=models.ImageField(upload_to='images/%Y/%m/%d/')
+    url=models.URLField(max_length=2000, blank=True)
+    image=models.ImageField(upload_to='images/%Y/%m/%d/', blank=True, null=True)
     description=models.TextField(blank=True)
     created=models.DateTimeField(auto_now_add=True)
 

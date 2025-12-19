@@ -5,6 +5,26 @@ const VITE_API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api/
 // Export base URL for absolute media paths
 export const API_BASE_URL = VITE_API_URL.split('/api')[0];
 
+/**
+ * Robust helper to get full media URL
+ * Handles absolute URLs, relative paths with /media/, and relative paths without it.
+ */
+export const getFullMediaUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  if (path.startsWith('data:') || path.startsWith('blob:')) return path;
+  
+  // Ensure path starts with /
+  const absolutePath = path.startsWith('/') ? path : `/${path}`;
+  
+  // If it doesn't have /media/ at the start, add it
+  if (!absolutePath.startsWith('/media/')) {
+     return `${API_BASE_URL}/media${absolutePath}`;
+  }
+  
+  return `${API_BASE_URL}${absolutePath}`;
+};
+
 const axiosInstance = axios.create({
   baseURL: VITE_API_URL,
   headers: {

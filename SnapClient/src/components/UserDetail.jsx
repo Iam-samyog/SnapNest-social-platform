@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faEye, faUser, faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
-import axiosInstance, { API_BASE_URL } from '../utils/axiosInstance';
+import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
 import userService from '../utils/userService';
@@ -111,7 +111,7 @@ const UserDetail = () => {
               <div className="flex-shrink-0">
                 {userData.profile?.photo ? (
                   <img
-                    src={userData.profile.photo.startsWith('http') ? userData.profile.photo : `${API_BASE_URL}${userData.profile.photo.startsWith('/') ? '' : '/'}${userData.profile.photo}`}
+                    src={getFullMediaUrl(userData.profile.photo)}
                     alt={userData.username}
                     className="w-32 h-32 rounded-full border-4 border-black object-cover"
                   />
@@ -189,7 +189,7 @@ const UserDetail = () => {
                     className="aspect-square relative cursor-pointer group overflow-hidden bg-gray-200"
                   >
                     <img
-                      src={image.image && !image.image.startsWith('http') ? `${API_BASE_URL}${image.image.startsWith('/') ? '' : '/'}${image.image}` : (image.image || image.url || '')}
+                      src={getFullMediaUrl(image.image || image.url)}
                       alt={image.title}
                       className="w-full h-full object-cover"
                     />

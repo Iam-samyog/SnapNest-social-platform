@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment, faTrash, faEdit, faTimes, faUser, faEye, faSave, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
-import axiosInstance, { API_BASE_URL } from '../utils/axiosInstance';
+import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 
 const ImageModal = ({ imageId, isOpen, onClose }) => {
   const [image, setImage] = useState(null);
@@ -172,7 +172,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
               {/* Left: Image */}
               <div className="w-full md:w-2/3 flex items-center justify-center bg-gray-100 p-4">
                 <img
-                  src={image.image && !image.image.startsWith('http') ? `${API_BASE_URL}${image.image.startsWith('/') ? '' : '/'}${image.image}` : (image.image || image.url || '')}
+                  src={getFullMediaUrl(image.image || image.url)}
                   alt={image.title}
                   className="max-width-full max-h-[40vh] md:max-h-full object-contain"
                 />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance, { API_BASE_URL } from '../utils/axiosInstance';
+import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 
 const SearchBar = ({ onImageClick }) => {
   const [query, setQuery] = useState('');
@@ -166,7 +166,7 @@ const SearchBar = ({ onImageClick }) => {
                     className="aspect-square relative overflow-hidden rounded-lg border-2 border-black hover:scale-105 transition-transform"
                   >
                     <img
-                      src={image.image && !image.image.startsWith('http') ? `${API_BASE_URL}${image.image.startsWith('/') ? '' : '/'}${image.image}` : (image.image || image.url || '')}
+                      src={getFullMediaUrl(image.image || image.url)}
                       alt={image.title}
                       className="w-full h-full object-cover"
                     />

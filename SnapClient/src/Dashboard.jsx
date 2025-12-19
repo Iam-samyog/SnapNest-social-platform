@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera, faPlus, faCog, faBookmark, faHeart, faEye, faTimes, faUser } from '@fortawesome/free-solid-svg-icons';
 import Navbar from './components/Navbar';
 import ImageModal from './components/ImageModal';
-import axiosInstance, { API_BASE_URL } from './utils/axiosInstance';
+import axiosInstance, { API_BASE_URL, getFullMediaUrl } from './utils/axiosInstance';
 
 const Dashboard = () => {
   const [showAlert, setShowAlert] = useState(true);
@@ -141,11 +141,9 @@ const Dashboard = () => {
           }
           // Transform images to match our format
           const transformedImages = allImages.map(img => {
-            let imageUrl = img.image || img.url || '';
-            // If it's a relative path, make it absolute using the API base URL
-            if (imageUrl && !imageUrl.startsWith('http')) {
-              imageUrl = `${API_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
-            }
+            // Priority: img.image (local/Cloudinary copy) > img.url (external source)
+            const imageUrl = getFullMediaUrl(img.image || img.url);
+            
             return {
               id: img.id,
               title: img.title || 'Untitled',
@@ -206,7 +204,7 @@ const Dashboard = () => {
             <div className="flex items-center gap-4">
               {user.photo ? (
                 <img 
-                  src={user.photo.startsWith('http') ? user.photo : `${API_BASE_URL}${user.photo.startsWith('/') ? '' : '/'}${user.photo}`} 
+                  src={getFullMediaUrl(user.photo)} 
                   alt="Avatar" 
                   className="w-16 h-16 rounded-full border-4 border-black object-cover" 
                 />

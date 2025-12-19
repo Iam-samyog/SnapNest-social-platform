@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
-import axiosInstance, { API_BASE_URL } from '../utils/axiosInstance';
+import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 import userService from '../utils/userService';
 import Navbar from './Navbar';
 
@@ -128,7 +128,7 @@ const UserList = () => {
                   >
                     {user.profile?.photo ? (
                       <img
-                        src={user.profile.photo.startsWith('http') ? user.profile.photo : `${API_BASE_URL}${user.profile.photo.startsWith('/') ? '' : '/'}${user.profile.photo}`}
+                        src={getFullMediaUrl(user.profile.photo)}
                         alt={user.username}
                         className="w-24 h-24 rounded-full border-4 border-black object-cover mx-auto mb-4"
                       />

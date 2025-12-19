@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Heart, Eye } from 'lucide-react';
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance, { getFullMediaUrl } from '../utils/axiosInstance';
 import Navbar from './Navbar';
 
 const ImageRanking = () => {
@@ -60,6 +60,13 @@ const ImageRanking = () => {
                 >
                   <div className="flex-shrink-0 w-12 h-12 bg-yellow-400 border-4 border-black rounded-full flex items-center justify-center font-black text-2xl text-black">
                     {index + 1}
+                  </div>
+                  <div className="flex-shrink-0 w-16 h-16 border-2 border-black rounded overflow-hidden bg-gray-200">
+                    <img
+                      src={getFullMediaUrl(image.image || image.url)}
+                      alt={image.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-black text-black mb-2">{image.title || 'Untitled'}</h3>
