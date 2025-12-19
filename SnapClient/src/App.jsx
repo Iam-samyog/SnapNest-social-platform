@@ -13,6 +13,7 @@ import EditProfile from './components/EditProfile';
 import ImageRanking from './components/ImageRanking';
 import ResetPassword from './components/ResetPassword';
 import GitHubCallback from './components/GitHubCallback';
+import ImageEdit from './components/ImageEdit';
 
 const App = () => {
   // Replace with your Google Client ID or use environment variable
@@ -63,6 +64,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <ImageRanking />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/images/:id/edit" 
+            element={
+              <ProtectedRoute>
+                <ImageEdit />
               </ProtectedRoute>
             } 
           />
