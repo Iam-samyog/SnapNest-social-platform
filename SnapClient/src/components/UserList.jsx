@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance from '../utils/axiosInstance';
+import userService from '../utils/userService';
 import Navbar from './Navbar';
 
 const UserList = () => {
@@ -50,9 +51,19 @@ const UserList = () => {
   };
 
   const handleFollow = async (userId, currentStatus) => {
+    // Find the user to get the username
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
     try {
-      const response = await axiosInstance.post(`users/${userId}/follow/`);
-      const newFollowingState = response.data.following !== undefined ? response.data.following : !currentStatus;
+      let response;
+      if (currentStatus) {
+          response = await userService.unfollowUser(user.username);
+      } else {
+          response = await userService.followUser(user.username);
+      }
+      
+      const newFollowingState = !currentStatus;
       
       setFollowingStatus(prev => ({
         ...prev,
@@ -60,16 +71,16 @@ const UserList = () => {
       }));
       
       // Update follower count from API response (most accurate)
-      setUsers(prev => prev.map(user => {
-        if (user.id === userId) {
+      setUsers(prev => prev.map(u => {
+        if (u.id === userId) {
           return {
-            ...user,
-            followers_count: response.data.followers_count !== undefined 
-              ? response.data.followers_count 
-              : (newFollowingState ? user.followers_count + 1 : Math.max(0, user.followers_count - 1))
+            ...u,
+            followers_count: response.followers_count !== undefined 
+              ? response.followers_count 
+              : (newFollowingState ? u.followers_count + 1 : Math.max(0, u.followers_count - 1))
           };
         }
-        return user;
+        return u;
       }));
     } catch (error) {
       console.error('Error following user:', error);
