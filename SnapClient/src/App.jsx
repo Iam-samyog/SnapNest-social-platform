@@ -16,7 +16,7 @@ import GitHubCallback from './components/GitHubCallback';
 
 const App = () => {
   // Replace with your Google Client ID or use environment variable
-  const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"; 
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID; 
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>

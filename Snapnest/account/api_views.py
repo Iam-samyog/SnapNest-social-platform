@@ -237,33 +237,33 @@ class SocialLoginAPIView(APIView):
             # If we still don't have a user, and we have a code, let's try manual exchange if generic auth_complete didn't work
             if not user and code:
                 # This is backend specific, but generally:
-                try:
-                    # auth_complete relies on query params. Let's monkeypatch or ensure query params exist?
-                    # Or just use the backend's request_access_token if available.
-                    # GitHub backend has `auth_complete` which calls `request_access_token`.
-                    # Let's try to pass the code directly if possible.
-                    # It seems `do_auth` with a code is NOT standard for all backends.
-                    
-                    # Safer fallback for DRF integration:
-                    # For GitHub, we can just put 'code' into request.GET or request.POST to satisfy auth_complete
-                    # But request is immutable.
-                    # Let's assume for now we use 'access_token' for Google (Client Side) 
-                    # and for GitHub we might need to handle it. 
-                    # Actually, for GitHub, if we just send the `code` as `access_token` parameter 
-                    # SOME strategies/backends handle it, but standard OAuth2 expects a token.
-                    
-                    # Let's stick to: Google sends access_token. GitHub sends code.
-                    # If code:
-                    if backend == 'github':
-                        # Manual exchange
-                         response = request.backend.request_access_token(code)
-                         # response is usually a dict or string depending on backend
-                         if isinstance(response, dict) and 'access_token' in response:
-                             access_token = response['access_token']
-                             user = request.backend.do_auth(access_token)
-                         else:
-                             # Some backends return bytes or text
-                             pass
+                # This is backend specific, but generally:
+                # auth_complete relies on query params. Let's monkeypatch or ensure query params exist?
+                # Or just use the backend's request_access_token if available.
+                # GitHub backend has `auth_complete` which calls `request_access_token`.
+                # Let's try to pass the code directly if possible.
+                # It seems `do_auth` with a code is NOT standard for all backends.
+                
+                # Safer fallback for DRF integration:
+                # For GitHub, we can just put 'code' into request.GET or request.POST to satisfy auth_complete
+                # But request is immutable.
+                # Let's assume for now we use 'access_token' for Google (Client Side) 
+                # and for GitHub we might need to handle it. 
+                # Actually, for GitHub, if we just send the `code` as `access_token` parameter 
+                # SOME strategies/backends handle it, but standard OAuth2 expects a token.
+                
+                # Let's stick to: Google sends access_token. GitHub sends code.
+                # If code:
+                if backend == 'github':
+                    # Manual exchange
+                        response = request.backend.request_access_token(code)
+                        # response is usually a dict or string depending on backend
+                        if isinstance(response, dict) and 'access_token' in response:
+                            access_token = response['access_token']
+                            user = request.backend.do_auth(access_token)
+                        else:
+                            # Some backends return bytes or text
+                            pass
             
             # If implicit flow or we got token
             if user:

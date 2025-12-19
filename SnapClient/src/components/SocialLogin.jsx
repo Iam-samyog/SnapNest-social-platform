@@ -35,8 +35,7 @@ const SocialLogin = ({ onSuccess, onError }) => {
     // GitHub Login Handler (Redirect Flow)
     const handleGitHubLogin = () => {
         setLoading(true);
-        // Replace with your GitHub Client ID
-        const GITHUB_CLIENT_ID = 'Ov23liy58sXp7ZlCg2Wl'; // Placeholder - User needs to fill this or use env
+        const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
         // The redirect URI should point to a simplified callback route in your frontend
         // e.g., http://localhost:3000/auth/callback/github
         const REDIRECT_URI = `${window.location.origin}/auth/callback/github`;
