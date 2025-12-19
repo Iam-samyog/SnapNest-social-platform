@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Upload, X, Link as LinkIcon, Bookmark } from 'lucide-react'; // Removing this import in next step to avoid conflict if I don't delete it? Actually I should just overwrite it.
+import { Upload } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpload, faTimes, faLink, faBookmark } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance from '../utils/axiosInstance';
@@ -16,6 +16,7 @@ const ImageUpload = () => {
     url: ''
   });
   const [preview, setPreview] = useState(null);
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [isUrlMode, setIsUrlMode] = useState(false);
