@@ -219,11 +219,8 @@ const Dashboard = () => {
                   <span className="font-semibold">{user.followers}</span> followers • 
                   <span className="font-semibold ml-1">{user.following}</span> following
                 </p>
-              </div>
-              
-            </div>
-            
-            <div className="flex gap-2">
+                <p>
+                       <div className="flex gap-2">
               <a 
                 ref={bookmarkletRef}
                 className="bg-white border-2 border-black text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 cursor-grab active:cursor-grabbing"
@@ -245,7 +242,13 @@ const Dashboard = () => {
               >
                 <FontAwesomeIcon icon={faCog} className="text-xl" />
               </button>
+            </div>  
+                </p>
+              </div>
+              
             </div>
+            
+         
           </div>
         </div>
 
