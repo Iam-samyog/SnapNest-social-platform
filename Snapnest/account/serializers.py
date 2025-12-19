@@ -87,6 +87,12 @@ class ProfileSerializer(serializers.ModelSerializer):
                 setattr(user, attr, value)
             user.save()
 
+        # Explicitly handle photo clearing
+        # When removing a photo in the frontend, it sends an empty string.
+        # DRF might not clear the ImageField automatically from an empty string in multipart/form-data.
+        if 'photo' in self.initial_data and self.initial_data['photo'] == '':
+            instance.photo = None
+
         # Update Profile fields
         return super().update(instance, validated_data)
 
