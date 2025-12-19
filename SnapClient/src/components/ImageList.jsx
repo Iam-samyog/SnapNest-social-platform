@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faEye } from '@fortawesome/free-solid-svg-icons';
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance, { API_BASE_URL } from '../utils/axiosInstance';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
 
@@ -88,7 +88,7 @@ const ImageList = () => {
                 className="aspect-square relative cursor-pointer group overflow-hidden bg-gray-200"
               >
                 <img
-                  src={image.image || image.url || ''}
+                  src={image.image && !image.image.startsWith('http') ? `${API_BASE_URL}${image.image.startsWith('/') ? '' : '/'}${image.image}` : (image.image || image.url || '')}
                   alt={image.title}
                   className="w-full h-full object-cover"
                 />

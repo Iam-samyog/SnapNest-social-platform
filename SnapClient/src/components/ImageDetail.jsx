@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Trash2, Edit, User, Eye } from 'lucide-react';
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance, { API_BASE_URL } from '../utils/axiosInstance';
 import Navbar from './Navbar';
 
 const ImageDetail = () => {
@@ -127,7 +127,7 @@ const ImageDetail = () => {
             
             <div className="mb-6">
               <img
-                src={image.image || image.url || ''}
+                src={image.image && !image.image.startsWith('http') ? `${API_BASE_URL}${image.image.startsWith('/') ? '' : '/'}${image.image}` : (image.image || image.url || '')}
                 alt={image.title}
                 className="w-full rounded-lg border-4 border-black"
               />

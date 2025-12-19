@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera, faPlus, faCog, faBookmark, faHeart, faEye, faTimes, faUser } from '@fortawesome/free-solid-svg-icons';
 import Navbar from './components/Navbar';
 import ImageModal from './components/ImageModal';
-import axiosInstance from './utils/axiosInstance';
+import axiosInstance, { API_BASE_URL } from './utils/axiosInstance';
 
 const Dashboard = () => {
   const [showAlert, setShowAlert] = useState(true);
@@ -139,13 +139,12 @@ const Dashboard = () => {
           if (profileData.user?.username) {
             allImages = allImages.filter(img => img.user === profileData.user.username);
           }
-          
           // Transform images to match our format
           const transformedImages = allImages.map(img => {
             let imageUrl = img.image || img.url || '';
-            // If it's a relative path, make it absolute
+            // If it's a relative path, make it absolute using the API base URL
             if (imageUrl && !imageUrl.startsWith('http')) {
-              imageUrl = `http://localhost:8000${imageUrl}`;
+              imageUrl = `${API_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
             }
             return {
               id: img.id,
@@ -207,7 +206,7 @@ const Dashboard = () => {
             <div className="flex items-center gap-4">
               {user.photo ? (
                 <img 
-                  src={user.photo.startsWith('http') ? user.photo : `/media/${user.photo}`} 
+                  src={user.photo.startsWith('http') ? user.photo : `${API_BASE_URL}${user.photo.startsWith('/') ? '' : '/'}${user.photo}`} 
                   alt="Avatar" 
                   className="w-16 h-16 rounded-full border-4 border-black object-cover" 
                 />
@@ -312,7 +311,7 @@ const Dashboard = () => {
                   className="relative aspect-square group cursor-pointer overflow-hidden rounded-lg border-2 border-black"
                 >
                   <img 
-                    src={image.url.startsWith('http') ? image.url : image.url.startsWith('/') ? image.url : `/media/${image.url}`} 
+                    src={image.url} 
                     alt={image.title}
                     className="w-full h-full object-cover"
                   />

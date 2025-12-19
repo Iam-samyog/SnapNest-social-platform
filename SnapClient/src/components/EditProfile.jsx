@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Save, X } from 'lucide-react';
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance, { API_BASE_URL } from '../utils/axiosInstance';
 import Navbar from './Navbar';
 
 const EditProfile = () => {
@@ -37,7 +37,8 @@ const EditProfile = () => {
       });
       
       if (profile.photo) {
-        setPreview(profile.photo);
+        const photoUrl = profile.photo.startsWith('http') ? profile.photo : `${API_BASE_URL}${profile.photo.startsWith('/') ? '' : '/'}${profile.photo}`;
+        setPreview(photoUrl);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
