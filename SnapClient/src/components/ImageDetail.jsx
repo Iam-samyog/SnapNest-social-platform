@@ -120,7 +120,7 @@ const ImageDetail = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50 pb-8">
+      <div className="bg-yellow min-h-screen bg-gray-50 pb-8">
         <div className="max-w-4xl mx-auto px-4 pt-8">
           <div className="bg-white border-4 border-black rounded-lg shadow-2xl p-6 mb-6">
             <h1 className="text-3xl font-black text-black mb-4">{image.title || 'Untitled'}</h1>
@@ -182,7 +182,7 @@ const ImageDetail = () => {
 
             {/* Comments Section */}
             <div className="border-t-4 border-black pt-6 mt-6">
-              <h3 className="text-2xl font-black text-black mb-4">💬 Comments</h3>
+              <h3 className="text-2xl font-black text-black mb-4">Comments</h3>
               
               <div className="space-y-4 mb-6">
                 {comments.length > 0 ? (
@@ -216,7 +216,7 @@ const ImageDetail = () => {
 
               {/* Comment Form */}
               <form onSubmit={handleComment} className="bg-yellow-400 border-2 border-black rounded-lg p-4">
-                <h4 className="text-xl font-bold text-black mb-3">✍️ Add a comment</h4>
+                <h4 className="text-xl font-bold text-black mb-3">Add a comment</h4>
                 <textarea
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}

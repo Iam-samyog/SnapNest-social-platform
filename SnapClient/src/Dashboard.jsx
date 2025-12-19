@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, Plus, Settings, Bookmark, Heart, Eye, X, User } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCamera, faPlus, faCog, faBookmark, faHeart, faEye, faTimes, faUser } from '@fortawesome/free-solid-svg-icons';
 import Navbar from './components/Navbar';
 import ImageModal from './components/ImageModal';
 import axiosInstance from './utils/axiosInstance';
@@ -14,6 +15,97 @@ const Dashboard = () => {
   const [selectedImageId, setSelectedImageId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  const bookmarkletRef = useRef(null);
+
+  useEffect(() => {
+    if (bookmarkletRef.current) {
+      const bookmarkletCode = `javascript:(function(){
+        var frontendUrl = '${window.location.origin}/';
+        var minWidth = 200;
+        var minHeight = 200;
+
+        if (window.__snapnest_open) {
+          var el = document.getElementById('snapnest-bookmarklet');
+          if(el) el.remove();
+          window.__snapnest_open = false;
+          return;
+        }
+        window.__snapnest_open = true;
+
+        var css = \`
+          #snapnest-bookmarklet { position: fixed; top: 20px; right: 20px; width: 380px; max-height: 80vh; background: #ffffff; border: 4px solid #000000; border-radius: 12px; box-shadow: 8px 8px 0px 0px #000000; z-index: 2147483647; font-family: sans-serif; display: flex; flex-direction: column; overflow: hidden; }
+          #snapnest-bookmarklet .snapnest-header { background: #fbbf24; border-bottom: 4px solid #000000; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+          #snapnest-bookmarklet .snapnest-logo { font-weight: 900; font-size: 20px; color: #000000; text-transform: uppercase; }
+          #snapnest-bookmarklet #snapnest-close { font-size: 28px; line-height: 1; color: #000000; text-decoration: none; font-weight: bold; cursor: pointer; }
+          #snapnest-bookmarklet .snapnest-content { padding: 16px; overflow-y: auto; background: #fff; }
+          #snapnest-bookmarklet h1 { font-size: 16px; font-weight: 700; margin: 0 0 16px 0; color: #000000; }
+          #snapnest-bookmarklet .snapnest-images { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+          #snapnest-bookmarklet .snapnest-img-wrapper { aspect-ratio: 1; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; cursor: pointer; position: relative; }
+          #snapnest-bookmarklet .snapnest-img-wrapper:hover { border-color: #000000; box-shadow: 2px 2px 0px 0px #000000; }
+          #snapnest-bookmarklet .snapnest-img-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
+          #snapnest-bookmarklet .snapnest-info { font-size: 13px; color: #6b7280; text-align: center; }
+        \`;
+
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.appendChild(document.createTextNode(css));
+        document.head.appendChild(style);
+
+        var boxHtml = \`
+          <div id="snapnest-bookmarklet">
+            <div class="snapnest-header">
+                <span class="snapnest-logo">SnapNest</span>
+                <a href="#" id="snapnest-close">&times;</a>
+            </div>
+            <div class="snapnest-content">
+                <h1>Select an image to bookmark:</h1>
+                <div class="snapnest-images"></div>
+                <p class="snapnest-info"></p>
+            </div>
+          </div>\`;
+        
+        var div = document.createElement('div');
+        div.innerHTML = boxHtml;
+        document.body.appendChild(div.firstElementChild);
+
+        var bookmarklet = document.getElementById('snapnest-bookmarklet');
+        var imagesContainer = bookmarklet.querySelector('.snapnest-images');
+        var imagesInfo = bookmarklet.querySelector('.snapnest-info');
+
+        bookmarklet.querySelector('#snapnest-close').addEventListener('click', function(e){
+          e.preventDefault();
+          bookmarklet.remove();
+          window.__snapnest_open = false;
+        });
+
+        var validCount = 0;
+        var images = document.querySelectorAll('img');
+        
+        for(var i=0; i<images.length; i++) {
+          var img = images[i];
+          if(img.naturalWidth >= minWidth && img.naturalHeight >= minHeight && img.src.startsWith('http')) {
+             var wrapper = document.createElement('div');
+             wrapper.className = 'snapnest-img-wrapper';
+             var newImg = document.createElement('img');
+             newImg.src = img.src;
+             newImg.onclick = function(e) {
+                bookmarklet.remove();
+                window.__snapnest_open = false;
+                window.open(frontendUrl + 'images/upload?url=' + encodeURIComponent(e.target.src) + '&title=' + encodeURIComponent(document.title), '_blank');
+             };
+             wrapper.appendChild(newImg);
+             imagesContainer.appendChild(wrapper);
+             validCount++;
+          }
+        }
+        
+        imagesInfo.textContent = validCount === 0 ? 'No large images found.' : 'Found ' + validCount + ' image(s).';
+      })()`;
+      
+      const cleanCode = bookmarkletCode.replace(/\s+/g, ' ').trim();
+      bookmarkletRef.current.setAttribute('href', cleanCode);
+    }
+  });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -99,6 +191,8 @@ const Dashboard = () => {
     );
   }
 
+
+
   if (!user) {
     return null;
   }
@@ -119,7 +213,7 @@ const Dashboard = () => {
                 />
               ) : (
                 <div className="w-16 h-16 rounded-full bg-white border-4 border-black flex items-center justify-center">
-                  <User className="w-8 h-8 text-black" />
+                  <FontAwesomeIcon icon={faUser} className="text-black text-2xl" />
                 </div>
               )}
               <div>
@@ -132,22 +226,27 @@ const Dashboard = () => {
             </div>
             
             <div className="flex gap-2">
-              <button className="bg-white border-2 border-black text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2">
-                <Bookmark className="w-4 h-4" />
-                <span className="hidden sm:inline">Bookmark</span>
-              </button>
+              <a 
+                ref={bookmarkletRef}
+                className="bg-white border-2 border-black text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 cursor-grab active:cursor-grabbing"
+                title="Drag me to your bookmarks bar!"
+                onClick={(e) => e.preventDefault()}
+              >
+                <FontAwesomeIcon icon={faBookmark} />
+                <span className="hidden sm:inline">SnapNest Bookmark</span>
+              </a>
               <button 
                 onClick={() => navigate('/images/upload')}
                 className="bg-black text-yellow-400 px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
               >
-                <Plus className="w-4 h-4" />
+                <FontAwesomeIcon icon={faPlus} />
                 <span className="hidden sm:inline">Upload</span>
               </button>
               <button 
                 onClick={() => navigate('/profile/edit')}
                 className="bg-white border-2 border-black text-black px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <Settings className="w-5 h-5" />
+                <FontAwesomeIcon icon={faCog} className="text-xl" />
               </button>
             </div>
           </div>
@@ -169,7 +268,7 @@ const Dashboard = () => {
               </div>
             </div>
             <button onClick={() => setShowAlert(false)} className="text-black hover:text-gray-700">
-              <X className="w-5 h-5" />
+              <FontAwesomeIcon icon={faTimes} className="text-xl" />
             </button>
           </div>
         )}
@@ -186,7 +285,7 @@ const Dashboard = () => {
                       <img src={action.user.photo} alt="User" className="w-full h-full rounded-full object-cover" />
                     ) : (
                       <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
-                        <User className="w-6 h-6 text-gray-500" />
+                        <FontAwesomeIcon icon={faUser} className="text-gray-500" />
                       </div>
                     )}
                   </div>
@@ -220,12 +319,12 @@ const Dashboard = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3">
                     <div className="flex items-center gap-2 text-white text-sm font-semibold">
-                      <Heart className="w-4 h-4" />
+                      <FontAwesomeIcon icon={faHeart} />
                       <span>{image.likes}</span>
                     </div>
                     <div className="flex items-center gap-2 text-white text-sm font-semibold">
-                      <Eye className="w-4 h-4" />
-                      <span>{image.total_views || 0}</span>
+                      <FontAwesomeIcon icon={faEye} />
+                      <span>{image.views}</span>
                     </div>
                   </div>
                 </div>
@@ -233,7 +332,7 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="text-center py-16 bg-white rounded-lg border-4 border-black">
-              <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <FontAwesomeIcon icon={faCamera} className="text-gray-400 text-6xl mx-auto mb-4" />
               <h5 className="text-xl font-bold text-black mb-2">No images yet</h5>
               <p className="text-gray-600 mb-6">Start by uploading or bookmarking images!</p>
               <button 

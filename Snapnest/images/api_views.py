@@ -16,9 +16,15 @@ r = redis.Redis(
 
 
 class ImageViewSet(viewsets.ModelViewSet):
-    queryset = Image.objects.all()
     serializer_class = ImageSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        queryset = Image.objects.all()
+        username = self.request.query_params.get('user', None)
+        if username is not None:
+            queryset = queryset.filter(user__username=username)
+        return queryset
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -37,8 +43,36 @@ class ImageViewSet(viewsets.ModelViewSet):
         return Response(data)
 
     def perform_create(self, serializer):
-        image = serializer.save(user=self.request.user)
-        create_action(self.request.user, 'uploaded image', image)
+        if 'url' in self.request.data and not self.request.data.get('image'):
+            # Download image from URL
+            import requests
+            from django.core.files.base import ContentFile
+            from django.utils.text import slugify
+            
+            image_url = self.request.data['url']
+            try:
+                response = requests.get(image_url, headers={'User-Agent': 'Mozilla/5.0'})
+                response.raise_for_status()
+                
+                # Get file extension or default to .jpg
+                ext = 'jpg'
+                if 'content-type' in response.headers:
+                    ext = response.headers['content-type'].split('/')[-1]
+                
+                file_name = f"{slugify(self.request.data.get('title', 'image'))}.{ext}"
+                
+                serializer.save(
+                    user=self.request.user, 
+                    image=ContentFile(response.content, name=file_name)
+                )
+            except Exception as e:
+                from rest_framework.exceptions import ValidationError
+                print(f"Error downloading image: {e}")
+                raise ValidationError({"url": f"Failed to download image: {str(e)}"})
+        else:
+            serializer.save(user=self.request.user)
+            
+        create_action(self.request.user, 'uploaded image', serializer.instance)
 
     def perform_destroy(self, instance):
         if instance.user != self.request.user:

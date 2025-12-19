@@ -33,6 +33,10 @@ class ImageSerializer(serializers.ModelSerializer):
             'is_liked',
             'total_views'
         ]
+        extra_kwargs = {
+            'image': {'required': False},
+            'url': {'required': False}
+        }
     
     def get_is_liked(self, obj):
         request = self.context.get('request')

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import SearchBar from './SearchBar';
 import ImageModal from './ImageModal';
 
@@ -13,11 +15,12 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('access');
     localStorage.removeItem('refresh');
-    navigate('/auth');
+    navigate('/');
   };
 
   const publicNavLinks = [
     { href: '/', label: 'HOME' },
+    { href: 'https://www.samyogm.com.np/', label: 'PORTFOLIO' },
     { href: '/auth', label: 'LOGIN' },
   ];
 
@@ -39,31 +42,55 @@ const Navbar = () => {
         </div>
         
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-6 lg:space-x-10 flex-1 justify-center">
-          {(isAuthenticated ? authNavLinks : publicNavLinks).map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              className="text-sm font-semibold text-black tracking-wide hover:text-amber-500 transition-colors duration-300"
-            >
-              {link.label}
-            </Link>
-          ))}
-          {isAuthenticated && (
-            <>
-              <SearchBar onImageClick={(imageId) => {
-                setSelectedImageId(imageId);
-                setIsModalOpen(true);
-              }} />
-              <button
-                onClick={handleLogout}
-                className="text-sm font-semibold text-black tracking-wide hover:text-red-500 transition-colors duration-300"
-              >
-                LOGOUT
-              </button>
-            </>
-          )}
-        </div>
+        {/* Desktop Menu */}
+<div className="hidden md:flex items-center w-full">
+  
+  {/* Center (Authenticated only) */}
+  {isAuthenticated && (
+    <div className="flex items-center space-x-6 lg:space-x-10 flex-1 justify-center">
+      {authNavLinks.map((link) => (
+        <Link
+          key={link.href}
+          to={link.href}
+          className="text-sm font-semibold text-black hover:text-amber-500 transition-colors"
+        >
+          {link.label}
+        </Link>
+      ))}
+
+      <SearchBar
+        onImageClick={(imageId) => {
+          setSelectedImageId(imageId);
+          setIsModalOpen(true);
+        }}
+      />
+    </div>
+  )}
+
+  {/* Right side */}
+  <div className="flex items-center space-x-6 ml-auto">
+    {!isAuthenticated &&
+      publicNavLinks.map((link) => (
+        <Link
+          key={link.href}
+          to={link.href}
+          className="text-sm font-semibold text-black hover:text-amber-500 transition-colors"
+        >
+          {link.label}
+        </Link>
+      ))}
+
+    {isAuthenticated && (
+      <button
+        onClick={handleLogout}
+        className="text-sm font-semibold text-black hover:text-red-500 transition-colors"
+      >
+        LOGOUT
+      </button>
+    )}
+  </div>
+</div>
+
 
         {/* Mobile Menu Button */}
         <button
@@ -71,13 +98,7 @@ const Navbar = () => {
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle menu"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {isOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
+          <FontAwesomeIcon icon={isOpen ? faTimes : faBars} className="w-6 h-6" />
         </button>
       </nav>
 
@@ -99,9 +120,7 @@ const Navbar = () => {
                 onClick={() => setIsOpen(false)}
                 aria-label="Close menu"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <FontAwesomeIcon icon={faTimes} className="w-6 h-6" />
               </button>
 
               {/* Menu Links */}

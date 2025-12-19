@@ -1,54 +1,106 @@
-#bookmarklet {
-    background:#fff;
-    border-bottom:8px solid #12c064;
-    font-family:"Helvetica Neue", helvetica, arial, sans-serif !important;
-    padding:10px; overflow:auto;
-    box-shadow:0px 0px 8px 0 #666;
-    position:fixed;
-    width:400px;
-    min-height:200px;
-    top:10px;
-    right:10px;
-    z-index:1000000000000;
+#snapnest-bookmarklet {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 380px;
+    max-height: 80vh;
+    background: #ffffff;
+    border: 4px solid #000000;
+    border-radius: 12px;
+    box-shadow: 8px 8px 0px 0px #000000;
+    z-index: 2147483647; /* Max z-index */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: snapnestSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-#bookmarklet h1 {
-    font-family:"Helvetica Neue", helvetica, arial, sans-serif;
-    font-weight:normal;
-    color:#333;
-    font-size:18px;
-    padding:4px 0 20px 0;
- }
-
-#bookmarklet #close {
-    float:right;
-    font-size:18px;
-    text-decoration:none;
-    color:#666;
-    margin-top:-6px;
+@keyframes snapnestSlideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
-#bookmarklet #close:hover {
-    color:#000;
+#snapnest-bookmarklet .snapnest-header {
+    background: #fbbf24; /* Yellow-400 */
+    border-bottom: 4px solid #000000;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-#bookmarklet .images {
-    margin-bottom:20px;
-    overflow:auto;
+#snapnest-bookmarklet .snapnest-logo {
+    font-weight: 900;
+    font-size: 20px;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
 }
 
-#bookmarklet .images img {
-    border:1px solid #ccc;
-    padding:2px;
-    margin:2px;
-    opacity:0.8;
-    width:90px;
-    float:left;
+#snapnest-bookmarklet #snapnest-close {
+    font-size: 28px;
+    line-height: 1;
+    color: #000000;
+    text-decoration: none;
+    font-weight: bold;
     cursor: pointer;
+    transition: transform 0.2s;
 }
 
-#bookmarklet .images img.selected,
-#bookmarklet .images img:hover {
-    border:1px solid #12c064;
-    opacity:1;
+#snapnest-bookmarklet #snapnest-close:hover {
+    transform: scale(1.1);
+}
+
+#snapnest-bookmarklet .snapnest-content {
+    padding: 16px;
+    overflow-y: auto;
+    background: #fff;
+}
+
+#snapnest-bookmarklet h1 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    color: #000000;
+    font-family: inherit;
+}
+
+#snapnest-bookmarklet .snapnest-images {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+#snapnest-bookmarklet .snapnest-img-wrapper {
+    aspect-ratio: 1;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: #f9fafb;
+}
+
+#snapnest-bookmarklet .snapnest-img-wrapper:hover {
+    border-color: #000000;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0px 0px #000000;
+}
+
+#snapnest-bookmarklet .snapnest-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+#snapnest-bookmarklet .snapnest-info {
+    font-size: 13px;
+    color: #6b7280;
+    text-align: center;
+    margin: 0;
+    font-weight: 500;
 }

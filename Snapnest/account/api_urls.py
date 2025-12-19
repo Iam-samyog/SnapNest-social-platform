@@ -4,7 +4,13 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView
 )
-from .api_views import UserViewSet, RegisterAPIView, ProfileAPIView
+from .api_views import (
+    UserViewSet, 
+    RegisterAPIView, 
+    ProfileAPIView,
+    PasswordResetRequestAPIView,
+    PasswordResetConfirmAPIView
+)
 
 router = DefaultRouter()
 router.register('users', UserViewSet, basename='user')
@@ -13,6 +19,8 @@ urlpatterns = [
     path('auth/register/', RegisterAPIView.as_view()),
     path('auth/token/', TokenObtainPairView.as_view()),
     path('auth/token/refresh/', TokenRefreshView.as_view()),
+    path('auth/password-reset/', PasswordResetRequestAPIView.as_view(), name='password_reset'),
+    path('auth/password-reset-confirm/', PasswordResetConfirmAPIView.as_view(), name='password_reset_confirm'),
     path('profile/', ProfileAPIView.as_view()),
     path('', include(router.urls)),
 ]

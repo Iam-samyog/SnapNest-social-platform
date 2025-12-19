@@ -1,19 +1,40 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Upload, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Upload, X, Link as LinkIcon, Bookmark } from 'lucide-react'; // Removing this import in next step to avoid conflict if I don't delete it? Actually I should just overwrite it.
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUpload, faTimes, faLink, faBookmark } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance from '../utils/axiosInstance';
 import Navbar from './Navbar';
 
 const ImageUpload = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    image: null
+    image: null,
+    url: ''
   });
   const [preview, setPreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [isUrlMode, setIsUrlMode] = useState(false);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const urlParam = searchParams.get('url');
+    const titleParam = searchParams.get('title');
+
+    if (urlParam) {
+      setIsUrlMode(true);
+      setFormData(prev => ({
+        ...prev,
+        url: urlParam,
+        title: titleParam || ''
+      }));
+      setPreview(urlParam);
+    }
+  }, [location]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,7 +47,7 @@ const ImageUpload = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({ ...prev, image: file }));
+      setFormData(prev => ({ ...prev, image: file, url: '' }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result);
@@ -44,7 +65,7 @@ const ImageUpload = () => {
       return;
     }
 
-    if (!formData.image) {
+    if (!isUrlMode && !formData.image) {
       setErrors({ image: 'Image file is required' });
       return;
     }
@@ -54,7 +75,12 @@ const ImageUpload = () => {
       const uploadData = new FormData();
       uploadData.append('title', formData.title);
       uploadData.append('description', formData.description);
-      uploadData.append('image', formData.image);
+      
+      if (isUrlMode) {
+         uploadData.append('url', formData.url);
+      } else {
+         uploadData.append('image', formData.image);
+      }
 
       const response = await axiosInstance.post('images/', uploadData, {
         headers: {
@@ -81,8 +107,8 @@ const ImageUpload = () => {
         <div className="max-w-2xl mx-auto">
           <div className="bg-white border-4 border-black rounded-lg shadow-2xl p-8">
             <h1 className="text-4xl font-black text-black mb-6 flex items-center gap-3">
-              <Upload className="w-10 h-10" />
-              Upload an Image
+              {isUrlMode ? <FontAwesomeIcon icon={faBookmark} className="w-10 h-10" /> : <FontAwesomeIcon icon={faUpload} className="w-10 h-10" />}
+              {isUrlMode ? 'Bookmark Image' : 'Upload an Image'}
             </h1>
 
             {errors.general && (
@@ -120,8 +146,18 @@ const ImageUpload = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-black font-bold mb-2">Image File *</label>
-                <div className="border-2 border-black border-dashed rounded-lg p-6 text-center">
+                <label className="block text-black font-bold mb-2">
+                  {isUrlMode ? 'Image URL' : 'Image File *'}
+                </label>
+                
+                {isUrlMode && (
+                  <div className="mb-4 bg-gray-100 p-3 rounded border-2 border-gray-300 flex items-center gap-2 overflow-hidden">
+                    <FontAwesomeIcon icon={faLink} className="text-gray-500 flex-shrink-0" />
+                    <span className="text-sm text-gray-600 truncate">{formData.url}</span>
+                  </div>
+                )}
+
+                <div className={`border-2 border-black border-dashed rounded-lg p-6 text-center ${isUrlMode ? 'bg-gray-50' : ''}`}>
                   {preview ? (
                     <div className="relative">
                       <img
@@ -129,20 +165,22 @@ const ImageUpload = () => {
                         alt="Preview"
                         className="max-w-full max-h-64 mx-auto rounded-lg border-2 border-black"
                       />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPreview(null);
-                          setFormData(prev => ({ ...prev, image: null }));
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                      {!isUrlMode && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPreview(null);
+                            setFormData(prev => ({ ...prev, image: null }));
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
+                        >
+                          <FontAwesomeIcon icon={faTimes} />
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div>
-                      <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                      <FontAwesomeIcon icon={faUpload} className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                       <p className="text-gray-600 mb-2">Click to select an image</p>
                       <input
                         type="file"
@@ -162,6 +200,20 @@ const ImageUpload = () => {
                   )}
                 </div>
                 {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+                {isUrlMode && (
+                    <button 
+                        type="button"
+                        onClick={() => {
+                            setIsUrlMode(false);
+                            setFormData(prev => ({ ...prev, url: '', title: '' }));
+                            setPreview(null);
+                            navigate('/images/upload');
+                        }}
+                        className="text-sm text-red-500 mt-2 hover:underline"
+                    >
+                        Cancel URL Upload (Upload File Instead)
+                    </button>
+                )}
               </div>
 
               <button
@@ -169,7 +221,7 @@ const ImageUpload = () => {
                 disabled={loading}
                 className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black disabled:opacity-50"
               >
-                {loading ? 'Uploading...' : 'Upload Image'}
+                {loading ? 'Saving...' : (isUrlMode ? 'Save Bookmark' : 'Upload Image')}
               </button>
             </form>
           </div>

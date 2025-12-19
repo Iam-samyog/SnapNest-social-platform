@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, User, Eye } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart, faEye } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance from '../utils/axiosInstance';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
@@ -76,7 +77,7 @@ const ImageList = () => {
 
       <div className="max-w-7xl mx-auto px-4">
         {images.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-3 gap-1">
             {images.map((image) => (
               <div
                 key={image.id}
@@ -84,34 +85,21 @@ const ImageList = () => {
                   setSelectedImageId(image.id);
                   setIsModalOpen(true);
                 }}
-                className="bg-white border-4 border-black rounded-lg shadow-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
+                className="aspect-square relative cursor-pointer group overflow-hidden bg-gray-200"
               >
-                <div className="aspect-square relative">
-                  <img
-                    src={image.image || image.url || ''}
-                    alt={image.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3">
-                    <div className="flex items-center gap-2 text-white text-sm font-semibold">
-                      <Heart className="w-4 h-4" />
-                      <span>{image.total_likes || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-white text-sm font-semibold">
-                      <Eye className="w-4 h-4" />
-                      <span>{image.total_views || 0}</span>
-                    </div>
+                <img
+                  src={image.image || image.url || ''}
+                  alt={image.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-6">
+                  <div className="flex items-center gap-2 text-white font-bold text-lg">
+                    <FontAwesomeIcon icon={faHeart} />
+                    <span>{image.total_likes || 0}</span>
                   </div>
-                </div>
-                <div className="p-3">
-                  <h6 className="font-bold text-black text-sm truncate mb-2">
-                    {image.title || 'Untitled'}
-                  </h6>
-                  <div className="flex items-center justify-between text-xs text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <User className="w-3 h-3" />
-                      <span>{image.user || 'Unknown'}</span>
-                    </div>
+                  <div className="flex items-center gap-2 text-white font-bold text-lg">
+                    <FontAwesomeIcon icon={faEye} />
+                    <span>{image.total_views || 0}</span>
                   </div>
                 </div>
               </div>
@@ -128,8 +116,8 @@ const ImageList = () => {
               Upload Your First Image
             </button>
           </div>
-          )}
-        </div>
+        )}
+      </div>
       </div>
       
       {/* Image Modal */}

@@ -10,6 +10,7 @@ import UserDetail from './components/UserDetail';
 import UserList from './components/UserList';
 import EditProfile from './components/EditProfile';
 import ImageRanking from './components/ImageRanking';
+import ResetPassword from './components/ResetPassword';
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/auth" element={<AuthPages />} />
+        <Route path="/password-reset/:uid/:token" element={<ResetPassword />} />
         <Route 
           path="/dashboard" 
           element={

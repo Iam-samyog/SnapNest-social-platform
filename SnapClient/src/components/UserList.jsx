@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, UserPlus, UserCheck } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance from '../utils/axiosInstance';
 import Navbar from './Navbar';
 
@@ -10,9 +11,21 @@ const UserList = () => {
   const [loading, setLoading] = useState(true);
   const [followingStatus, setFollowingStatus] = useState({});
 
+  const [currentUsername, setCurrentUsername] = useState(null);
+
   useEffect(() => {
     fetchUsers();
+    fetchCurrentUser();
   }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await axiosInstance.get('profile/');
+      setCurrentUsername(response.data.user.username);
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -85,7 +98,7 @@ const UserList = () => {
       <div className="min-h-screen bg-gray-50 pb-8">
         <div className="bg-yellow-400 border-b-4 border-black p-6 mb-6">
           <h1 className="text-4xl font-black text-black text-center flex items-center justify-center gap-3">
-            <User className="w-10 h-10" />
+            <FontAwesomeIcon icon={faUser} className="w-10 h-10" />
             Discover People
           </h1>
         </div>
@@ -110,7 +123,7 @@ const UserList = () => {
                       />
                     ) : (
                       <div className="w-24 h-24 rounded-full bg-yellow-400 border-4 border-black flex items-center justify-center mx-auto mb-4">
-                        <User className="w-12 h-12 text-black" />
+                        <FontAwesomeIcon icon={faUser} className="w-12 h-12 text-black" />
                       </div>
                     )}
                     <h6 className="text-lg font-black text-black mb-1">
@@ -128,32 +141,34 @@ const UserList = () => {
                     </div>
                   </div>
                   
-                  <button
-                    onClick={() => handleFollow(user.id, followingStatus[user.id])}
-                    className={`w-full px-4 py-2 rounded-lg font-bold border-2 border-black transition-colors flex items-center justify-center gap-2 ${
-                      followingStatus[user.id]
-                        ? 'bg-gray-200 text-black hover:bg-gray-300'
-                        : 'bg-black text-yellow-400 hover:bg-gray-800'
-                    }`}
-                  >
-                    {followingStatus[user.id] ? (
-                      <>
-                        <UserCheck className="w-4 h-4" />
-                        Following
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="w-4 h-4" />
-                        Follow
-                      </>
-                    )}
-                  </button>
+                  {currentUsername !== user.username && (
+                    <button
+                      onClick={() => handleFollow(user.id, followingStatus[user.id])}
+                      className={`w-full px-4 py-2 rounded-lg font-bold border-2 border-black transition-colors flex items-center justify-center gap-2 ${
+                        followingStatus[user.id]
+                          ? 'bg-gray-200 text-black hover:bg-gray-300'
+                          : 'bg-black text-yellow-400 hover:bg-gray-800'
+                      }`}
+                    >
+                      {followingStatus[user.id] ? (
+                        <>
+                          <FontAwesomeIcon icon={faUserCheck} className="w-4 h-4" />
+                          Following
+                        </>
+                      ) : (
+                        <>
+                          <FontAwesomeIcon icon={faUserPlus} className="w-4 h-4" />
+                          Follow
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-16 bg-white rounded-lg border-4 border-black">
-              <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <FontAwesomeIcon icon={faUser} className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h5 className="text-xl font-bold text-black mb-2">No users found</h5>
               <p className="text-gray-600">Be the first to join!</p>
             </div>

@@ -4,6 +4,7 @@ import axiosInstance from '../utils/axiosInstance';
 
 const AuthPages = () => {
   const [isSignIn, setIsSignIn] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -11,6 +12,7 @@ const AuthPages = () => {
     confirmPassword: '',
   });
   const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -24,21 +26,29 @@ const AuthPages = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
-    }
-    if (!isSignIn && !formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!isSignIn && !/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (!isSignIn && formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    if (!isSignIn && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+    if (!isForgotPassword) {
+      if (!formData.username.trim()) {
+        newErrors.username = 'Username is required';
+      }
+      if (!isSignIn && !formData.email.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!isSignIn && !/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = 'Email is invalid';
+      }
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      } else if (!isSignIn && formData.password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
+      }
+      if (!isSignIn && formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+    } else {
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = 'Email is invalid';
+      }
     }
     return newErrors;
   };
@@ -52,7 +62,13 @@ const AuthPages = () => {
     }
 
     try {
-      if (isSignIn) {
+      if (isForgotPassword) {
+        await axiosInstance.post('auth/password-reset/', {
+          email: formData.email,
+        });
+        setSuccessMessage('If an account exists with this email, a reset link has been sent.');
+        setErrors({});
+      } else if (isSignIn) {
         // Login: use JWT endpoint
         const res = await axiosInstance.post('auth/token/', {
           username: formData.username,
@@ -96,16 +112,23 @@ const AuthPages = () => {
     }
   };
 
-
-   
   const handleSocialLogin = (provider) => {
     alert(`Sign in with ${provider} clicked!`);
   };
 
   const toggleAuthMode = () => {
     setIsSignIn(!isSignIn);
+    setIsForgotPassword(false);
     setFormData({ username: '', email: '', password: '', confirmPassword: '' });
     setErrors({});
+    setSuccessMessage('');
+  };
+
+  const toggleForgotPassword = () => {
+    setIsForgotPassword(!isForgotPassword);
+    setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+    setErrors({});
+    setSuccessMessage('');
   };
 
   const goToHomepage = () => {
@@ -125,8 +148,15 @@ const AuthPages = () => {
         <div className="bg-white border-4 border-black rounded-lg shadow-2xl p-8">
           {/* Title */}
           <h2 className="text-3xl font-bold text-black mb-2">
-            {isSignIn ? 'Log-in' : 'Sign Up'}
+            {isForgotPassword ? 'Reset Password' : (isSignIn ? 'Log-in' : 'Sign Up')}
           </h2>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="bg-green-100 border-2 border-green-500 text-green-700 px-4 py-3 rounded mb-4">
+              <p className="font-semibold">{successMessage}</p>
+            </div>
+          )}
 
           {/* Error Message */}
           {errors.general && (
@@ -134,7 +164,7 @@ const AuthPages = () => {
               <p className="font-semibold">{errors.general}</p>
             </div>
           )}
-          {Object.keys(errors).length > 0 && isSignIn && !errors.general && (
+          {Object.keys(errors).length > 0 && isSignIn && !isForgotPassword && !errors.general && (
             <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
               <p className="font-semibold">
                 Your username and password didn't match. Please try again.
@@ -144,7 +174,17 @@ const AuthPages = () => {
 
           {/* Description */}
           <p className="text-black mb-6">
-            {isSignIn ? (
+            {isForgotPassword ? (
+               <>
+                Enter your email address and we'll send you a link to reset your password.{' '}
+                <button
+                  onClick={toggleForgotPassword}
+                  className="text-black font-bold underline hover:opacity-70"
+                >
+                  Back to Log-in
+                </button>
+              </>
+            ) : isSignIn ? (
               <>
                 Please use the following form to log-in. If you don't have an account{' '}
                 <button
@@ -167,26 +207,27 @@ const AuthPages = () => {
             )}
           </p>
 
-          {/* Form fields... (unchanged for brevity) */}
           <div className="space-y-4 mb-6">
-            {/* Username */}
-            <div>
-              <label className="block text-black font-semibold mb-2">Username:</label>
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 border-2 ${
-                  errors.username ? 'border-red-500' : 'border-black'
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
-                placeholder="Enter your username"
-              />
-              {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
-            </div>
+            {/* Username - Hidden in Forgot Password */}
+            {!isForgotPassword && (
+              <div>
+                <label className="block text-black font-semibold mb-2">Username:</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 border-2 ${
+                    errors.username ? 'border-red-500' : 'border-black'
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
+                  placeholder="Enter your username"
+                />
+                {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
+              </div>
+            )}
 
-            {/* Email (Sign Up only) */}
-            {!isSignIn && (
+            {/* Email (Sign Up only OR Forgot Password) */}
+            {(!isSignIn || isForgotPassword) && (
               <div>
                 <label className="block text-black font-semibold mb-2">Email:</label>
                 <input
@@ -203,24 +244,26 @@ const AuthPages = () => {
               </div>
             )}
 
-            {/* Password */}
-            <div>
-              <label className="block text-black font-semibold mb-2">Password:</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 border-2 ${
-                  errors.password ? 'border-red-500' : 'border-black'
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
-                placeholder="Enter your password"
-              />
-              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-            </div>
+            {/* Password - Hidden in Forgot Password */}
+            {!isForgotPassword && (
+              <div>
+                <label className="block text-black font-semibold mb-2">Password:</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 border-2 ${
+                    errors.password ? 'border-red-500' : 'border-black'
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-black`}
+                  placeholder="Enter your password"
+                />
+                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+              </div>
+            )}
 
             {/* Confirm Password (Sign Up only) */}
-            {!isSignIn && (
+            {!isSignIn && !isForgotPassword && (
               <div>
                 <label className="block text-black font-semibold mb-2">Confirm Password:</label>
                 <input
@@ -244,14 +287,17 @@ const AuthPages = () => {
               onClick={handleSubmit}
               className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black"
             >
-              {isSignIn ? 'Log-in' : 'Sign Up'}
+              {isForgotPassword ? 'Send Reset Link' : (isSignIn ? 'Log-in' : 'Sign Up')}
             </button>
           </div>
 
-          {/* Forgot Password, Divider, Social Login, Footer... (unchanged) */}
-          {isSignIn && (
+          {/* Forgot Password Link */}
+          {isSignIn && !isForgotPassword && (
             <div className="text-center mb-6">
-              <button className="text-black underline hover:opacity-70">
+              <button 
+                onClick={toggleForgotPassword} 
+                className="text-black underline hover:opacity-70"
+              >
                 Forgotten your password?
               </button>
             </div>

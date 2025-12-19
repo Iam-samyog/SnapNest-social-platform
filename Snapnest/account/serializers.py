@@ -5,6 +5,12 @@ from .models import Profile, Contact
 User = get_user_model()
 
 
+class SimpleProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['photo', 'date_of_birth']
+
+
 class UserSerializer(serializers.ModelSerializer):
     is_following = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
@@ -12,7 +18,11 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_following', 'followers_count', 'following_count']
+    profile = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_following', 'followers_count', 'following_count', 'profile']
     
     def get_is_following(self, obj):
         request = self.context.get('request')
@@ -28,6 +38,11 @@ class UserSerializer(serializers.ModelSerializer):
     
     def get_following_count(self, obj):
         return obj.following.count()
+
+    def get_profile(self, obj):
+        if hasattr(obj, 'profile'):
+            return SimpleProfileSerializer(obj.profile, context=self.context).data
+        return None
 
 
 class ProfileSerializer(serializers.ModelSerializer):

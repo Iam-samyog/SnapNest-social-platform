@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Heart, Eye, UserPlus, UserCheck } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart, faEye, faUser, faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance from '../utils/axiosInstance';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
@@ -22,23 +23,28 @@ const UserDetail = () => {
 
   const fetchUserData = async () => {
     try {
-      // Fetch user list to find the user
-      const usersRes = await axiosInstance.get('users/');
+      // Fetch specific user by username using the new filter
+      const usersRes = await axiosInstance.get(`users/?username=${username}`);
       const users = usersRes.data.results || usersRes.data || [];
-      const user = users.find(u => u.username === username);
+      const user = users.length > 0 ? users[0] : null;
       
       if (user) {
         setUserData(user);
         setIsFollowing(user.is_following || false);
         
         // Check if this is the current user
+        // Check if this is the current user
         const profileRes = await axiosInstance.get('profile/');
-        setIsCurrentUser(profileRes.data.user?.username === username);
+        setIsCurrentUser(profileRes.data.user?.username?.toLowerCase() === username?.toLowerCase());
         
-        // Fetch user's images
-        const imagesRes = await axiosInstance.get('images/');
-        const allImages = imagesRes.data.results || imagesRes.data || [];
-        const userImages = allImages.filter(img => img.user === username);
+        // Fetch user's images using the new filter
+        const imagesRes = await axiosInstance.get(`images/?user=${username}`);
+        let userImages = imagesRes.data.results || imagesRes.data || [];
+        
+        // If the backend doesn't support filtering yet (fallback or older version cached), filter manually
+        // But the new backend change should support ?user=username
+        // We can double check if we got all images or just my own stream if filter failed
+        // For now trusting the backend filter we just added.
         setImages(userImages);
       }
     } catch (error) {
@@ -118,7 +124,7 @@ const UserDetail = () => {
                   />
                 ) : (
                   <div className="w-32 h-32 rounded-full bg-white border-4 border-black flex items-center justify-center">
-                    <User className="w-16 h-16 text-black" />
+                    <FontAwesomeIcon icon={faUser} className="w-16 h-16 text-black text-4xl" />
                   </div>
                 )}
               </div>
@@ -137,13 +143,13 @@ const UserDetail = () => {
                     >
                       {isFollowing ? (
                         <>
-                          <UserCheck className="w-5 h-5" />
-                          Following
+                          <FontAwesomeIcon icon={faUserCheck} />
+                          <span>Following</span>
                         </>
                       ) : (
                         <>
-                          <UserPlus className="w-5 h-5" />
-                          Follow
+                          <FontAwesomeIcon icon={faUserPlus} />
+                          <span>Follow</span>
                         </>
                       )}
                     </button>
@@ -173,10 +179,13 @@ const UserDetail = () => {
           </div>
 
           {/* Images Grid */}
-          <div className="bg-white border-4 border-black rounded-lg shadow-2xl p-6">
-            <h3 className="text-2xl font-black text-black mb-6">📸 Images</h3>
+          {/* Images Grid */}
+          <div className="mt-8">
+            <h3 className="text-2xl font-black text-black mb-6 flex items-center gap-2">
+              <FontAwesomeIcon icon={faUser} /> Posts
+            </h3>
             {images.length > 0 ? (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-1">
                 {images.map((image) => (
                   <div
                     key={image.id}
@@ -184,20 +193,20 @@ const UserDetail = () => {
                       setSelectedImageId(image.id);
                       setIsModalOpen(true);
                     }}
-                    className="aspect-square relative cursor-pointer group overflow-hidden rounded-lg border-2 border-black"
+                    className="aspect-square relative cursor-pointer group overflow-hidden bg-gray-200"
                   >
                     <img
                       src={image.image || image.url || ''}
                       alt={image.title}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3">
-                      <div className="flex items-center gap-2 text-white text-sm font-semibold">
-                        <Heart className="w-4 h-4" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-6">
+                      <div className="flex items-center gap-2 text-white font-bold text-lg">
+                        <FontAwesomeIcon icon={faHeart} />
                         <span>{image.total_likes || 0}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-white text-sm font-semibold">
-                        <Eye className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-white font-bold text-lg">
+                        <FontAwesomeIcon icon={faEye} />
                         <span>{image.total_views || 0}</span>
                       </div>
                     </div>
@@ -205,7 +214,7 @@ const UserDetail = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-16">
+              <div className="text-center py-16 bg-white rounded-lg border-4 border-black">
                 <p className="text-xl font-bold text-black mb-2">No images yet</p>
                 <p className="text-gray-600">This user hasn't uploaded any images.</p>
               </div>
