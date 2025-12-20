@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Upload } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpload, faTimes, faLink, faBookmark } from '@fortawesome/free-solid-svg-icons';
+import { faUpload, faTimes, faLink, faBookmark, faCamera, faSync } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance from '../utils/axiosInstance';
 import Navbar from './Navbar';
 
 const ImageUpload = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const videoRef = React.useRef(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -20,6 +21,17 @@ const ImageUpload = () => {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [isUrlMode, setIsUrlMode] = useState(false);
+  const [isCameraMode, setIsCameraMode] = useState(false);
+  const [stream, setStream] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      // Cleanup stream on unmount
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -37,6 +49,50 @@ const ImageUpload = () => {
     }
   }, [location]);
 
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' }, 
+        audio: false 
+      });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+      setIsCameraMode(true);
+      setIsUrlMode(false);
+      setPreview(null);
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setErrors({ general: "Could not access camera. Please check permissions." });
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setIsCameraMode(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoRef.current, 0, 0);
+      
+      canvas.toBlob((blob) => {
+        const file = new File([blob], `capture_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        setFormData(prev => ({ ...prev, image: file, url: '' }));
+        setPreview(canvas.toDataURL('image/jpeg'));
+        stopCamera();
+      }, 'image/jpeg', 0.9);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -49,6 +105,7 @@ const ImageUpload = () => {
     const file = e.target.files[0];
     if (file) {
       setIsUrlMode(false);
+      setIsCameraMode(false);
       setFormData(prev => ({ ...prev, image: file, url: '' }));
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -156,7 +213,7 @@ const ImageUpload = () => {
 
               <div className="mb-6">
                 <label className="block text-black font-bold mb-2">
-                  {isUrlMode ? 'Image URL' : 'Image File *'}
+                  {isUrlMode ? 'Image URL' : 'Image Source *'}
                 </label>
                 
                 {isUrlMode && (
@@ -167,7 +224,32 @@ const ImageUpload = () => {
                 )}
 
                 <div className={`border-2 border-black border-dashed rounded-lg p-6 text-center ${isUrlMode ? 'bg-gray-50' : ''}`}>
-                  {preview ? (
+                  {isCameraMode ? (
+                    <div className="relative">
+                      <video 
+                        ref={videoRef} 
+                        autoPlay 
+                        playsInline 
+                        className="w-full max-h-64 mx-auto rounded-lg border-2 border-black object-cover"
+                      />
+                      <div className="mt-4 flex justify-center gap-4">
+                        <button
+                          type="button"
+                          onClick={capturePhoto}
+                          className="bg-black text-yellow-400 px-6 py-2 rounded-lg font-bold hover:bg-gray-800 transition-colors flex items-center gap-2"
+                        >
+                          <FontAwesomeIcon icon={faCamera} /> Capture
+                        </button>
+                        <button
+                          type="button"
+                          onClick={stopCamera}
+                          className="bg-red-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-600 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : preview ? (
                     <div className="relative">
                       <img
                         src={preview}
@@ -188,23 +270,34 @@ const ImageUpload = () => {
                       )}
                     </div>
                   ) : (
-                    <div>
-                      <FontAwesomeIcon icon={faUpload} className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                      <p className="text-gray-600 mb-2">Click to select an image</p>
-                      <input
-                        type="file"
-                        name="image"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <label
-                        htmlFor="image-upload"
-                        className="bg-black text-yellow-400 px-6 py-2 rounded-lg font-bold cursor-pointer hover:bg-gray-800 transition-colors inline-block"
-                      >
-                        Choose File
-                      </label>
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row justify-center gap-4">
+                        <div>
+                          <input
+                            type="file"
+                            name="image"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="hidden"
+                            id="image-upload"
+                          />
+                          <label
+                            htmlFor="image-upload"
+                            className="w-full sm:w-auto bg-black text-yellow-400 px-6 py-3 rounded-lg font-bold cursor-pointer hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <FontAwesomeIcon icon={faUpload} /> Choose File
+                          </label>
+                        </div>
+                        
+                        <button
+                          type="button"
+                          onClick={startCamera}
+                          className="bg-white border-2 border-black text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <FontAwesomeIcon icon={faCamera} /> Take Photo
+                        </button>
+                      </div>
+                      <p className="text-gray-600 text-sm">Upload a file or use your camera</p>
                     </div>
                   )}
                 </div>
@@ -228,7 +321,7 @@ const ImageUpload = () => {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || isCameraMode}
                 className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading && <Upload className="w-5 h-5 animate-bounce" />}
