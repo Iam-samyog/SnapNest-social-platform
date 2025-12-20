@@ -155,8 +155,8 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# WhiteNoise settings
-WHITENOISE_MANIFEST_STRICT = False
+# WhiteNoise settings (serve but don't fail on build)
+# WHITENOISE_MANIFEST_STRICT = False # No longer needed with standard storage
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = 'login'
@@ -178,7 +178,7 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
