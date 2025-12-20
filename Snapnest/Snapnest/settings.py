@@ -148,13 +148,15 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
     BASE_DIR / 'images' / 'static',
 ]
 
 # Media
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# WhiteNoise settings
+WHITENOISE_MANIFEST_STRICT = False
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = 'login'
