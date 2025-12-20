@@ -6,48 +6,19 @@ import { faUpload, faTimes, faLink, faBookmark, faCamera, faSync } from '@fortaw
 import axiosInstance from '../utils/axiosInstance';
 import Navbar from './Navbar';
 
-const ImageUpload = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+const CameraModal = ({ isOpen, onClose, onCapture }) => {
   const videoRef = React.useRef(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    image: null,
-    url: ''
-  });
-  const [preview, setPreview] = useState(null);
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
-  const [isUrlMode, setIsUrlMode] = useState(false);
-  const [isCameraMode, setIsCameraMode] = useState(false);
   const [stream, setStream] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    return () => {
-      // Cleanup stream on unmount
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [stream]);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const urlParam = searchParams.get('url');
-    const titleParam = searchParams.get('title');
-
-    if (urlParam) {
-      setIsUrlMode(true);
-      setFormData(prev => ({
-        ...prev,
-        url: urlParam,
-        title: titleParam || ''
-      }));
-      setPreview(urlParam);
+    if (isOpen) {
+      startCamera();
+    } else {
+      stopCamera();
     }
-  }, [location]);
+    return () => stopCamera();
+  }, [isOpen]);
 
   const startCamera = async () => {
     try {
@@ -59,12 +30,9 @@ const ImageUpload = () => {
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
-      setIsCameraMode(true);
-      setIsUrlMode(false);
-      setPreview(null);
     } catch (err) {
-      console.error("Error accessing camera:", err);
-      setErrors({ general: "Could not access camera. Please check permissions." });
+      console.error("Camera access error:", err);
+      setError("Please allow camera access in your browser settings.");
     }
   };
 
@@ -73,10 +41,9 @@ const ImageUpload = () => {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
-    setIsCameraMode(false);
   };
 
-  const capturePhoto = () => {
+  const handleCapture = () => {
     if (videoRef.current) {
       const canvas = document.createElement('canvas');
       canvas.width = videoRef.current.videoWidth;
@@ -86,12 +53,70 @@ const ImageUpload = () => {
       
       canvas.toBlob((blob) => {
         const file = new File([blob], `capture_${Date.now()}.jpg`, { type: 'image/jpeg' });
-        setFormData(prev => ({ ...prev, image: file, url: '' }));
-        setPreview(canvas.toDataURL('image/jpeg'));
-        stopCamera();
+        onCapture(file, canvas.toDataURL('image/jpeg'));
+        onClose();
       }, 'image/jpeg', 0.9);
     }
   };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm">
+      <div className="bg-white border-4 border-black rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in duration-200">
+        <div className="p-4 border-b-4 border-black flex justify-between items-center bg-yellow-400">
+          <h3 className="font-black text-xl uppercase tracking-tight">Camera</h3>
+          <button onClick={onClose} className="hover:rotate-90 transition-transform">
+            <FontAwesomeIcon icon={faTimes} className="text-2xl" />
+          </button>
+        </div>
+        
+        <div className="aspect-square bg-black relative">
+          {error ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-white">
+              <FontAwesomeIcon icon={faSync} className="text-4xl mb-4 text-yellow-400" />
+              <p className="font-bold">{error}</p>
+            </div>
+          ) : (
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              className="w-full h-full object-cover"
+            />
+          )}
+          
+          <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+            <button 
+              type="button"
+              onClick={handleCapture}
+              disabled={!!error}
+              className="w-16 h-16 bg-white rounded-full border-4 border-black active:scale-95 transition-transform flex items-center justify-center shadow-lg"
+            >
+              <div className="w-12 h-12 rounded-full border-2 border-gray-200" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ImageUpload = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    image: null,
+    url: ''
+  });
+  const [preview, setPreview] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [isUrlMode, setIsUrlMode] = useState(false);
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -105,7 +130,6 @@ const ImageUpload = () => {
     const file = e.target.files[0];
     if (file) {
       setIsUrlMode(false);
-      setIsCameraMode(false);
       setFormData(prev => ({ ...prev, image: file, url: '' }));
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -113,6 +137,12 @@ const ImageUpload = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const onCameraCapture = (file, previewUrl) => {
+    setFormData(prev => ({ ...prev, image: file, url: '' }));
+    setPreview(previewUrl);
+    setIsUrlMode(false);
   };
 
   const handleSubmit = async (e) => {
@@ -169,6 +199,12 @@ const ImageUpload = () => {
   return (
     <>
       <Navbar />
+      <CameraModal 
+        isOpen={isCameraModalOpen} 
+        onClose={() => setIsCameraModalOpen(false)} 
+        onCapture={onCameraCapture}
+      />
+      
       <div className="min-h-screen bg-yellow-400 py-12 px-6">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white border-4 border-black rounded-lg shadow-2xl p-8">
@@ -224,37 +260,12 @@ const ImageUpload = () => {
                 )}
 
                 <div className={`border-2 border-black border-dashed rounded-lg p-6 text-center ${isUrlMode ? 'bg-gray-50' : ''}`}>
-                  {isCameraMode ? (
-                    <div className="relative">
-                      <video 
-                        ref={videoRef} 
-                        autoPlay 
-                        playsInline 
-                        className="w-full max-h-64 mx-auto rounded-lg border-2 border-black object-cover"
-                      />
-                      <div className="mt-4 flex justify-center gap-4">
-                        <button
-                          type="button"
-                          onClick={capturePhoto}
-                          className="bg-black text-yellow-400 px-6 py-2 rounded-lg font-bold hover:bg-gray-800 transition-colors flex items-center gap-2"
-                        >
-                          <FontAwesomeIcon icon={faCamera} /> Capture
-                        </button>
-                        <button
-                          type="button"
-                          onClick={stopCamera}
-                          className="bg-red-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-600 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : preview ? (
+                  {preview ? (
                     <div className="relative">
                       <img
                         src={preview}
                         alt="Preview"
-                        className="max-w-full max-h-64 mx-auto rounded-lg border-2 border-black"
+                        className="max-w-full max-h-64 mx-auto rounded-lg border-2 border-black object-cover shadow-lg"
                       />
                       {!isUrlMode && (
                         <button
@@ -263,7 +274,7 @@ const ImageUpload = () => {
                             setPreview(null);
                             setFormData(prev => ({ ...prev, image: null }));
                           }}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 border-2 border-black"
                         >
                           <FontAwesomeIcon icon={faTimes} />
                         </button>
@@ -283,7 +294,7 @@ const ImageUpload = () => {
                           />
                           <label
                             htmlFor="image-upload"
-                            className="w-full sm:w-auto bg-black text-yellow-400 px-6 py-3 rounded-lg font-bold cursor-pointer hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto bg-black text-yellow-400 px-6 py-3 rounded-lg font-bold cursor-pointer hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
                           >
                             <FontAwesomeIcon icon={faUpload} /> Choose File
                           </label>
@@ -291,8 +302,8 @@ const ImageUpload = () => {
                         
                         <button
                           type="button"
-                          onClick={startCamera}
-                          className="bg-white border-2 border-black text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                          onClick={() => setIsCameraModalOpen(true)}
+                          className="bg-white border-2 border-black text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
                         >
                           <FontAwesomeIcon icon={faCamera} /> Take Photo
                         </button>
@@ -321,8 +332,8 @@ const ImageUpload = () => {
 
               <button
                 type="submit"
-                disabled={loading || isCameraMode}
-                className="w-full bg-black text-yellow-400 py-3 rounded-lg font-bold text-lg uppercase tracking-wide hover:bg-gray-800 transition-colors duration-300 border-2 border-black disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={loading}
+                className="w-full bg-black text-yellow-400 py-4 rounded-lg font-bold text-xl uppercase tracking-widest hover:bg-gray-800 transition-all duration-300 border-4 border-black disabled:opacity-50 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]"
               >
                 {loading && <Upload className="w-5 h-5 animate-bounce" />}
                 {loading ? loadingMessage : (isUrlMode ? 'Save Bookmark' : 'Upload Image')}
