@@ -129,7 +129,7 @@ const SearchBar = ({ onImageClick }) => {
           {/* Users Results */}
           {results.users.length > 0 && (
             <div className="p-4 border-b-2 border-black">
-              <h3 className="text-sm font-bold text-black mb-2">👥 Users</h3>
+              <h3 className="text-sm font-bold text-black mb-2">Users</h3>
               <div className="space-y-2">
                 {results.users.map((user) => (
                   <button
