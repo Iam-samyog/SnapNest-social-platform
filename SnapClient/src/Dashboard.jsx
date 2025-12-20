@@ -120,8 +120,19 @@ const Dashboard = () => {
           return;
         }
 
-        // Fetch user profile
-        const profileRes = await axiosInstance.get('profile/');
+        // Fetch dashboard data in parallel for better performance
+        const [profileRes, imagesRes, actionsRes] = await Promise.all([
+          axiosInstance.get('profile/'),
+          axiosInstance.get('images/').catch(err => {
+            console.error('Error fetching images:', err);
+            return { data: { results: [] } };
+          }),
+          axiosInstance.get('actions/').catch(err => {
+            console.error('Error fetching activities:', err);
+            return { data: [] };
+          })
+        ]);
+
         const profileData = profileRes.data;
         
         // Extract user data from profile response
@@ -133,53 +144,36 @@ const Dashboard = () => {
           following: profileData.following_count || 0,
         };
 
-        // Fetch user's images
-        try {
-          const imagesRes = await axiosInstance.get('images/');
-          // Get all images and filter by current user
-          let allImages = imagesRes.data.results || imagesRes.data || [];
-          // Filter images by current user
-          if (profileData.user?.username) {
-            allImages = allImages.filter(img => img.user === profileData.user.username);
-          }
-          // Transform images to match our format
-          const transformedImages = allImages.map(img => {
-            // Priority: img.image (local/Cloudinary copy) > img.url (external source)
-            const imageUrl = getFullMediaUrl(img.image || img.url);
-            
-            return {
-              id: img.id,
-              title: img.title || 'Untitled',
-              url: imageUrl,
-              likes: img.total_likes || 0,
-              views: img.total_views || 0,
-            };
-          });
-          setImages(transformedImages);
-        } catch (imgError) {
-          console.error('Error fetching images:', imgError);
-          setImages([]);
+        // Process images
+        let allImages = imagesRes.data.results || imagesRes.data || [];
+        if (profileData.user?.username) {
+          allImages = allImages.filter(img => img.user === profileData.user.username);
         }
+        
+        const transformedImages = allImages.map(img => ({
+          id: img.id,
+          title: img.title || 'Untitled',
+          url: getFullMediaUrl(img.image || img.url),
+          likes: img.total_likes || 0,
+          views: img.total_views || 0,
+        }));
+        setImages(transformedImages);
 
-        // Fetch activities
-        try {
-          const actionsRes = await axiosInstance.get('actions/');
-          const actionsData = actionsRes.data || [];
-          
-          const transformedActivities = actionsData.map(action => ({
-            id: action.id,
-            verb: action.verb,
-            user: {
-              username: action.user?.username,
-              firstName: action.user?.first_name || action.user?.username,
-              photo: action.user?.profile?.photo
-            }
-          }));
-          setActivities(transformedActivities);
-        } catch (actionError) {
-          console.error('Error fetching activities:', actionError);
-          setActivities([]);
-        }
+        // Process activities
+        const actionsData = actionsRes.data || [];
+        const transformedActivities = actionsData.map(action => ({
+          id: action.id,
+          verb: action.verb,
+          user: {
+            username: action.user?.username,
+            firstName: action.user?.first_name || action.user?.username,
+            photo: action.user?.profile?.photo
+          }
+        }));
+        setActivities(transformedActivities);
+
+        setUser(userData);
+        setLoading(false);
 
         setUser(userData);
         setLoading(false);
