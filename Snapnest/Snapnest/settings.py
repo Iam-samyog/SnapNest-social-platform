@@ -186,6 +186,10 @@ if config('CLOUDINARY_URL', default=None):
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     }
 
+# Legacy settings for compatibility with third-party apps (like django-cloudinary-storage)
+DEFAULT_FILE_STORAGE = STORAGES["default"]["BACKEND"]
+STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
+
 AUTHENTICATION_BACKENDS=[
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.github.GithubOAuth2',
