@@ -10,6 +10,7 @@ const CameraModal = ({ isOpen, onClose, onCapture }) => {
   const videoRef = React.useRef(null);
   const [stream, setStream] = useState(null);
   const [error, setError] = useState(null);
+  const [facingMode, setFacingMode] = useState('user');
 
   useEffect(() => {
     if (isOpen) {
@@ -18,12 +19,13 @@ const CameraModal = ({ isOpen, onClose, onCapture }) => {
       stopCamera();
     }
     return () => stopCamera();
-  }, [isOpen]);
+  }, [isOpen, facingMode]);
 
   const startCamera = async () => {
+    stopCamera(); // Ensure old stream is stopped before starting new one
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' }, 
+        video: { facingMode: facingMode }, 
         audio: false 
       });
       setStream(mediaStream);
@@ -34,6 +36,10 @@ const CameraModal = ({ isOpen, onClose, onCapture }) => {
       console.error("Camera access error:", err);
       setError("Please allow camera access in your browser settings.");
     }
+  };
+
+  const toggleCamera = () => {
+    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
   };
 
   const stopCamera = () => {
@@ -66,9 +72,18 @@ const CameraModal = ({ isOpen, onClose, onCapture }) => {
       <div className="bg-white border-4 border-black rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in duration-200">
         <div className="p-4 border-b-4 border-black flex justify-between items-center bg-yellow-400">
           <h3 className="font-black text-xl uppercase tracking-tight">Camera</h3>
-          <button onClick={onClose} className="hover:rotate-90 transition-transform">
-            <FontAwesomeIcon icon={faTimes} className="text-2xl" />
-          </button>
+          <div className="flex gap-4 items-center">
+            <button 
+              onClick={toggleCamera} 
+              className="bg-black text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors border-2 border-black"
+              title="Flip Camera"
+            >
+              <FontAwesomeIcon icon={faSync} className="text-lg" />
+            </button>
+            <button onClick={onClose} className="hover:rotate-90 transition-transform p-1">
+              <FontAwesomeIcon icon={faTimes} className="text-2xl" />
+            </button>
+          </div>
         </div>
         
         <div className="aspect-square bg-black relative">
