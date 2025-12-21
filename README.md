@@ -2,9 +2,43 @@
 
 > A modern, full-stack social image sharing platform built with Django REST Framework and React
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://snapnest-social-platform.vercel.app)
-[![Backend](https://img.shields.io/badge/backend-Django-green)](https://snapnest-backend-sbse.onrender.com)
-[![Frontend](https://img.shields.io/badge/frontend-React-blue)](https://snapnest-social-platform.vercel.app)
+<p> <em>SnapNest is a high-performance social image platform that lets you discover, share, and save images from anywhere on the web. With a unique browser bookmarklet, you can curate content with a single click. Built with Django and React, it showcases enterprise-level performance optimizations including 90% fewer database queries, intelligent search debouncing, and seamless infinite scrolling. Whether you're a photographer showcasing your work or a curator building collections, SnapNest delivers a fast, beautiful, and intuitive experience.</em></p>
+
+
+## 🌟 Features
+
+### Core Functionality
+- **📤 Image Upload & Sharing** - Upload images directly or via URL with drag-and-drop support
+- **📷 Camera Integration** - Take photos directly from your device with front/back camera toggle
+- **🔖 Bookmarklet** - Save images from any website with a single click using the browser bookmarklet
+- **♾️ Infinite Scroll** - Smooth, optimized infinite scrolling with Intersection Observer API
+- **🔍 Real-time Search** - Debounced search with request cancellation for users and images
+- **❤️ Social Interactions** - Like, comment, and follow other users
+- **👥 User Profiles** - Customizable profiles with follower/following lists
+- **📊 Activity Feed** - Track user activities and engagement
+- **🏆 Image Ranking** - Redis-powered view tracking and trending images
+
+### Performance Optimizations
+- **⚡ Backend Optimizations**
+  - N+1 query elimination with `select_related` and `prefetch_related`
+  - Pagination (20 items per page) for all list endpoints
+  - Singleton Redis connection for efficient caching
+  - Optimized serializers with prefetched data
+  
+- **🚀 Frontend Optimizations**
+  - Debounced search (300ms) with AbortController
+  - Lazy loading for all images
+  - Intersection Observer for infinite scroll
+  - Code splitting and chunking for faster load times
+  - React.memo for component optimization
+
+### Authentication
+- **🔐 Multiple Auth Methods**
+  - Email/Password authentication
+  - Google OAuth integration
+  - GitHub OAuth integration
+  - JWT token-based authentication
+
 
 ## 📸 Screenshots
 
@@ -51,39 +85,6 @@
 
 </div>
 
-## 🌟 Features
-
-### Core Functionality
-- **📤 Image Upload & Sharing** - Upload images directly or via URL with drag-and-drop support
-- **📷 Camera Integration** - Take photos directly from your device with front/back camera toggle
-- **🔖 Bookmarklet** - Save images from any website with a single click using the browser bookmarklet
-- **♾️ Infinite Scroll** - Smooth, optimized infinite scrolling with Intersection Observer API
-- **🔍 Real-time Search** - Debounced search with request cancellation for users and images
-- **❤️ Social Interactions** - Like, comment, and follow other users
-- **👥 User Profiles** - Customizable profiles with follower/following lists
-- **📊 Activity Feed** - Track user activities and engagement
-- **🏆 Image Ranking** - Redis-powered view tracking and trending images
-
-### Performance Optimizations
-- **⚡ Backend Optimizations**
-  - N+1 query elimination with `select_related` and `prefetch_related`
-  - Pagination (20 items per page) for all list endpoints
-  - Singleton Redis connection for efficient caching
-  - Optimized serializers with prefetched data
-  
-- **🚀 Frontend Optimizations**
-  - Debounced search (300ms) with AbortController
-  - Lazy loading for all images
-  - Intersection Observer for infinite scroll
-  - Code splitting and chunking for faster load times
-  - React.memo for component optimization
-
-### Authentication
-- **🔐 Multiple Auth Methods**
-  - Email/Password authentication
-  - Google OAuth integration
-  - GitHub OAuth integration
-  - JWT token-based authentication
 
 ## 🛠️ Tech Stack
 
@@ -293,7 +294,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 👨‍💻 Author
 
-**Samyog Pandey**
+**Samyog**
 - GitHub: [@Iam-samyog](https://github.com/Iam-samyog)
 - Project Link: [SnapNest](https://github.com/Iam-samyog/SnapNest-social-platform)
 
@@ -303,6 +304,8 @@ This project is open source and available under the [MIT License](LICENSE).
 - React team for the amazing frontend library
 - Cloudinary for image hosting
 - Render and Vercel for deployment platforms
+- <strong> <em> Django 5 by Example by Antonio Melé  https://github.com/PacktPublishing/Django-5-By-Example </em> </strong> 
+
 
 ---
 
