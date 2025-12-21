@@ -102,7 +102,7 @@ const Review = () => {
     }
   ];
 
-  // Auto-scroll every 5 seconds on mobile
+  // Auto-scroll every 5 seconds on mobile - loops infinitely
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % reviews.length);
