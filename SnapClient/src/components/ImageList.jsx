@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faEye } from '@fortawesome/free-solid-svg-icons';
@@ -14,13 +14,14 @@ const ImageList = () => {
   const [selectedImageId, setSelectedImageId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  
+  // Ref for the last image element (for Intersection Observer)
+  const lastImageRef = useRef(null);
+  const observerRef = useRef(null);
 
-  useEffect(() => {
-    fetchImages();
-  }, []);
-
-  const fetchImages = async (pageNum = 1) => {
+  const fetchImages = useCallback(async (pageNum = 1) => {
     try {
+      setLoading(true);
       const response = await axiosInstance.get('images/', {
         params: { page: pageNum }
       });
@@ -33,26 +34,50 @@ const ImageList = () => {
       }
       
       setHasMore(newImages.length > 0);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching images:', error);
+    } finally {
       setLoading(false);
     }
-  };
-
-  const handleScroll = () => {
-    if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight) return;
-    if (!hasMore || loading) return;
-    
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchImages(nextPage);
-  };
+  }, []); // Dependencies for useCallback
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMore, loading, page]);
+    fetchImages();
+  }, [fetchImages]); // Initial fetch
+
+  // Set up Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (loading || !hasMore) return;
+    
+    // Disconnect previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+    
+    // Create new observer
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          const nextPage = page + 1;
+          setPage(nextPage);
+          fetchImages(nextPage);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    // Observe the last image
+    if (lastImageRef.current) {
+      observerRef.current.observe(lastImageRef.current);
+    }
+    
+    // Cleanup
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [loading, hasMore, page, fetchImages]); // Dependencies for the observer
 
   if (loading && images.length === 0) {
     return (
@@ -78,9 +103,10 @@ const ImageList = () => {
       <div className="max-w-7xl mx-auto px-4">
         {images.length > 0 ? (
           <div className="grid grid-cols-3 gap-1">
-            {images.map((image) => (
+            {images.map((image, index) => (
               <div
                 key={image.id}
+                ref={index === images.length - 1 ? lastImageRef : null}
                 onClick={() => {
                   setSelectedImageId(image.id);
                   setIsModalOpen(true);
@@ -90,6 +116,7 @@ const ImageList = () => {
                 <img
                   src={getFullMediaUrl(image.image || image.url)}
                   alt={image.title}
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-6">

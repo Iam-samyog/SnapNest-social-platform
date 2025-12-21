@@ -8,11 +8,22 @@ from actions.utils import create_action
 import redis
 from django.conf import settings
 
-r = redis.Redis(
-    host=settings.REDIS_HOST,
-    port=settings.REDIS_PORT,
-    db=settings.REDIS_DB
-)
+# Singleton Redis connection - reuse across all requests
+_redis_connection = None
+
+def get_redis_connection():
+    """Get or create a singleton Redis connection"""
+    global _redis_connection
+    if _redis_connection is None:
+        _redis_connection = redis.Redis(
+            host=settings.REDIS_HOST,
+            port=settings.REDIS_PORT,
+            db=settings.REDIS_DB,
+            decode_responses=True  # Automatically decode responses to strings
+        )
+    return _redis_connection
+
+r = get_redis_connection()
 
 
 class ImageViewSet(viewsets.ModelViewSet):
@@ -20,7 +31,11 @@ class ImageViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        queryset = Image.objects.all()
+        # Optimize queries with select_related and prefetch_related
+        queryset = Image.objects.select_related('user', 'user__profile').prefetch_related(
+            'users_like',
+            'comments__user__profile'
+        )
         username = self.request.query_params.get('user', None)
         if username is not None:
             queryset = queryset.filter(user__username=username)
@@ -37,9 +52,9 @@ class ImageViewSet(viewsets.ModelViewSet):
         total_views = r.incr(f'image:{instance.id}:views')
         r.zincrby('image_ranking', 1, instance.id)
         serializer = self.get_serializer(instance)
-        # Add view count to response
+        # Add view count to response (already an int with decode_responses=True)
         data = serializer.data
-        data['total_views'] = total_views
+        data['total_views'] = int(total_views) if total_views else 0
         return Response(data)
 
     def perform_create(self, serializer):
@@ -134,7 +149,7 @@ class ImageViewSet(viewsets.ModelViewSet):
         if total_views is None:
             total_views = 0
         else:
-            total_views = int(total_views)
+            total_views = int(total_views)  # Already decoded with decode_responses=True
         return Response({'total_views': total_views})
 
     @action(detail=True, methods=['post'])
@@ -143,4 +158,4 @@ class ImageViewSet(viewsets.ModelViewSet):
         image = self.get_object()
         total_views = r.incr(f'image:{image.id}:views')
         r.zincrby('image_ranking', 1, image.id)
-        return Response({'total_views': total_views})
+        return Response({'total_views': int(total_views) if total_views else 0})

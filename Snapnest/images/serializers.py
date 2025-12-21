@@ -60,18 +60,16 @@ class ImageSerializer(serializers.ModelSerializer):
     def get_is_liked(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
+            # Use prefetched data if available to avoid extra query
+            if hasattr(obj, '_prefetched_objects_cache') and 'users_like' in obj._prefetched_objects_cache:
+                return request.user in obj.users_like.all()
             return request.user in obj.users_like.all()
         return False
     
     def get_total_views(self, obj):
         try:
-            import redis
-            from django.conf import settings
-            r = redis.Redis(
-                host=settings.REDIS_HOST,
-                port=settings.REDIS_PORT,
-                db=settings.REDIS_DB
-            )
+            # Import the singleton connection from api_views
+            from .api_views import r
             views = r.get(f'image:{obj.id}:views')
             if views is None:
                 return 0

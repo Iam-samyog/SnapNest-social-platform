@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
+import { useDebounce } from '../hooks/useDebounce';
 
 const SearchBar = ({ onImageClick }) => {
   const [query, setQuery] = useState('');
@@ -10,6 +11,10 @@ const SearchBar = ({ onImageClick }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const searchRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  
+  // Debounce the search query to reduce API calls
+  const debouncedQuery = useDebounce(query, 300);
 
   // Close results when clicking outside
   useEffect(() => {
@@ -25,19 +30,46 @@ const SearchBar = ({ onImageClick }) => {
     };
   }, []);
 
-  const handleSearch = async (searchQuery) => {
-    if (!searchQuery.trim()) {
+  // Perform search when debounced query changes
+  useEffect(() => {
+    if (debouncedQuery.trim()) {
+      handleSearch(debouncedQuery);
+    } else {
       setResults({ users: [], images: [] });
       setShowResults(false);
-      return;
     }
+    
+    // Cleanup function to abort pending requests
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [debouncedQuery]);
+
+  const handleSearch = async (searchQuery) => {
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController for this request
+    abortControllerRef.current = new AbortController();
 
     setLoading(true);
     try {
-      // Search users
-      const usersRes = await axiosInstance.get('users/', {
-        params: { search: searchQuery }
-      });
+      // Search users and images in parallel
+      const [usersRes, imagesRes] = await Promise.all([
+        axiosInstance.get('users/', {
+          params: { search: searchQuery },
+          signal: abortControllerRef.current.signal
+        }),
+        axiosInstance.get('images/', {
+          params: { search: searchQuery },
+          signal: abortControllerRef.current.signal
+        })
+      ]);
+      
       const allUsers = usersRes.data.results || usersRes.data || [];
       const filteredUsers = allUsers.filter(user => 
         user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -45,10 +77,6 @@ const SearchBar = ({ onImageClick }) => {
         user.last_name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
-      // Search images
-      const imagesRes = await axiosInstance.get('images/', {
-        params: { search: searchQuery }
-      });
       const allImages = imagesRes.data.results || imagesRes.data || [];
       const filteredImages = allImages.filter(image =>
         image.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -61,8 +89,11 @@ const SearchBar = ({ onImageClick }) => {
       });
       setShowResults(true);
     } catch (error) {
-      console.error('Error searching:', error);
-      setResults({ users: [], images: [] });
+      // Ignore abort errors
+      if (error.name !== 'AbortError' && error.name !== 'CanceledError') {
+        console.error('Error searching:', error);
+        setResults({ users: [], images: [] });
+      }
     } finally {
       setLoading(false);
     }
@@ -71,10 +102,9 @@ const SearchBar = ({ onImageClick }) => {
   const handleInputChange = (e) => {
     const value = e.target.value;
     setQuery(value);
+    // Show loading immediately when typing
     if (value.trim()) {
-      handleSearch(value);
-    } else {
-      setShowResults(false);
+      setLoading(true);
     }
   };
 

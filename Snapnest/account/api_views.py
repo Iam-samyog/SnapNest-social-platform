@@ -33,7 +33,12 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'username'
 
     def get_queryset(self):
-        queryset = User.objects.filter(is_active=True)
+        # Optimize queries with select_related and prefetch_related
+        queryset = User.objects.filter(is_active=True).select_related('profile').prefetch_related(
+            'rel_from_set',  # Following
+            'rel_to_set',    # Followers
+            'images_created' # Posts
+        )
         username = self.request.query_params.get('username', None)
         if username is not None:
             queryset = queryset.filter(username=username)
@@ -88,8 +93,15 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     def followers(self, request, username=None):
         user = self.get_object()
         # Get users who follow this user (user_from in Contact where user_to=user)
-        followers_contacts = user.rel_to_set.all()
+        followers_contacts = user.rel_to_set.select_related('user_from__profile').all()
         follower_users = [contact.user_from for contact in followers_contacts]
+        
+        # Paginate the results
+        page = self.paginate_queryset(follower_users)
+        if page is not None:
+            serializer = UserSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+        
         serializer = UserSerializer(follower_users, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -97,8 +109,15 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     def following(self, request, username=None):
         user = self.get_object()
         # Get users this user follows (user_to in Contact where user_from=user)
-        following_contacts = user.rel_from_set.all()
+        following_contacts = user.rel_from_set.select_related('user_to__profile').all()
         following_users = [contact.user_to for contact in following_contacts]
+        
+        # Paginate the results
+        page = self.paginate_queryset(following_users)
+        if page is not None:
+            serializer = UserSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+        
         serializer = UserSerializer(following_users, many=True, context={'request': request})
         return Response(serializer.data)
 
