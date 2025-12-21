@@ -33,9 +33,12 @@ const ImageList = () => {
         setImages(prev => [...prev, ...newImages]);
       }
       
-      setHasMore(newImages.length > 0);
+      // Check if there's a next page in the pagination response
+      setHasMore(!!response.data.next);
     } catch (error) {
       console.error('Error fetching images:', error);
+      // On error, stop trying to load more
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
