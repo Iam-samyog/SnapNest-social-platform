@@ -31,7 +31,8 @@ const userService = {
     getFollowers: async (username) => {
         try {
             const response = await axiosInstance.get(`/users/${username}/followers/`);
-            return response.data;
+            // Handle paginated response - extract results array
+            return response.data.results || response.data || [];
         } catch (error) {
             throw error;
         }
@@ -40,7 +41,8 @@ const userService = {
     getFollowing: async (username) => {
         try {
             const response = await axiosInstance.get(`/users/${username}/following/`);
-            return response.data;
+            // Handle paginated response - extract results array
+            return response.data.results || response.data || [];
         } catch (error) {
             throw error;
         }
