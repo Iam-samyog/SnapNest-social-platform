@@ -296,7 +296,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 **Samyog**
 - GitHub: [@Iam-samyog](https://github.com/Iam-samyog)
-- Project Link: [SnapNest](https://github.com/Iam-samyog/SnapNest-social-platform)
+- Project Link: [SnapNest](https://snap-nest-social-platform-oo5n.vercel.app/)
 
 ## 🙏 Acknowledgments
 
