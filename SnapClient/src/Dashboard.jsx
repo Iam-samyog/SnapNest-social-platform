@@ -159,9 +159,9 @@ const Dashboard = () => {
         }));
         setImages(transformedImages);
 
-        // Process activities
-        const actionsData = actionsRes.data || [];
-        const transformedActivities = actionsData.map(action => ({
+        // Process activities - handle paginated response
+        const actionsData = actionsRes.data.results || actionsRes.data || [];
+        const transformedActivities = (Array.isArray(actionsData) ? actionsData : []).map(action => ({
           id: action.id,
           verb: action.verb,
           user: {
