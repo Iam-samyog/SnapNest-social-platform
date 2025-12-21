@@ -133,6 +133,23 @@ const ImageUpload = () => {
   const [isUrlMode, setIsUrlMode] = useState(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
 
+  // Extract URL parameters from bookmarklet
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const imageUrl = params.get('url');
+    const pageTitle = params.get('title');
+
+    if (imageUrl) {
+      setIsUrlMode(true);
+      setFormData(prev => ({
+        ...prev,
+        url: imageUrl,
+        title: pageTitle || ''
+      }));
+      setPreview(imageUrl);
+    }
+  }, [location.search]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
