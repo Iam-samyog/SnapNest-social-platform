@@ -45,9 +45,9 @@
 ### Mobile View
 
 <div style="display:flex; gap:10px;">
-  <img width="300" height="600" src="https://github.com/user-attachments/assets/bd84d394-ff2f-490e-a121-91b4457a3e5f" />
-  <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/b56b6103-edfa-4766-9504-314c8938c149" />
-  <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/873678cd-5160-4594-a74c-dfcca130ea68" />
+  <img width="220" height="500" src="https://github.com/user-attachments/assets/bd84d394-ff2f-490e-a121-91b4457a3e5f" />
+  <img width="220" height="500" alt="image" src="https://github.com/user-attachments/assets/b56b6103-edfa-4766-9504-314c8938c149" />
+  <img width="220" height="500" alt="image" src="https://github.com/user-attachments/assets/873678cd-5160-4594-a74c-dfcca130ea68" />
 
 </div>
 
