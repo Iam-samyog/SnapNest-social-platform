@@ -1,8 +1,16 @@
-# SnapNest 📸
+
+<img width="458" height="140" alt="image" src="https://github.com/user-attachments/assets/a369bae3-e9bf-422b-b40d-ad9cff156bcd" />
+
+
 
 > A modern, full-stack social image sharing platform built with Django REST Framework and React
 
+
+
 <p> <em>SnapNest is a high-performance social image platform that lets you discover, share, and save images from anywhere on the web. With a unique browser bookmarklet, you can curate content with a single click. Built with Django and React, it showcases enterprise-level performance optimizations including 90% fewer database queries, intelligent search debouncing, and seamless infinite scrolling. Whether you're a photographer showcasing your work or a curator building collections, SnapNest delivers a fast, beautiful, and intuitive experience.</em></p>
+
+
+
 
 
 ## 🌟 Features
