@@ -45,6 +45,8 @@ SILENCED_SYSTEM_CHECKS = ['auth.E003', 'auth.W004']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'account.apps.AccountConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,6 +61,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'easy_thumbnails',
     'actions.apps.ActionsConfig',
+    'chat.apps.ChatConfig',
     'debug_toolbar',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -251,7 +254,7 @@ REDIS_PORT = redis_url_parsed.port
 REDIS_DB = 0 # Default/Simplify for now, or extract from path
 
 
-CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000').split(',')
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:5173,http://127.0.0.1:5173').split(',')
 CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
 CORS_ALLOW_CREDENTIALS = True
 
@@ -272,4 +275,15 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+ASGI_APPLICATION = 'Snapnest.asgi.application'
+
+CHANNEL_LAYERS={
+    'default':{
+        'BACKEND':'channels_redis.core.RedisChannelLayer',
+        'CONFIG':{
+            'hosts':[(config('REDIS_URL', default='redis://localhost:6379/0'))],
+        },
+    }
 }

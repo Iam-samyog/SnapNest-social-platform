@@ -8,6 +8,9 @@ const SocialLogin = ({ onSuccess, onError }) => {
     const [loading, setLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
+    const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
+
     // Google Login Hook for Custom UI
     const loginGoogle = useGoogleLogin({
         onSuccess: async (tokenResponse) => {
@@ -37,15 +40,27 @@ const SocialLogin = ({ onSuccess, onError }) => {
                 setLoadingMessage('');
             }
         },
+        onSuccess_disabled: !GOOGLE_CLIENT_ID, // Custom prop if needed, but we'll use conditional onClick
         onError: () => onError && onError('Google Login Failed'),
     });
 
     // GitHub Login Handler (Redirect Flow)
     const handleGitHubLogin = () => {
+        if (!GITHUB_CLIENT_ID) {
+            if (onError) onError('GitHub Client ID is not configured. Please check your .env file.');
+            return;
+        }
         setLoading(true);
-        const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
         const REDIRECT_URI = `${window.location.origin}/auth/callback/github`;
         window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=user:email`;
+    };
+
+    const handleGoogleLoginClick = () => {
+        if (!GOOGLE_CLIENT_ID) {
+            if (onError) onError('Google Client ID is not configured. Please check your .env file.');
+            return;
+        }
+        loginGoogle();
     };
 
     return (
@@ -53,7 +68,7 @@ const SocialLogin = ({ onSuccess, onError }) => {
              {/* Custom Google Button */}
             <button
                 type="button"
-                onClick={() => loginGoogle()}
+                onClick={handleGoogleLoginClick}
                 disabled={loading}
                 className="w-full bg-white border-2 border-black text-black py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors duration-300 flex items-center justify-center gap-2"
             >
