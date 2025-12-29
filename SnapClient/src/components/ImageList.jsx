@@ -121,8 +121,7 @@ const ImageList = () => {
                   alt={image.title}
                   loading="lazy"
                   className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-6">
+                />                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-6">
                   <div className="flex items-center gap-2 text-white font-bold text-lg">
                     <FontAwesomeIcon icon={faHeart} />
                     <span>{image.total_likes || 0}</span>
