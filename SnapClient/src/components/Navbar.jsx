@@ -29,7 +29,6 @@ const Navbar = () => {
     { href: '/images', label: 'IMAGES' },
     { href: '/users', label: 'PEOPLE' },
     { href: '/images/ranking', label: 'RANKING' },
-    { href: '/messages', label: 'MESSAGES' },
   ];
 
   return (

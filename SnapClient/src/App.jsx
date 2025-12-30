@@ -98,14 +98,14 @@ const App = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
+        {/* <Route 
           path="/messages" 
           element={
             <ProtectedRoute>
               <Messenger />
             </ProtectedRoute>
           } 
-        />
+        /> */}
       </Routes>
     </BrowserRouter>
   );
