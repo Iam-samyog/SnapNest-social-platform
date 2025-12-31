@@ -31,6 +31,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'username'
+    pagination_class = None # Return all users at once for discover/chat list
 
     def get_queryset(self):
         # Optimize queries with select_related and prefetch_related

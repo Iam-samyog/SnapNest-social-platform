@@ -417,9 +417,9 @@ const Dashboard = () => {
         </div> */}
 
         {/* Image Feed Grid */}
-        <div className="px-4">
+        <div className="px-2 sm:px-4">
           {images.length > 0 ? (
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 sm:gap-2">
               {images.map((image) => (
                 <div 
                   key={image.id} 

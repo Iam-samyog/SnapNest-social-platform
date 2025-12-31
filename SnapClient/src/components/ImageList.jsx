@@ -103,9 +103,9 @@ const ImageList = () => {
         </h1>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4">
         {images.length > 0 ? (
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-1 sm:gap-2">
             {images.map((image, index) => (
               <div
                 key={image.id}

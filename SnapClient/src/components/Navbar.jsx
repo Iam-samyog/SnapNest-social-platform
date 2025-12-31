@@ -29,14 +29,15 @@ const Navbar = () => {
     { href: '/images', label: 'IMAGES' },
     { href: '/users', label: 'PEOPLE' },
     { href: '/images/ranking', label: 'RANKING' },
+    { href: '/messages', label: 'MESSAGES' },
   ];
 
   return (
     <>
-      <nav className="relative z-50 px-6 md:px-12 py-8 flex items-center justify-between bg-white/10 backdrop-blur-md">
+      <nav className="relative z-50 px-4 md:px-12 py-4 md:py-8 flex items-center justify-between bg-white/10 backdrop-blur-md border-b-2 border-black/5 md:border-none">
         {/* Logo */}
         <div className="flex items-center space-x-3">
-          <Link to="/" className="text-2xl md:text-4xl font-bold text-black tracking-wide hover:opacity-80 transition-opacity">
+          <Link to="/" className="text-xl md:text-4xl font-black text-black tracking-tighter hover:scale-105 transition-transform">
             SNAPNEST
           </Link>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart, faEye, faUser, faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
+import { faHeart, faEye, faUser, faUserPlus, faUserCheck, faCommentDots } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
@@ -129,26 +129,35 @@ const UserDetail = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                   <h2 className="text-3xl font-black text-black">{userData.username}</h2>
                   {!isCurrentUser && (
-                    <button
-                      onClick={handleFollow}
-                      className={`px-6 py-2 rounded-lg font-bold border-2 border-black transition-colors flex items-center gap-2 ${
-                        isFollowing
-                          ? 'bg-gray-200 text-black hover:bg-gray-300'
-                          : 'bg-black text-yellow-400 hover:bg-gray-800'
-                      }`}
-                    >
-                      {isFollowing ? (
-                        <>
-                          <FontAwesomeIcon icon={faUserCheck} />
-                          <span>Following</span>
-                        </>
-                      ) : (
-                        <>
-                          <FontAwesomeIcon icon={faUserPlus} />
-                          <span>Follow</span>
-                        </>
-                      )}
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleFollow}
+                        className={`px-6 py-2 rounded-lg font-bold border-2 border-black transition-colors flex items-center gap-2 ${
+                          isFollowing
+                            ? 'bg-gray-200 text-black hover:bg-gray-300'
+                            : 'bg-black text-yellow-400 hover:bg-gray-800'
+                        }`}
+                      >
+                        {isFollowing ? (
+                          <>
+                            <FontAwesomeIcon icon={faUserCheck} />
+                            <span>Following</span>
+                          </>
+                        ) : (
+                          <>
+                            <FontAwesomeIcon icon={faUserPlus} />
+                            <span>Follow</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => navigate('/messages', { state: { selectedUser: userData } })}
+                        className="px-6 py-2 rounded-lg font-bold border-2 border-black bg-white text-black hover:bg-black hover:text-yellow-400 transition-colors flex items-center gap-2"
+                      >
+                        <FontAwesomeIcon icon={faCommentDots} />
+                        <span>Message</span>
+                      </button>
+                    </div>
                   )}
                 </div>
                 
@@ -193,7 +202,7 @@ const UserDetail = () => {
               <FontAwesomeIcon icon={faUser} /> Posts
             </h3>
             {images.length > 0 ? (
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 sm:gap-2">
                 {images.map((image) => (
                   <div
                     key={image.id}

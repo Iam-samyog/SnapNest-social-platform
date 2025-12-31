@@ -1,120 +1,157 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import axiosInstance, { getFullMediaUrl } from '../utils/axiosInstance';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faCommentDots, faUser } from '@fortawesome/free-solid-svg-icons';
 import ChatBox from './ChatBox';
 import Navbar from './Navbar';
+import UserAvatar from './UserAvatar';
 
 const Messenger = () => {
+    const location = useLocation();
     const [users, setUsers] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(location.state?.selectedUser || null);
     const [search, setSearch] = useState('');
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const [currentUserUsername, setCurrentUserUsername] = useState('');
 
     useEffect(() => {
-        fetchData();
+        const fetchUsers = async () => {
+            try {
+                // Using 'users/' as confirmed working in UserList.jsx
+                const response = await axiosInstance.get('users/');
+                const data = response.data.results || response.data || [];
+                
+                const token = localStorage.getItem('access');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    setCurrentUserId(payload.user_id);
+                    setCurrentUserUsername(payload.username || payload.name || 'You'); // Fallback if username not in payload
+                    setUsers(data.filter(u => u.id !== payload.user_id));
+                } else {
+                    setUsers(data);
+                }
+            } catch (err) {
+                console.error("Fetch users error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUsers();
     }, []);
 
-    const fetchData = async () => {
-        try {
-            const [profileRes, usersRes] = await Promise.all([
-                axiosInstance.get('profile/'),
-                axiosInstance.get('users/')
-            ]);
-            setCurrentUser(profileRes.data.user);
-            setUsers(usersRes.data.results || usersRes.data || []);
-        } catch (error) {
-            console.error('Error fetching messenger data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const filteredUsers = users.filter(u => 
-        u.username !== currentUser?.username && 
-        (u.username.toLowerCase().includes(search.toLowerCase()) || 
-         (u.first_name && u.first_name.toLowerCase().includes(search.toLowerCase())))
+        u.username.toLowerCase().includes(search.toLowerCase())
     );
 
+    const handleBack = () => setSelectedUser(null);
+
+    const getOtherUserPhoto = (user) => {
+        return user.profile?.photo ? getFullMediaUrl(user.profile.photo) : null;
+    };
+
     if (loading) return (
-        <div className="h-screen flex items-center justify-center bg-gray-50">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="flex h-screen w-full items-center justify-center bg-white">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="h-screen flex flex-col overflow-hidden bg-white">
             <Navbar />
-            
-            <div className="flex-1 flex max-w-6xl mx-auto w-full border-x bg-white overflow-hidden my-4 rounded-xl shadow-2xl">
-                {/* Sidebar */}
-                <div className="w-1/3 border-r flex flex-col">
-                    <div className="p-4 border-b">
-                        <h2 className="text-xl font-bold text-black mb-4">Messages</h2>
-                        <div className="relative">
-                            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="flex flex-1 w-full bg-white overflow-hidden border-t border-gray-100">
+                {/* Sidebar - Hidden on mobile if user selected */}
+                <div className={`
+                    ${selectedUser ? 'hidden md:flex' : 'flex'} 
+                    w-full md:w-[350px] lg:w-[400px] flex-col border-r-4 border-black bg-white
+                `}>
+                    <div className="p-4 md:p-6 sticky top-0 bg-yellow-400 z-10 border-b-4 border-black">
+                        <div className="flex items-center justify-between mb-6">
+                            <h1 className="text-xl font-black tracking-tighter text-black flex items-center gap-2 uppercase">
+                                 Messages
+                            </h1>
+                            
+                        </div>
+                        <div className="relative group">
+                            <FontAwesomeIcon icon={faSearch} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm group-focus-within:text-black transition-colors" />
                             <input 
-                                type="text" 
-                                placeholder="Search people..." 
-                                className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                type="text"
+                                placeholder="Search friends"
+                                className="w-full bg-white border-2 border-black py-3 pl-11 pr-4 rounded-xl focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all text-sm font-bold text-black"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
                     </div>
-                    
-                    <div className="flex-1 overflow-y-auto">
-                        {filteredUsers.length > 0 ? (
-                            filteredUsers.map(user => (
-                                <div 
-                                    key={user.id}
-                                    onClick={() => setSelectedUser(user)}
-                                    className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors ${selectedUser?.id === user.id ? 'bg-indigo-50 border-r-4 border-indigo-600' : ''}`}
-                                >
-                                    <div className="w-12 h-12 rounded-full border-2 border-black overflow-hidden bg-yellow-400 flex-shrink-0">
-                                        {user.profile?.photo ? (
-                                            <img src={getFullMediaUrl(user.profile.photo)} alt="" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <FontAwesomeIcon icon={faUser} />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-bold text-black truncate">{user.first_name || user.username}</p>
-                                        <p className="text-xs text-gray-500 truncate">@{user.username}</p>
-                                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        {filteredUsers.map(user => (
+                            <div 
+                                key={user.id}
+                                onClick={() => setSelectedUser(user)}
+                                className={`
+                                    flex items-center gap-4 px-6 py-4 cursor-pointer transition-all duration-200 border-b-2 border-gray-100
+                                    ${selectedUser?.id === user.id 
+                                        ? 'bg-yellow-50 border-r-8 border-black shadow-inner' 
+                                        : 'hover:bg-gray-50'
+                                    }
+                                `}
+                            >
+                                <div className="relative">
+                                    <UserAvatar 
+                                        user={{
+                                            ...user,
+                                            photo: getOtherUserPhoto(user)
+                                        }} 
+                                        className="w-14 h-14"
+                                    />
                                 </div>
-                            ))
-                        ) : (
-                            <div className="p-8 text-center text-gray-500">
-                                <p>No users found</p>
+                                <div className="flex-1 min-w-0">
+                                    <p className={`text-[15px] font-black truncate ${selectedUser?.id === user.id ? 'text-black' : 'text-gray-900'}`}>
+                                        {user.username}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                        {filteredUsers.length === 0 && (
+                            <div className="text-center py-10 px-4">
+                                <p className="text-gray-400 text-sm italic font-medium">No conversations found</p>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Chat Area */}
-                <div className="flex-1 flex flex-col bg-gray-50">
+                {/* Chat Area - Hidden on mobile if no user selected */}
+                <div className={`
+                    ${!selectedUser ? 'hidden md:flex' : 'flex'} 
+                    flex-1 flex-col bg-white overflow-hidden relative
+                `}>
                     {selectedUser ? (
-                        <div className="flex-1 flex flex-col h-full"> 
-                            <ChatBox 
-                                otherUser={{
-                                    id: selectedUser.id,
-                                    username: selectedUser.username,
-                                    photo: getFullMediaUrl(selectedUser.profile?.photo)
-                                }} 
-                                currentUserId={currentUser?.id}
-                            />
-                        </div>
+                        <ChatBox 
+                            otherUser={{
+                                ...selectedUser,
+                                photo: getOtherUserPhoto(selectedUser)
+                            }} 
+                            currentUserId={currentUserId}
+                            currentUserUsername={currentUserUsername}
+                            onBack={handleBack}
+                        />
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8 text-center">
-                            <div className="w-20 h-20 rounded-full border-4 border-dashed border-gray-300 flex items-center justify-center mb-4">
-                                <FontAwesomeIcon icon={faCommentDots} className="text-3xl" />
+                        <div className="hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center bg-gray-50/30">
+                            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-md mb-6 border border-gray-100">
+                                 <FontAwesomeIcon icon={faSearch} className="text-4xl text-black" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-600">Your Messages</h3>
-                            <p className="mt-2 max-w-xs">Select a user from the sidebar to start a conversation.</p>
+                            <h2 className="text-2xl font-bold text-black mb-2">Select a Message</h2>
+                            <p className="text-gray-500 max-w-sm text-sm">
+                                Choose a conversation or search for a friend to start chatting in real-time.
+                            </p>
+                            <button 
+                                className="mt-8 bg-black hover:bg-amber-500 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg hover:shadow-amber-100 uppercase text-xs tracking-widest"
+                                onClick={() => document.querySelector('input')?.focus()}
+                            >
+                                Find People
+                            </button>
                         </div>
                     )}
                 </div>

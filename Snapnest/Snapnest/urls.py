@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/', include('account.api_urls')),
     path('api/', include('images.api_urls')),   # For image APIs
     path('api/', include('actions.urls')), 
+    path('api/', include('chat.api_urls')),
 ]
 
 if settings.DEBUG:
