@@ -204,30 +204,30 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
                     </div>
                 )}
                 
-                <div className="bg-white border-2 border-black rounded-full flex items-center px-4 py-1 gap-2 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
-                    <button 
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className="text-gray-500 hover:text-black transition-colors"
-                    >
-                        <FontAwesomeIcon icon={faSmile} className="text-lg" />
-                    </button>
-                    <input 
-                        type="text" 
-                        value={input} 
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="Type a message..."
-                        className="flex-1 bg-transparent py-3 focus:outline-none text-[14px] font-bold text-black placeholder-gray-500"
-                    />
-                    {input.trim() && (
-                        <button 
-                            onClick={handleSend} 
-                            className="bg-white text-black px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all active:scale-95 border-2 border-black"
-                        >
-                            Send
-                        </button>
-                    )}
-                </div>
+               <div className="bg-white border-2 border-black rounded-full flex items-center px-2 sm:px-4 py-1 gap-1 sm:gap-2 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all w-full max-w-full">
+    <button 
+        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+        className="text-gray-500 hover:text-black transition-colors flex-shrink-0"
+    >
+        <FontAwesomeIcon icon={faSmile} className="text-lg sm:text-xl" />
+    </button>
+    <input 
+        type="text" 
+        value={input} 
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+        placeholder="Type a message..."
+        className="flex-1 bg-transparent py-2 sm:py-3 focus:outline-none text-[15px] sm:text-[16px] font-bold text-black placeholder-gray-500 min-w-0"
+    />
+    {input.trim() && (
+        <button 
+            onClick={handleSend} 
+            className="bg-white text-black px-3 sm:px-6 py-2 rounded-full font-black text-xs sm:text-sm uppercase tracking-widest hover:bg-black hover:text-white transition-all active:scale-95 border-2 border-black flex-shrink-0"
+        >
+            Send
+        </button>
+    )}
+</div>
             </div>
         </div>
     );
