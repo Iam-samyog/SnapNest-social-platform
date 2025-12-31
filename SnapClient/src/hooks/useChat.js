@@ -37,7 +37,10 @@ const useChat = (recipientId) => {
         
         const token = localStorage.getItem('access');
         if (token) {
-            const wsUrl = `ws://localhost:8000/ws/chat/${recipientId}/?token=${token}`;
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            // If on localhost, use the django dev server port. Otherwise use the current host.
+            const host = window.location.hostname === 'localhost' ? 'localhost:8000' : window.location.host;
+            const wsUrl = `${protocol}//${host}/ws/chat/${recipientId}/?token=${token}`;
             socketRef.current = new WebSocket(wsUrl);
             
             socketRef.current.onopen = () => {
