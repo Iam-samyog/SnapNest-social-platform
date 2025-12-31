@@ -39,6 +39,12 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,snapnest-ba
 # Strip whitespace from each host to prevent configuration errors
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = [
+    'https://snap-nest-social-platform-oo5n.vercel.app',
+    'https://snapnest-backend-sbse.onrender.com'
+]
+
 # Silence warnings about dynamically added User model fields
 # The 'following' field is added via add_to_class in account/models.py
 SILENCED_SYSTEM_CHECKS = ['auth.E003', 'auth.W004']
