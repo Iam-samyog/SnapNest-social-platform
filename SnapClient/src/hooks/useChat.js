@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance, { API_BASE_URL } from '../utils/axiosInstance';
 
 const useChat = (recipientId) => {
     const [messages, setMessages] = useState([]);
@@ -37,10 +37,13 @@ const useChat = (recipientId) => {
         
         const token = localStorage.getItem('access');
         if (token) {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            // If on localhost, use the django dev server port. Otherwise use the current host.
-            const host = window.location.hostname === 'localhost' ? 'localhost:8000' : window.location.host;
+            // Determine WebSocket URL from API_BASE_URL
+            const isLocal = API_BASE_URL.includes('localhost') || API_BASE_URL.includes('127.0.0.1');
+            const protocol = isLocal ? 'ws:' : 'wss:';
+            // Extract host from API_BASE_URL (remove protocol)
+            const host = API_BASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
             const wsUrl = `${protocol}//${host}/ws/chat/${recipientId}/?token=${token}`;
+            
             socketRef.current = new WebSocket(wsUrl);
             
             socketRef.current.onopen = () => {

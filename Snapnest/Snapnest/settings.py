@@ -14,13 +14,15 @@ from pathlib import Path
 from decouple import config
 from django.urls import reverse_lazy
 from datetime import timedelta
+from urllib.parse import urlparse
+
+import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-import os
-import dj_database_url
 
 # ... (Previous imports kept if needed, but standardizing)
 
@@ -31,9 +33,9 @@ import dj_database_url
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-c#*h=m7tb&10lvrx%-p2*+@&wh_*@@-_jdsqk#+svfn5i$^g&j')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,snapnest-backend-sbse.onrender.com').split(',')
 # Strip whitespace from each host to prevent configuration errors
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
 
@@ -247,14 +249,21 @@ REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 # Actually, let's just make settings provide the breakdown if easy, or expect the code to change.
 # The `api_views.py` uses: settings.REDIS_HOST, settings.REDIS_PORT, settings.REDIS_DB
 # We can extract them from the URL if provided.
-import urllib.parse
-redis_url_parsed = urllib.parse.urlparse(REDIS_URL)
+
+# Parse REDIS_URL to get host, port, db
+redis_url_parsed = urlparse(REDIS_URL)
 REDIS_HOST = redis_url_parsed.hostname
 REDIS_PORT = redis_url_parsed.port
-REDIS_DB = 0 # Default/Simplify for now, or extract from path
+try:
+    REDIS_DB = int(redis_url_parsed.path.lstrip('/')) if redis_url_parsed.path.lstrip('/') else 0
+except ValueError:
+    REDIS_DB = 0
 
 
-CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:5173,http://127.0.0.1:5173').split(',')
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS', 
+    default='http://localhost:5173,http://127.0.0.1:5173,https://snap-nest-social-platform-oo5n.vercel.app'
+).split(',')
 CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
 CORS_ALLOW_CREDENTIALS = True
 

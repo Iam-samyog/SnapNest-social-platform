@@ -51,19 +51,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         # Remove user from online status
-        r.srem('online_users', self.user.id)
+        if hasattr(self, 'user') and self.user.is_authenticated:
+            r.srem('online_users', self.user.id)
+            
+            # Broadcast that user is offline
+            await self.channel_layer.group_send(
+                self.room_name,
+                {
+                    'type': 'user_status',
+                    'user_id': self.user.id,
+                    'status': 'offline'
+                }
+            )
         
-        # Broadcast that user is offline
-        await self.channel_layer.group_send(
-            self.room_name,
-            {
-                'type': 'user_status',
-                'user_id': self.user.id,
-                'status': 'offline'
-            }
-        )
-        
-        await self.channel_layer.group_discard(self.room_name, self.channel_name)
+        if hasattr(self, 'room_name'):
+            await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
