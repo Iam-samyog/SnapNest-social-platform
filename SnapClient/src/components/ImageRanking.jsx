@@ -15,11 +15,9 @@ const ImageRanking = () => {
 
   const fetchRanking = async () => {
     try {
-      // Fetch all images and sort by views (matching backend Redis ranking)
-      const response = await axiosInstance.get('images/');
-      const allImages = response.data.results || response.data || [];
-      const sortedImages = [...allImages].sort((a, b) => (b.total_views || 0) - (a.total_views || 0));
-      setImages(sortedImages.slice(0, 10)); // Top 10
+      // Fetch ranking directly from backend (Redis-backed global ranking)
+      const response = await axiosInstance.get('images/ranking/');
+      setImages(response.data || []);
     } catch (error) {
       console.error('Error fetching ranking:', error);
     } finally {

@@ -22,13 +22,35 @@ const ImageModal = ({ imageUuid, isOpen, onClose }) => {
   const [editDescription, setEditDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  // Ref to prevent double increment in Strict Mode
+  const hasIncrementedAction = React.useRef(false);
+
   useEffect(() => {
     if (isOpen && imageUuid) {
       fetchImage();
+      
+      // Increment views when modal opens
+      if (!hasIncrementedAction.current) {
+          incrementViews();
+          hasIncrementedAction.current = true;
+      }
+      
       // Reset edit state when opening a new image
       setIsEditing(false);
+    } else if (!isOpen) {
+        // Reset ref when modal closes
+        hasIncrementedAction.current = false;
     }
   }, [isOpen, imageUuid]);
+
+  const incrementViews = async () => {
+    try {
+      const response = await axiosInstance.post(`images/${imageUuid}/increment_views/`);
+      setViewCount(response.data.total_views || 0);
+    } catch (error) {
+      console.error('Error incrementing views:', error);
+    }
+  };
 
   const fetchImage = async () => {
     try {

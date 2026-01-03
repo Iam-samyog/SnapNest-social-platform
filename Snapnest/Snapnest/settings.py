@@ -220,8 +220,8 @@ else:
     }
 
 # Legacy settings for compatibility
-DEFAULT_FILE_STORAGE = STORAGES["default"]["BACKEND"]
-STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
+# DEFAULT_FILE_STORAGE = STORAGES["default"]["BACKEND"]
+# STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
 
 AUTHENTICATION_BACKENDS=[
     'social_core.backends.google.GoogleOAuth2',

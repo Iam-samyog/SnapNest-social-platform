@@ -93,9 +93,22 @@ const Navbar = () => {
 </div>
 
 
+          {/* Mobile Search - Visible only on mobile */}
+          {isAuthenticated && (
+            <div className="md:hidden flex-1 mx-2 flex justify-end">
+               <SearchBar
+                onImageClick={(uuid) => {
+                  setSelectedImageUuid(uuid);
+                  setIsModalOpen(true);
+                }}
+                className="relative w-full max-w-[200px]"
+              />
+            </div>
+          )}
+
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-blue-800 focus:outline-none p-2"
+          className="md:hidden text-blue-800 focus:outline-none p-2 ml-2"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle menu"
         >
@@ -142,6 +155,8 @@ const Navbar = () => {
                 </button>
               )}
             </div>
+
+            {/* Removed SearchBar from here */}
 
             <div className="mt-auto">
               {!isAuthenticated && (

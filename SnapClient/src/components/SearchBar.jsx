@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 import { useDebounce } from '../hooks/useDebounce';
 
-const SearchBar = ({ onImageClick }) => {
+const SearchBar = ({ onImageClick, className = "relative flex-1 max-w-md mx-4" }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState({ users: [], images: [] });
   const [showResults, setShowResults] = useState(false);
@@ -126,7 +126,7 @@ const SearchBar = ({ onImageClick }) => {
   };
 
   return (
-    <div ref={searchRef} className="relative flex-1 max-w-md mx-4">
+    <div ref={searchRef} className={className}>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <Search className="h-5 w-5 text-gray-400" />
@@ -229,4 +229,3 @@ const SearchBar = ({ onImageClick }) => {
 };
 
 export default SearchBar;
-
