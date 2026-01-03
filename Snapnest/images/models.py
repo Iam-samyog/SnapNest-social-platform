@@ -16,6 +16,7 @@ class Image(models.Model):
     title=models.CharField(max_length=250)
 
     total_likes=models.PositiveIntegerField(default=0)
+    total_views=models.PositiveIntegerField(default=0)
 
     slug=models.SlugField(max_length=250,blank=True)
     url=models.URLField(max_length=2000, blank=True)

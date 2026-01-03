@@ -75,6 +75,16 @@ const ImageModal = ({ imageUuid, isOpen, onClose, onUpdate }) => {
 
       const profileRes = await axiosInstance.get('profile/');
       setIsOwner(profileRes.data.user?.username === imageData.user);
+
+      // Sync with parent immediately to reflect fresh data (e.g. from other users)
+      if (onUpdate) {
+        onUpdate({ 
+          uuid: imageUuid, 
+          viewCount: imageData.total_views,
+          likeCount: imageData.total_likes,
+          liked: imageData.is_liked
+        });
+      }
     } catch (error) {
       console.error('Error fetching image:', error);
     } finally {
