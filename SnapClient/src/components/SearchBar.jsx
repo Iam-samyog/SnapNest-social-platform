@@ -108,14 +108,14 @@ const SearchBar = ({ onImageClick }) => {
     }
   };
 
-  const handleImageClick = (imageId) => {
+  const handleImageClick = (imageUuid) => {
     setShowResults(false);
     setQuery('');
     // Use callback if provided, otherwise navigate
     if (onImageClick) {
-      onImageClick(imageId);
+      onImageClick(imageUuid);
     } else {
-      navigate(`/images/${imageId}`);
+      navigate(`/images/${imageUuid}`);
     }
   };
 
@@ -191,8 +191,8 @@ const SearchBar = ({ onImageClick }) => {
               <div className="grid grid-cols-3 gap-2">
                 {results.images.map((image) => (
                   <button
-                    key={image.id}
-                    onClick={() => handleImageClick(image.id)}
+                    key={image.uuid}
+                    onClick={() => handleImageClick(image.uuid)}
                     className="aspect-square relative overflow-hidden rounded-lg border-2 border-black hover:scale-105 transition-transform"
                   >
                     <img

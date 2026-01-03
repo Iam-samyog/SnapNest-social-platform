@@ -39,13 +39,13 @@ const HowToSnapNest = () => {
             </div>
             <div className="relative">
               {steps.map((step, index) => (
-                <div key={index} data-aos="fade-up" data-aos-delay={index * 100}>
-                  <div className="flex flex-col sm:flex-row justify-center items-center mb-8">
-                    <div className="bg-white rounded-2xl shadow-2xl border-4 border-black p-4 sm:p-8 w-full max-w-2xl hover:scale-105 transition-transform duration-300 relative">
-                      <div className="absolute -top-6 -left-6 bg-yellow-400 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center border-4 border-black shadow-xl">
-                        <span className="text-lg sm:text-xl font-bold">{step.number}</span>
+                <div key={index} data-aos="fade-up" data-aos-delay={index * 100} className="w-full">
+                  <div className="flex flex-col sm:flex-row justify-center items-center mb-10 md:mb-8">
+                    <div className="bg-white rounded-2xl shadow-2xl border-4 border-black p-6 sm:p-8 w-full max-w-2xl hover:scale-105 transition-transform duration-300 relative group">
+                      <div className="absolute -top-5 -left-5 md:-top-6 md:-left-6 bg-yellow-400 rounded-full w-10 h-10 md:w-16 md:h-16 flex items-center justify-center border-4 border-black shadow-xl z-20">
+                        <span className="text-base md:text-xl font-bold">{step.number}</span>
                       </div>
-                      <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 ml-0 sm:ml-8">
+                      <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6 md:ml-8 mt-2 sm:mt-0">
                         <div className="flex-shrink-0 w-10 h-10 sm:w-14 sm:h-14 bg-yellow-400 rounded-xl flex items-center justify-center text-xl sm:text-2xl border-2 border-black">
                           <FontAwesomeIcon icon={step.icon} size="lg" />
                         </div>

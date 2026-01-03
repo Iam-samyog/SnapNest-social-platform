@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { useNavigate } from "react-router-dom";
 
 const CTASection = () => {
@@ -27,17 +26,17 @@ const CTASection = () => {
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6 justify-center items-center">
           <button
             onClick={handleRegister}
-            className="bg-black text-yellow-400 px-12 py-5 rounded-lg font-bold text-xl uppercase tracking-wide hover:bg-gray-800 transform hover:scale-105 transition-all duration-300 shadow-2xl border-4 border-black"
+            className="w-full md:w-auto bg-black text-yellow-400 px-10 py-4 md:px-12 md:py-5 rounded-lg font-bold text-lg md:text-xl uppercase tracking-wide hover:bg-gray-800 transform hover:scale-105 transition-all duration-300 shadow-2xl border-4 border-black"
           >
             Register Now
           </button>
           
           <button
             onClick={handleSignIn}
-            className="bg-white text-black px-12 py-5 rounded-lg font-bold text-xl uppercase tracking-wide hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl border-4 border-black"
+            className="w-full md:w-auto bg-white text-black px-10 py-4 md:px-12 md:py-5 rounded-lg font-bold text-lg md:text-xl uppercase tracking-wide hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl border-4 border-black"
           >
             Sign In
           </button>

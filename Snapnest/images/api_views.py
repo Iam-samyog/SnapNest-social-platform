@@ -29,6 +29,7 @@ r = get_redis_connection()
 class ImageViewSet(viewsets.ModelViewSet):
     serializer_class = ImageSerializer
     permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'uuid'
     
     def get_queryset(self):
         # Optimize queries with select_related and prefetch_related
@@ -41,6 +42,29 @@ class ImageViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(user__username=username)
         return queryset
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            # Batch fetch view counts for paged results
+            image_ids = [img.id for img in page]
+            if image_ids:
+                keys = [f'image:{img_id}:views' for img_id in image_ids]
+                view_counts = r.mget(keys)
+                # Store in a temporary attribute for the serializer
+                for img, count in zip(page, view_counts):
+                    img._redis_views = int(count) if count else 0
+            
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        # Non-paginated results
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['request'] = self.request
@@ -48,23 +72,45 @@ class ImageViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        # Increment view count in Redis
-        total_views = r.incr(f'image:{instance.id}:views')
-        r.zincrby('image_ranking', 1, instance.id)
         serializer = self.get_serializer(instance)
-        # Add view count to response (already an int with decode_responses=True)
-        data = serializer.data
-        data['total_views'] = int(total_views) if total_views else 0
-        return Response(data)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         if 'url' in self.request.data and not self.request.data.get('image'):
             # Download image from URL
             import requests
+            import ipaddress
+            from urllib.parse import urlparse
             from django.core.files.base import ContentFile
             from django.utils.text import slugify
+            from rest_framework.exceptions import ValidationError
             
             image_url = self.request.data['url']
+            
+            # SSRF Mitigation: Validate the URL
+            try:
+                parsed_url = urlparse(image_url)
+                if parsed_url.scheme not in ['http', 'https']:
+                    raise ValidationError({"url": "Only HTTP and HTTPS URLs are allowed."})
+                
+                # Check for internal/private IP ranges
+                hostname = parsed_url.hostname
+                if not hostname:
+                    raise ValidationError({"url": "Invalid URL."})
+                
+                try:
+                    ip = ipaddress.ip_address(hostname)
+                    if ip.is_private or ip.is_loopback or ip.is_link_local:
+                        raise ValidationError({"url": "Internal or private URLs are not allowed."})
+                except ValueError:
+                    # Hostname is not an IP, it's a domain name. 
+                    if hostname.lower() in ['localhost', '127.0.0.1', '::1', '0.0.0.0']:
+                         raise ValidationError({"url": "Internal or private URLs are not allowed."})
+            except ValidationError:
+                raise
+            except Exception as e:
+                raise ValidationError({"url": f"Invalid URL: {str(e)}"})
+
             try:
                 # Add a timeout and ensure we follow redirects
                 response = requests.get(
@@ -106,34 +152,34 @@ class ImageViewSet(viewsets.ModelViewSet):
         instance.delete()
 
     @action(detail=True, methods=['post'])
-    def like(self, request, pk=None):
+    def like(self, request, uuid=None):
         image = self.get_object()
         if request.user in image.users_like.all():
             # Already liked, so unlike
             image.users_like.remove(request.user)
             image.total_likes = image.users_like.count()
             image.save()
-            return Response({'status': 'unliked', 'liked': False})
+            return Response({'status': 'unliked', 'liked': False, 'total_likes': image.total_likes})
         else:
             # Not liked, so like
             image.users_like.add(request.user)
             image.total_likes = image.users_like.count()
             image.save()
             create_action(request.user, 'likes', image)
-            return Response({'status': 'liked', 'liked': True})
+            return Response({'status': 'liked', 'liked': True, 'total_likes': image.total_likes})
 
     @action(detail=True, methods=['post'])
-    def unlike(self, request, pk=None):
+    def unlike(self, request, uuid=None):
         image = self.get_object()
         if request.user in image.users_like.all():
             image.users_like.remove(request.user)
             image.total_likes = image.users_like.count()
             image.save()
-            return Response({'status': 'unliked', 'liked': False})
-        return Response({'status': 'already_unliked', 'liked': False})
+            return Response({'status': 'unliked', 'liked': False, 'total_likes': image.total_likes})
+        return Response({'status': 'already_unliked', 'liked': False, 'total_likes': image.total_likes})
 
     @action(detail=True, methods=['post'])
-    def comment(self, request, pk=None):
+    def comment(self, request, uuid=None):
         image = self.get_object()
         serializer = CommentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -142,7 +188,7 @@ class ImageViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['get'])
-    def views(self, request, pk=None):
+    def views(self, request, uuid=None):
         """Get view count from Redis"""
         image = self.get_object()
         total_views = r.get(f'image:{image.id}:views')
@@ -153,7 +199,7 @@ class ImageViewSet(viewsets.ModelViewSet):
         return Response({'total_views': total_views})
 
     @action(detail=True, methods=['post'])
-    def increment_views(self, request, pk=None):
+    def increment_views(self, request, uuid=None):
         """Increment view count in Redis"""
         image = self.get_object()
         total_views = r.incr(f'image:{image.id}:views')

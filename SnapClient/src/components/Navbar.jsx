@@ -7,7 +7,7 @@ import ImageModal from './ImageModal';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [selectedImageUuid, setSelectedImageUuid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const isAuthenticated = !!localStorage.getItem('access');
@@ -60,8 +60,8 @@ const Navbar = () => {
       ))}
 
       <SearchBar
-        onImageClick={(imageId) => {
-          setSelectedImageId(imageId);
+        onImageClick={(uuid) => {
+          setSelectedImageUuid(uuid);
           setIsModalOpen(true);
         }}
       />
@@ -106,57 +106,51 @@ const Navbar = () => {
       {/* Mobile Menu Overlay */}
       {isOpen && (
         <>
-          {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
-            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity duration-300" 
+            onClick={() => setIsOpen(false)} 
           />
-          
-          {/* Menu Panel */}
-          <div className="fixed top-0 right-0 h-full w-64 bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300">
-            <div className="flex flex-col p-6">
-              {/* Close Button */}
-              <button
-                className="self-end text-black p-2 mb-8"
+          <div className="fixed right-0 top-0 bottom-0 w-[75%] max-w-[320px] bg-yellow-400 z-[70] p-8 space-y-8 shadow-2xl flex flex-col border-l-4 border-black">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-2xl font-black text-black tracking-tighter">MENU</span>
+              <button 
                 onClick={() => setIsOpen(false)}
-                aria-label="Close menu"
+                className="w-10 h-10 flex items-center justify-center bg-black text-yellow-400 rounded-full"
               >
-                <FontAwesomeIcon icon={faTimes} className="w-6 h-6" />
+                <FontAwesomeIcon icon={faTimes} />
               </button>
+            </div>
 
-              {/* Menu Links */}
-              <div className="flex flex-col space-y-6">
-                {(isAuthenticated ? authNavLinks : publicNavLinks).map((link) => (
-                  <Link
-                    key={link.href}
-                    to={link.href}
-                    className="text-black font-semibold hover:text-amber-500 transition-colors duration-300"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                {isAuthenticated && (
-                  <>
-                    <div className="py-2">
-                      <SearchBar onImageClick={(imageId) => {
-                        setSelectedImageId(imageId);
-                        setIsModalOpen(true);
-                        setIsOpen(false);
-                      }} />
-                    </div>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setIsOpen(false);
-                      }}
-                      className="text-black font-semibold hover:text-red-500 transition-colors duration-300 text-left"
-                    >
-                      LOGOUT
-                    </button>
-                  </>
-                )}
-              </div>
+            <div className="flex flex-col space-y-6">
+              {(isAuthenticated ? authNavLinks : publicNavLinks).map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="text-2xl font-black text-black hover:translate-x-2 transition-transform uppercase"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              
+              {isAuthenticated && (
+                <button
+                  onClick={() => { handleLogout(); setIsOpen(false); }}
+                  className="text-2xl font-black text-red-600 text-left hover:translate-x-2 transition-transform uppercase"
+                >
+                  LOGOUT
+                </button>
+              )}
+            </div>
+
+            <div className="mt-auto">
+              {!isAuthenticated && (
+                <Link to="/auth" onClick={() => setIsOpen(false)}>
+                  <button className="w-full bg-black text-yellow-400 py-4 rounded-xl font-black text-lg shadow-xl uppercase">
+                    GET STARTED
+                  </button>
+                </Link>
+              )}
             </div>
           </div>
         </>
@@ -164,11 +158,11 @@ const Navbar = () => {
 
       {/* Image Modal */}
       <ImageModal
-        imageId={selectedImageId}
+        imageUuid={selectedImageUuid}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setSelectedImageId(null);
+          setSelectedImageUuid(null);
         }}
       />
     </>

@@ -5,7 +5,7 @@ import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInst
 import Navbar from './Navbar';
 
 const ImageDetail = () => {
-  const { id } = useParams();
+  const { uuid } = useParams();
   const navigate = useNavigate();
   const [image, setImage] = useState(null);
   const [comments, setComments] = useState([]);
@@ -18,15 +18,21 @@ const ImageDetail = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const hasIncrementedAction = React.useRef(false);
+  
   useEffect(() => {
     fetchImage();
-    // Increment view count when page loads
-    incrementViews();
-  }, [id]);
+    
+    // Use a ref to ensure increment only happens once even if component re-mounts (Strict Mode)
+    if (!hasIncrementedAction.current) {
+        incrementViews();
+        hasIncrementedAction.current = true;
+    }
+  }, [uuid]);
 
   const incrementViews = async () => {
     try {
-      const response = await axiosInstance.post(`images/${id}/increment_views/`);
+      const response = await axiosInstance.post(`images/${uuid}/increment_views/`);
       setViewCount(response.data.total_views || 0);
     } catch (error) {
       console.error('Error incrementing views:', error);
@@ -35,7 +41,7 @@ const ImageDetail = () => {
 
   const fetchImage = async () => {
     try {
-      const response = await axiosInstance.get(`images/${id}/`);
+      const response = await axiosInstance.get(`images/${uuid}/`);
       const imageData = response.data;
       setImage(imageData);
       setComments(imageData.comments || []);
@@ -58,13 +64,14 @@ const ImageDetail = () => {
 
   const handleLike = async () => {
     try {
-      const response = await axiosInstance.post(`images/${id}/like/`);
+      const response = await axiosInstance.post(`images/${uuid}/like/`);
       const newLikedState = response.data.liked !== undefined ? response.data.liked : !liked;
       setLiked(newLikedState);
       
-      // Refresh image to get updated like count
-      const imageRes = await axiosInstance.get(`images/${id}/`);
-      setLikeCount(imageRes.data.total_likes || 0);
+      // Update like count from response
+      if (response.data.total_likes !== undefined) {
+          setLikeCount(response.data.total_likes);
+      }
     } catch (error) {
       console.error('Error liking image:', error);
       if (error.response?.data?.detail) {
@@ -80,7 +87,7 @@ const ImageDetail = () => {
     if (!commentText.trim()) return;
 
     try {
-      const response = await axiosInstance.post(`images/${id}/comment/`, {
+      const response = await axiosInstance.post(`images/${uuid}/comment/`, {
         body: commentText
       });
       setComments(prev => [...prev, response.data]);
@@ -93,11 +100,8 @@ const ImageDetail = () => {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await axiosInstance.delete(`images/${id}/`);
-      // Short delay to show success
-      setTimeout(() => {
-        navigate('/images');
-      }, 500);
+      await axiosInstance.delete(`images/${uuid}/`);
+      navigate('/dashboard');
     } catch (error) {
       console.error('Error deleting image:', error);
       setIsDeleting(false);
@@ -188,7 +192,7 @@ const ImageDetail = () => {
               {isOwner && (
                 <div className="flex gap-3 w-full md:w-auto">
                   <button
-                    onClick={() => navigate(`/images/${id}/edit`)}
+                    onClick={() => navigate(`/images/${uuid}/edit`)}
                     className="flex-1 md:flex-none bg-yellow-400 text-black px-6 py-2.5 rounded-lg font-black border-2 border-black hover:bg-yellow-500 transition-all active:translate-y-0.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none flex items-center justify-center gap-2 uppercase text-sm"
                   >
                     <Edit className="w-4 h-4" />

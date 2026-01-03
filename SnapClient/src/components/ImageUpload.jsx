@@ -214,7 +214,7 @@ const ImageUpload = () => {
 
       setLoadingMessage('Success! Opening image...');
       setTimeout(() => {
-        navigate(`/images/${response.data.id}`);
+        navigate(`/images/${response.data.uuid}`);
       }, 800);
       
     } catch (error) {

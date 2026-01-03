@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment, faTrash, faEdit, faTimes, faUser, faEye, faSave, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 
-const ImageModal = ({ imageId, isOpen, onClose }) => {
+const ImageModal = ({ imageUuid, isOpen, onClose }) => {
   const navigate = useNavigate();
   const [image, setImage] = useState(null);
   const [comments, setComments] = useState([]);
@@ -23,16 +23,16 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (isOpen && imageId) {
+    if (isOpen && imageUuid) {
       fetchImage();
       // Reset edit state when opening a new image
       setIsEditing(false);
     }
-  }, [isOpen, imageId]);
+  }, [isOpen, imageUuid]);
 
   const fetchImage = async () => {
     try {
-      const response = await axiosInstance.get(`images/${imageId}/`);
+      const response = await axiosInstance.get(`images/${imageUuid}/`);
       const imageData = response.data;
       setImage(imageData);
       setComments(imageData.comments || []);
@@ -55,12 +55,13 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
 
   const handleLike = async () => {
     try {
-      const response = await axiosInstance.post(`images/${imageId}/like/`);
+      const response = await axiosInstance.post(`images/${imageUuid}/like/`);
       const newLikedState = response.data.liked !== undefined ? response.data.liked : !liked;
       setLiked(newLikedState);
 
-      const imageRes = await axiosInstance.get(`images/${imageId}/`);
-      setLikeCount(imageRes.data.total_likes || 0);
+      if (response.data.total_likes !== undefined) {
+          setLikeCount(response.data.total_likes);
+      }
     } catch (error) {
       console.error('Error liking image:', error);
       if (error.response?.data?.detail) {
@@ -75,7 +76,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
     e.preventDefault();
     if (!commentText.trim()) return;
     try {
-      const response = await axiosInstance.post(`images/${imageId}/comment/`, { body: commentText });
+      const response = await axiosInstance.post(`images/${imageUuid}/comment/`, { body: commentText });
       setComments(prev => [...prev, response.data]);
       setCommentText('');
     } catch (error) {
@@ -86,7 +87,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
 
   const handleDelete = async () => {
     try {
-      await axiosInstance.delete(`images/${imageId}/`);
+      await axiosInstance.delete(`images/${imageUuid}/`);
       onClose();
       window.location.reload();
     } catch (error) {
@@ -115,7 +116,7 @@ const ImageModal = ({ imageId, isOpen, onClose }) => {
     
     setIsSaving(true);
     try {
-      const response = await axiosInstance.patch(`images/${imageId}/`, {
+      const response = await axiosInstance.patch(`images/${imageUuid}/`, {
         title: editTitle,
         description: editDescription
       });

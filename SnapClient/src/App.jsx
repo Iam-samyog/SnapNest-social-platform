@@ -44,7 +44,7 @@ const App = () => {
             } 
           />
           <Route 
-            path="/images/:id" 
+            path="/images/:uuid" 
             element={
               <ProtectedRoute>
                 <ImageDetail />
@@ -68,7 +68,7 @@ const App = () => {
             } 
           />
           <Route 
-            path="/images/:id/edit" 
+            path="/images/:uuid/edit" 
             element={
               <ProtectedRoute>
                 <ImageEdit />

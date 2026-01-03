@@ -11,7 +11,7 @@ const ImageList = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [selectedImageUuid, setSelectedImageUuid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   
@@ -108,10 +108,10 @@ const ImageList = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-1 sm:gap-2">
             {images.map((image, index) => (
               <div
-                key={image.id}
+                key={image.uuid}
                 ref={index === images.length - 1 ? lastImageRef : null}
                 onClick={() => {
-                  setSelectedImageId(image.id);
+                  setSelectedImageUuid(image.uuid);
                   setIsModalOpen(true);
                 }}
                 className="aspect-square relative cursor-pointer group overflow-hidden bg-gray-200"
@@ -151,11 +151,11 @@ const ImageList = () => {
       
       {/* Image Modal */}
       <ImageModal
-        imageId={selectedImageId}
+        imageUuid={selectedImageUuid}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setSelectedImageId(null);
+          setSelectedImageUuid(null);
         }}
       />
     </>

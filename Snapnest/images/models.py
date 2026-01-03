@@ -3,6 +3,8 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.urls import reverse
 
+import uuid
+
 # Create your models here.
 class Image(models.Model):
     user=models.ForeignKey(
@@ -10,6 +12,7 @@ class Image(models.Model):
         related_name='images_created',
         on_delete=models.CASCADE
     )
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
     title=models.CharField(max_length=250)
 
     total_likes=models.PositiveIntegerField(default=0)

@@ -31,6 +31,7 @@ class ImageSerializer(serializers.ModelSerializer):
         model = Image
         fields = [
             'id',
+            'uuid',
             'title',
             'slug',
             'url',
@@ -67,9 +68,14 @@ class ImageSerializer(serializers.ModelSerializer):
         return False
     
     def get_total_views(self, obj):
+        # First check if we have the view count in a temporary attribute (set by batch fetch in ViewSet)
+        if hasattr(obj, '_redis_views'):
+            return obj._redis_views
+            
         try:
-            # Import the singleton connection from api_views
+            # Fallback to individual fetch if not batched (e.g. single object retrieve)
             from .api_views import r
+            # We still use .id for internal Redis key stability
             views = r.get(f'image:{obj.id}:views')
             if views is None:
                 return 0

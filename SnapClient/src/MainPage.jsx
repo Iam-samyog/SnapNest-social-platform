@@ -39,11 +39,8 @@ const MainPage = () => {
     <Review></Review>
     <CTASection></CTASection>
     <Footer></Footer>
-
-   
-    
     </>
-  )
-}
+  );
+};
 
 export default MainPage

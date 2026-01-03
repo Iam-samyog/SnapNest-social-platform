@@ -13,7 +13,7 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [images, setImages] = useState([]);
   const [activities, setActivities] = useState([]);
-  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [selectedImageUuid, setSelectedImageUuid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [followModalType, setFollowModalType] = useState('followers');
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
@@ -151,7 +151,7 @@ const Dashboard = () => {
         }
         
         const transformedImages = allImages.map(img => ({
-          id: img.id,
+          uuid: img.uuid,
           title: img.title || 'Untitled',
           url: getFullMediaUrl(img.image || img.url),
           likes: img.total_likes || 0,
@@ -422,9 +422,9 @@ const Dashboard = () => {
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 sm:gap-2">
               {images.map((image) => (
                 <div 
-                  key={image.id} 
+                  key={image.uuid} 
                   onClick={() => {
-                    setSelectedImageId(image.id);
+                    setSelectedImageUuid(image.uuid);
                     setIsModalOpen(true);
                   }}
                   className="relative aspect-square group cursor-pointer overflow-hidden rounded-lg border-2 border-black"
@@ -465,11 +465,11 @@ const Dashboard = () => {
       
       {/* Image Modal */}
       <ImageModal
-        imageId={selectedImageId}
+        imageUuid={selectedImageUuid}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setSelectedImageId(null);
+          setSelectedImageUuid(null);
         }}
       />
 

@@ -5,7 +5,7 @@ import axiosInstance, { getFullMediaUrl } from '../utils/axiosInstance';
 import Navbar from './Navbar';
 
 const ImageEdit = () => {
-  const { id } = useParams();
+  const { uuid } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
@@ -18,11 +18,11 @@ const ImageEdit = () => {
 
   useEffect(() => {
     fetchImageDetails();
-  }, [id]);
+  }, [uuid]);
 
   const fetchImageDetails = async () => {
     try {
-      const response = await axiosInstance.get(`images/${id}/`);
+      const response = await axiosInstance.get(`images/${uuid}/`);
       const data = response.data;
       setImage(data);
       setFormData({
@@ -57,11 +57,11 @@ const ImageEdit = () => {
 
     setSaving(true);
     try {
-      await axiosInstance.patch(`images/${id}/`, {
+      await axiosInstance.patch(`images/${uuid}/`, {
         title: formData.title,
         description: formData.description,
       });
-      navigate(`/images/${id}`);
+      navigate(`/images/${uuid}`);
     } catch (error) {
       console.error('Error updating image:', error);
       if (error.response?.data) {
@@ -152,7 +152,7 @@ const ImageEdit = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate(`/images/${id}`)}
+                  onClick={() => navigate(`/images/${uuid}`)}
                   className="bg-gray-200 text-black px-8 py-4 rounded-lg font-bold border-2 border-black hover:bg-gray-300 transition-colors"
                 >
                   Cancel

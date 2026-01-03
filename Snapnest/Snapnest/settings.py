@@ -42,7 +42,9 @@ ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_TRUSTED_ORIGINS = [
     'https://snap-nest-social-platform-oo5n.vercel.app',
-    'https://snapnest-backend-sbse.onrender.com'
+    'https://snapnest-backend-sbse.onrender.com',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173'
 ]
 
 # Silence warnings about dynamically added User model fields
@@ -79,7 +81,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware", # Added WhiteNoise
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware', # Check ordering, usually high up
     'django.middleware.common.CommonMiddleware',
@@ -88,6 +90,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Security Hardening (mostly for production)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+SESSION_COOKIE_HTTPONLY = True
 
 ROOT_URLCONF = 'Snapnest.urls'
 
@@ -184,22 +199,27 @@ EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
 
 # Storage Configuration (Django 4.2+)
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
-
-# Cloudinary Configuration
-if config('CLOUDINARY_URL', default=None):
-    STORAGES["default"] = {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+# Storage Configuration (Django 4.2+)
+if DEBUG and not config('CLOUDINARY_URL', default=None):
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
     }
 
-# Legacy settings for compatibility with third-party apps (like django-cloudinary-storage)
+# Legacy settings for compatibility
 DEFAULT_FILE_STORAGE = STORAGES["default"]["BACKEND"]
 STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
 
@@ -258,10 +278,11 @@ REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 
 # Parse REDIS_URL to get host, port, db
 redis_url_parsed = urlparse(REDIS_URL)
-REDIS_HOST = redis_url_parsed.hostname
-REDIS_PORT = redis_url_parsed.port
+REDIS_HOST = redis_url_parsed.hostname or 'localhost'
+REDIS_PORT = redis_url_parsed.port or 6379
 try:
-    REDIS_DB = int(redis_url_parsed.path.lstrip('/')) if redis_url_parsed.path.lstrip('/') else 0
+    path = redis_url_parsed.path.lstrip('/')
+    REDIS_DB = int(path) if path else 0
 except ValueError:
     REDIS_DB = 0
 
@@ -281,6 +302,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,  # Default page size for all list endpoints
 }

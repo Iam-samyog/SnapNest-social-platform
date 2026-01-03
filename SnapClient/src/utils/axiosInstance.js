@@ -72,8 +72,8 @@ axiosInstance.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem("refresh");
         if (refreshToken) {
-          // Use axios directly to avoid interceptor loop
-          const response = await axios.post("/api/auth/token/refresh/", {
+          // Use axios directly with full URL to avoid interceptor loop
+          const response = await axios.post(`${VITE_API_URL}auth/token/refresh/`, {
             refresh: refreshToken,
           }, {
             headers: {

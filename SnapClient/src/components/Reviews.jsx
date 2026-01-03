@@ -191,15 +191,15 @@ const Review = () => {
           </div>
 
           {/* Dots Navigation for Mobile */}
-          <div className="flex justify-center gap-3 mt-8">
+          <div className="flex justify-center gap-2 mt-8 flex-wrap">
             {reviews.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   currentIndex === index 
-                    ? 'bg-black w-8' 
-                    : 'bg-black opacity-30 hover:opacity-50'
+                    ? 'bg-black w-6' 
+                    : 'bg-black opacity-30'
                 }`}
                 aria-label={`Go to review ${index + 1}`}
               />

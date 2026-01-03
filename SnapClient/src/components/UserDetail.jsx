@@ -16,7 +16,7 @@ const UserDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isCurrentUser, setIsCurrentUser] = useState(false);
-  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [selectedImageUuid, setSelectedImageUuid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [followModalType, setFollowModalType] = useState('followers');
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
@@ -205,9 +205,9 @@ const UserDetail = () => {
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 sm:gap-2">
                 {images.map((image) => (
                   <div
-                    key={image.id}
+                    key={image.uuid}
                     onClick={() => {
-                      setSelectedImageId(image.id);
+                      setSelectedImageUuid(image.uuid);
                       setIsModalOpen(true);
                     }}
                     className="aspect-square relative cursor-pointer group overflow-hidden bg-gray-200"
@@ -242,11 +242,11 @@ const UserDetail = () => {
       
       {/* Image Modal */}
       <ImageModal
-        imageId={selectedImageId}
+        imageUuid={selectedImageUuid}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setSelectedImageId(null);
+          setSelectedImageUuid(null);
         }}
       />
 
