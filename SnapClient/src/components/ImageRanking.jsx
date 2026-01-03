@@ -3,15 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { Trophy, Heart, Eye } from 'lucide-react';
 import axiosInstance, { getFullMediaUrl } from '../utils/axiosInstance';
 import Navbar from './Navbar';
+import ImageModal from './ImageModal';
 
 const ImageRanking = () => {
   const navigate = useNavigate();
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImageUuid, setSelectedImageUuid] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchRanking();
   }, []);
+
+  const handleImageUpdate = (updatedData) => {
+    setImages(prevImages => prevImages.map(img => 
+      img.uuid === updatedData.uuid ? { ...img, total_views: updatedData.viewCount !== undefined ? updatedData.viewCount : img.total_views, total_likes: updatedData.likeCount !== undefined ? updatedData.likeCount : img.total_likes } : img
+    ));
+  };
 
   const fetchRanking = async () => {
     try {
@@ -53,7 +62,10 @@ const ImageRanking = () => {
               {images.map((image, index) => (
                 <li
                   key={image.uuid}
-                  onClick={() => navigate(`/images/${image.uuid}`)}
+                  onClick={() => {
+                    setSelectedImageUuid(image.uuid);
+                    setIsModalOpen(true);
+                  }}
                   className="flex items-center gap-4 p-4 bg-gray-50 border-2 border-black rounded-lg cursor-pointer hover:bg-yellow-400 hover:scale-105 transition-all duration-300"
                 >
                   <div className="flex-shrink-0 w-12 h-12 bg-yellow-400 border-4 border-black rounded-full flex items-center justify-center font-black text-2xl text-black">
@@ -100,6 +112,17 @@ const ImageRanking = () => {
           </div>
         </div>
       </div>
+      
+      {/* Image Modal */}
+      <ImageModal
+        imageUuid={selectedImageUuid}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedImageUuid(null);
+        }}
+        onUpdate={handleImageUpdate}
+      />
     </>
   );
 };

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment, faTrash, faEdit, faTimes, faUser, faEye, faSave, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance, { API_BASE_URL, getFullMediaUrl } from '../utils/axiosInstance';
 
-const ImageModal = ({ imageUuid, isOpen, onClose }) => {
+const ImageModal = ({ imageUuid, isOpen, onClose, onUpdate }) => {
   const navigate = useNavigate();
   const [image, setImage] = useState(null);
   const [comments, setComments] = useState([]);
@@ -46,7 +46,14 @@ const ImageModal = ({ imageUuid, isOpen, onClose }) => {
   const incrementViews = async () => {
     try {
       const response = await axiosInstance.post(`images/${imageUuid}/increment_views/`);
-      setViewCount(response.data.total_views || 0);
+      const newViews = response.data.total_views || 0;
+      setViewCount(newViews);
+      if (onUpdate && image) {
+        onUpdate({ 
+          uuid: imageUuid, 
+          viewCount: newViews 
+        });
+      }
     } catch (error) {
       console.error('Error incrementing views:', error);
     }
@@ -59,7 +66,7 @@ const ImageModal = ({ imageUuid, isOpen, onClose }) => {
       setImage(imageData);
       setComments(imageData.comments || []);
       setLikeCount(imageData.total_likes || 0);
-      setViewCount(imageData.total_views || 0);
+      setViewCount(prev => Math.max(prev, imageData.total_views || 0));
       setLiked(imageData.is_liked || false);
       
       // Initialize edit fields
@@ -83,6 +90,13 @@ const ImageModal = ({ imageUuid, isOpen, onClose }) => {
 
       if (response.data.total_likes !== undefined) {
           setLikeCount(response.data.total_likes);
+          if (onUpdate) {
+            onUpdate({ 
+              uuid: imageUuid, 
+              likeCount: response.data.total_likes,
+              liked: newLikedState
+            });
+          }
       }
     } catch (error) {
       console.error('Error liking image:', error);

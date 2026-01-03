@@ -209,6 +209,12 @@ const Dashboard = () => {
     return null;
   }
 
+  const handleImageUpdate = (updatedData) => {
+    setImages(prevImages => prevImages.map(img => 
+      img.uuid === updatedData.uuid ? { ...img, views: updatedData.viewCount !== undefined ? updatedData.viewCount : img.views, likes: updatedData.likeCount !== undefined ? updatedData.likeCount : img.likes } : img
+    ));
+  };
+
   return (
     <>
       <div className="max-w-8xl mx-auto bg-gray-50 min-h-screen pb-8">
@@ -471,6 +477,7 @@ const Dashboard = () => {
           setIsModalOpen(false);
           setSelectedImageUuid(null);
         }}
+        onUpdate={handleImageUpdate}
       />
 
       <FollowListModal

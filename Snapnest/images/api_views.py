@@ -54,7 +54,7 @@ class ImageViewSet(viewsets.ModelViewSet):
                 view_counts = r.mget(keys)
                 # Store in a temporary attribute for the serializer
                 for img, count in zip(page, view_counts):
-                    img._redis_views = int(count) if count else 0
+                    img._redis_views = int(count) if count else img.total_views
             
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
@@ -191,7 +191,8 @@ class ImageViewSet(viewsets.ModelViewSet):
         image = self.get_object()
         total_views = r.get(f'image:{image.id}:views')
         if total_views is None:
-            total_views = 0
+            # Fallback to DB if not in Redis
+            total_views = image.total_views
         else:
             total_views = int(total_views)  # Already decoded with decode_responses=True
         return Response({'total_views': total_views})
@@ -200,20 +201,27 @@ class ImageViewSet(viewsets.ModelViewSet):
     def increment_views(self, request, uuid=None):
         """Increment view count in Redis and sync to DB"""
         image = self.get_object()
-        total_views = r.incr(f'image:{image.id}:views')
+        
+        # Check if key exists in Redis
+        view_key = f'image:{image.id}:views'
+        if not r.exists(view_key):
+             # Initialize Redis with DB value if missing
+             r.set(view_key, image.total_views)
+             
+        total_views = r.incr(view_key)
         r.zincrby('image_ranking', 1, image.id)
         
         # Sync back to DB so it persists and is visible in admin
         image.total_views = total_views
         image.save(update_fields=['total_views'])
         
-        return Response({'total_views': int(total_views) if total_views else 0})
+        return Response({'total_views': int(total_views)})
 
     @action(detail=False, methods=['get'])
     def ranking(self, request):
         """Get top 10 images from Redis sorted set"""
-        # Get top 10 image IDs from Redis
-        image_ranking = r.zrange('image_ranking', 0, 9, desc=True)
+        # Get all image IDs from Redis
+        image_ranking = r.zrange('image_ranking', 0, -1, desc=True)
         image_ranking_ids = [int(id) for id in image_ranking]
         
         # Fetch actual image objects from DB in one query
@@ -221,12 +229,19 @@ class ImageViewSet(viewsets.ModelViewSet):
         # Sort them in the exact order Redis gave us
         most_viewed.sort(key=lambda x: image_ranking_ids.index(x.id))
         
-        # Attach view counts
+        # Attach view counts safely using a dictionary
         if image_ranking_ids:
             keys = [f'image:{img_id}:views' for img_id in image_ranking_ids]
             view_counts = r.mget(keys)
-            for img, count in zip(most_viewed, view_counts):
-                img._redis_views = int(count) if count else 0
+            
+            # Map ID -> View Count
+            views_map = {}
+            for img_id, count in zip(image_ranking_ids, view_counts):
+                views_map[img_id] = int(count) if count else None
+            
+            for img in most_viewed:
+                redis_val = views_map.get(img.id)
+                img._redis_views = redis_val if redis_val is not None else img.total_views
 
         serializer = self.get_serializer(most_viewed, many=True)
         return Response(serializer.data)

@@ -78,7 +78,8 @@ class ImageSerializer(serializers.ModelSerializer):
             # We still use .id for internal Redis key stability
             views = r.get(f'image:{obj.id}:views')
             if views is None:
-                return 0
+                # Fallback to DB if not in Redis
+                return obj.total_views
             return int(views)
         except:
-            return 0
+            return obj.total_views

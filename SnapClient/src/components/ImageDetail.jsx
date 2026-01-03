@@ -46,7 +46,7 @@ const ImageDetail = () => {
       setImage(imageData);
       setComments(imageData.comments || []);
       setLikeCount(imageData.total_likes || 0);
-      setViewCount(imageData.total_views || 0);
+      setViewCount(prev => Math.max(prev, imageData.total_views || 0));
       setLiked(imageData.is_liked || false);
       
       // Check if current user is the owner

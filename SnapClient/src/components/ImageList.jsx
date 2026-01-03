@@ -93,6 +93,12 @@ const ImageList = () => {
     );
   }
 
+  const handleImageUpdate = (updatedData) => {
+    setImages(prevImages => prevImages.map(img => 
+      img.uuid === updatedData.uuid ? { ...img, total_views: updatedData.viewCount !== undefined ? updatedData.viewCount : img.total_views, total_likes: updatedData.likeCount !== undefined ? updatedData.likeCount : img.total_likes } : img
+    ));
+  };
+
   return (
     <>
       <Navbar />
@@ -157,6 +163,7 @@ const ImageList = () => {
           setIsModalOpen(false);
           setSelectedImageUuid(null);
         }}
+        onUpdate={handleImageUpdate}
       />
     </>
   );
