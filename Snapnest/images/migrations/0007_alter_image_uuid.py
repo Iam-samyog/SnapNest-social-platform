@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("images", "0005_image_uuid"),
+        ("images", "0006_populate_uuids"),
     ]
 
     operations = [
