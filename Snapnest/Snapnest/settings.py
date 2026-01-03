@@ -182,7 +182,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # WhiteNoise settings (serve but don't fail on build)
-# WHITENOISE_MANIFEST_STRICT = False # No longer needed with standard storage
+WHITENOISE_MANIFEST_STRICT = False 
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = 'login'
