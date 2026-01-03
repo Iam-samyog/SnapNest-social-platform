@@ -62,8 +62,6 @@ class ImageViewSet(viewsets.ModelViewSet):
         # Non-paginated results
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -200,8 +198,35 @@ class ImageViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def increment_views(self, request, uuid=None):
-        """Increment view count in Redis"""
+        """Increment view count in Redis and sync to DB"""
         image = self.get_object()
         total_views = r.incr(f'image:{image.id}:views')
         r.zincrby('image_ranking', 1, image.id)
+        
+        # Sync back to DB so it persists and is visible in admin
+        image.total_views = total_views
+        image.save(update_fields=['total_views'])
+        
         return Response({'total_views': int(total_views) if total_views else 0})
+
+    @action(detail=False, methods=['get'])
+    def ranking(self, request):
+        """Get top 10 images from Redis sorted set"""
+        # Get top 10 image IDs from Redis
+        image_ranking = r.zrange('image_ranking', 0, 9, desc=True)
+        image_ranking_ids = [int(id) for id in image_ranking]
+        
+        # Fetch actual image objects from DB in one query
+        most_viewed = list(Image.objects.filter(id__in=image_ranking_ids))
+        # Sort them in the exact order Redis gave us
+        most_viewed.sort(key=lambda x: image_ranking_ids.index(x.id))
+        
+        # Attach view counts
+        if image_ranking_ids:
+            keys = [f'image:{img_id}:views' for img_id in image_ranking_ids]
+            view_counts = r.mget(keys)
+            for img, count in zip(most_viewed, view_counts):
+                img._redis_views = int(count) if count else 0
+
+        serializer = self.get_serializer(most_viewed, many=True)
+        return Response(serializer.data)
