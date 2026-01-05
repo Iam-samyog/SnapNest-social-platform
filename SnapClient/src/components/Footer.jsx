@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebookF, faXTwitter, faLinkedinIn, faInstagram } from '@fortawesome/free-brands-svg-icons';
+import { faFacebookF, faXTwitter, faLinkedinIn, faInstagram, faGithub } from '@fortawesome/free-brands-svg-icons';
 
 const Footer = () => {
   return (
@@ -16,11 +16,11 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4 mt-6">
               <a
-                href="#"
-                title="Facebook"
+                href="https://github.com/Iam-samyog/SnapNest-social-platform"
+                title="Github"
                 className="w-10 h-10 bg-black text-yellow-400 flex items-center justify-center rounded-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
               >
-                <FontAwesomeIcon icon={faFacebookF} size="lg" />
+                <FontAwesomeIcon icon={faGithub} size="lg" />
               </a>
               <a
                 href="#"
@@ -30,7 +30,7 @@ const Footer = () => {
                 <FontAwesomeIcon icon={faXTwitter} size="lg" />
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/in/samyogm/"
                 title="LinkedIn"
                 className="w-10 h-10 bg-black text-yellow-400 flex items-center justify-center rounded-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
               >

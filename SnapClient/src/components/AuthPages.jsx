@@ -132,7 +132,13 @@ const AuthPages = () => {
         } else if (errorData.non_field_errors) {
           setErrors({ general: errorData.non_field_errors[0] });
         } else {
-          setErrors(errorData);
+          // Normalize field errors (DRF returns arrays, we want strings)
+          const normalizedErrors = {};
+          Object.keys(errorData).forEach(key => {
+            const val = errorData[key];
+            normalizedErrors[key] = Array.isArray(val) ? val[0] : val;
+          });
+          setErrors(normalizedErrors);
         }
       } else {
         setErrors({ general: 'Server error. Try again.' });
