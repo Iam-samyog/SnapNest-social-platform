@@ -5,7 +5,15 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), nodePolyfills()],
+  plugins: [react(), tailwindcss(), nodePolyfills({
+    // Whether to polyfill `node:` protocol imports.
+    protocolImports: true,
+  })],
+  define: {
+    // By default, Vite doesn't include shims for NodeJS/
+    // necessary for segment analytics lib to work
+    global: 'window',
+  },
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',

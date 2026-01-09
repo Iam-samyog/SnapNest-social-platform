@@ -48,7 +48,13 @@ const CallInterface = ({
           const peer = new SimplePeer({
             initiator: true,
             trickle: false,
-            stream: currentStream
+            stream: currentStream,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' }
+                ]
+            }
           });
 
           peer.on('signal', (data) => {
@@ -126,7 +132,13 @@ const CallInterface = ({
         const peer = new SimplePeer({
             initiator: false,
             trickle: false,
-            stream: stream
+            stream: stream,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' }
+                ]
+            }
         });
 
         peer.on('signal', (data) => {
