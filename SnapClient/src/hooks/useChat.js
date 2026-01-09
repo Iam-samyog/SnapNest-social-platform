@@ -50,7 +50,7 @@ const useChat = (recipientId) => {
                 setIsConnected(true);
             };
 
-            socketRef.current.onmessage = (event) => {
+            const handleMessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
                     
@@ -90,6 +90,8 @@ const useChat = (recipientId) => {
                 }
             };
 
+            socketRef.current.addEventListener('message', handleMessage);
+
             socketRef.current.onclose = () => {
                 setIsConnected(false);
             };
@@ -122,7 +124,7 @@ const useChat = (recipientId) => {
         }
     };
 
-    return { messages, sendMessage, sendReaction, isConnected, isRecipientOnline };
+    return { messages, sendMessage, sendReaction, isConnected, isRecipientOnline, socket: socketRef.current };
 };
 
 export default useChat;

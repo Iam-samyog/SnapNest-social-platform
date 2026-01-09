@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [images, setImages] = useState([]);
+  const [postsCount, setPostsCount] = useState(0);
   const [activities, setActivities] = useState([]);
   const [selectedImageUuid, setSelectedImageUuid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -120,21 +121,10 @@ const Dashboard = () => {
           return;
         }
 
-        // Fetch dashboard data in parallel for better performance
-        const [profileRes, imagesRes, actionsRes] = await Promise.all([
-          axiosInstance.get('profile/'),
-          axiosInstance.get('images/').catch(err => {
-            console.error('Error fetching images:', err);
-            return { data: { results: [] } };
-          }),
-          axiosInstance.get('actions/').catch(err => {
-            console.error('Error fetching activities:', err);
-            return { data: [] };
-          })
-        ]);
-
+        // 1. Fetch profile first to get identifying info
+        const profileRes = await axiosInstance.get('profile/');
         const profileData = profileRes.data;
-        
+
         // Extract user data from profile response
         const userData = {
           username: profileData.user?.username || 'User',
@@ -144,22 +134,37 @@ const Dashboard = () => {
           following: profileData.following_count || 0,
         };
 
+        setUser(userData);
+
+        // 2. Fetch images & activities in parallel, now that we have the username if needed
+        // Note: For 'images/', we now filter by this user to get *their* grid and *their* total count correctly.
+        const [imagesRes, actionsRes] = await Promise.all([
+          axiosInstance.get(`images/?user=${userData.username}`).catch(err => {
+            console.error('Error fetching images:', err);
+            return { data: { results: [], count: 0 } };
+          }),
+          axiosInstance.get('actions/').catch(err => {
+            console.error('Error fetching activities:', err);
+            return { data: [] };
+          })
+        ]);
+
         // Process images
-        let allImages = imagesRes.data.results || imagesRes.data || [];
-        if (profileData.user?.username) {
-          allImages = allImages.filter(img => img.user === profileData.user.username);
-        }
+        const results = imagesRes.data.results || imagesRes.data || [];
+        const totalCount = imagesRes.data.count || results.length;
         
-        const transformedImages = allImages.map(img => ({
+        const transformedImages = results.map(img => ({
           uuid: img.uuid,
           title: img.title || 'Untitled',
           url: getFullMediaUrl(img.image || img.url),
           likes: img.total_likes || 0,
           views: img.total_views || 0,
         }));
+        
         setImages(transformedImages);
+        setPostsCount(totalCount);
 
-        // Process activities - handle paginated response
+        // Process activities
         const actionsData = actionsRes.data.results || actionsRes.data || [];
         const transformedActivities = (Array.isArray(actionsData) ? actionsData : []).map(action => ({
           id: action.id,
@@ -172,10 +177,6 @@ const Dashboard = () => {
         }));
         setActivities(transformedActivities);
 
-        setUser(userData);
-        setLoading(false);
-
-        setUser(userData);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -317,7 +318,7 @@ const Dashboard = () => {
         <div className="flex gap-3 sm:gap-6 mt-2 sm:mt-3 mb-2 sm:mb-3 flex-wrap">
           <div className="text-center">
             <div className="text-base sm:text-lg font-black text-black">
-              {images.length} <span className="text-base sm:text-lg font-bold text-black capitalize ml-1">posts</span>
+              {postsCount} <span className="text-base sm:text-lg font-bold text-black capitalize ml-1">posts</span>
             </div>
           </div>
           <div 

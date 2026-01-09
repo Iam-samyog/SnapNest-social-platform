@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useChat from '../hooks/useChat';
 import UserAvatar from './UserAvatar';
+import CallInterface from './CallInterface';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -17,10 +18,17 @@ import {
 
 const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
     const navigate = useNavigate();
-    const { messages, sendMessage, sendReaction, isRecipientOnline } = useChat(otherUser.id);
+    const { messages, sendMessage, sendReaction, isRecipientOnline, socket } = useChat(otherUser.id);
     const [input, setInput] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [activeReactionMessageId, setActiveReactionMessageId] = useState(null);
+    
+    // Call State
+    const [isCalling, setIsCalling] = useState(false);
+    const [isIncomingCall, setIsIncomingCall] = useState(false);
+    const [callData, setCallData] = useState(null);
+    const [callAccepted, setCallAccepted] = useState(false);
+    
     const scrollRef = useRef();
     const emojiBarRef = useRef();
     const messagesAreaRef = useRef();
@@ -44,6 +52,48 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // Listen for call signals
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleMessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'call_user') {
+                setIsIncomingCall(true);
+                setCallData(data);
+            } else if (data.type === 'end_call') {
+                setIsIncomingCall(false);
+                setIsCalling(false);
+                setCallData(null);
+            }
+        };
+
+        // We attach a secondary listener. 
+        // Note: Ideally useChat should handle this or allow registering listeners.
+        // For now, we are relying on the fact that WebSocket allows multiple event listeners 
+        // via addEventListener, but useChat uses onmessage assignment.
+        // We really should hack useChat to not overwrite onmessage or we accept that useChat owns onmessage.
+        // Actually, since useChat uses `socket.onmessage = ...`, it overwrites.
+        // We need to patch useChat or handle signals inside useChat.
+        // WAIT: Previous step exposed socket. If we assign socket.onmessage here, we break useChat.
+        // FIX: Let's assume for this specific task we modify the listener in useChat to dispatch CustomEvents
+        // OR we patch the existing onmessage handler.
+        
+        // Better approach for this constraint:
+        // We'll trust that useChat processes chat messages and we only care about signals which useChat likely ignores/logs error for.
+        // Actually useChat logs "Critical errors" if it can't parse text as chat message? No, it checks data.type.
+        // Currently useChat ignores unknown types.
+        
+        // Let's attach an event listener to the socket OBJECT if it supports it? 
+        // standard WebSocket supports addEventListener.
+        socket.addEventListener('message', handleMessage);
+
+        return () => {
+             socket.removeEventListener('message', handleMessage);
+        };
+    }, [socket]);
 
     const toggleReactionMenu = (msgId) => {
         setActiveReactionMessageId(prev => prev === msgId ? null : msgId);
@@ -86,6 +136,20 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
                     </div>
                 </div>
                 <div className="flex items-center gap-6 text-black">
+                     <button 
+                        onClick={() => setIsCalling(true)}
+                        className="hover:scale-110 transition-transform"
+                        title="Start Video Call"
+                    >
+                        <FontAwesomeIcon icon={faVideo} className="text-xl sm:text-2xl" />
+                    </button>
+                    <button 
+                         onClick={() => setIsCalling(true)}
+                         className="hover:scale-110 transition-transform"
+                         title="Start Audio Call"
+                    >
+                        <FontAwesomeIcon icon={faPhone} className="text-lg sm:text-xl" />
+                    </button>
                 </div>
             </div>
             
@@ -229,6 +293,71 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
     )}
 </div>
             </div>
+
+            
+            {/* Call Interface */}
+            {isCalling && (
+                <CallInterface 
+                    isInitiator={true}
+                    currentUser={{ id: currentUserId, username: currentUserUsername }} // We need to ensure we pass IDs correctly
+                    otherUser={otherUser}
+                    socket={socket}
+                    onClose={() => setIsCalling(false)}
+                />
+            )}
+
+            {isIncomingCall && !isCalling && (
+                <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                    <div className="bg-white border-4 border-black p-6 rounded-lg max-w-sm w-full text-center shadow-[8px_8px_0px_0px_rgba(251,191,36,1)]">
+                        <div className="w-24 h-24 mx-auto mb-4 relative">
+                            <UserAvatar user={otherUser} className="w-full h-full border-4 border-black" />
+                            <div className="absolute -bottom-2 -right-2 bg-yellow-400 border-2 border-black p-2 rounded-full animate-bounce">
+                                <FontAwesomeIcon icon={faVideo} className="text-black" />
+                            </div>
+                        </div>
+                        <h3 className="text-2xl font-black text-black mb-2">Incoming Call...</h3>
+                        <p className="text-gray-600 font-bold mb-8">{otherUser.username} is calling you</p>
+                        
+                        <div className="flex gap-4 justify-center">
+                            <button 
+                                onClick={() => {
+                                    setIsIncomingCall(false);
+                                    setCallData(null);
+                                    // Send rejection signal?
+                                    socket.send(JSON.stringify({ type: 'end_call', to: otherUser.id }));
+                                }}
+                                className="bg-red-500 text-white p-4 rounded-full border-2 border-black hover:scale-110 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                            >
+                                <FontAwesomeIcon icon={faPhone} className="rotate-[135deg] text-xl" />
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setIsCalling(true);
+                                    setIsIncomingCall(false); // Hide outgoing/incoming modal, show CallInterface
+                                }}
+                                className="bg-green-500 text-white p-4 rounded-full border-2 border-black hover:scale-110 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse"
+                            >
+                                <FontAwesomeIcon icon={faPhone} className="text-xl" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+             
+            {/* If we accepted a call (isCalling becomes true via the accept button above), we render CallInterface with connectionData */}
+            {isCalling && callData && (
+                 <CallInterface 
+                    isInitiator={false}
+                    currentUser={{ id: currentUserId, username: currentUserUsername }} 
+                    otherUser={otherUser}
+                    socket={socket}
+                    connectionData={callData}
+                    onClose={() => {
+                        setIsCalling(false);
+                        setCallData(null);
+                    }}
+                />
+            )}
         </div>
     );
 };

@@ -167,10 +167,18 @@ const SearchBar = ({ onImageClick, className = "relative flex-1 max-w-md mx-4" }
                     onClick={() => handleUserClick(user.username)}
                     className="w-full text-left p-2 hover:bg-yellow-400 rounded-lg transition-colors flex items-center gap-3"
                   >
-                    <div className="w-10 h-10 rounded-full bg-yellow-400 border-2 border-black flex items-center justify-center flex-shrink-0">
-                      <span className="text-black font-bold">
-                        {user.first_name?.[0] || user.username[0].toUpperCase()}
-                      </span>
+                    <div className="w-10 h-10 rounded-full bg-yellow-400 border-2 border-black flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {user.profile?.photo ? (
+                        <img 
+                          src={getFullMediaUrl(user.profile.photo)} 
+                          alt={user.username} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-black font-bold">
+                          {user.first_name?.[0] || user.username[0].toUpperCase()}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <p className="font-bold text-black">{user.username}</p>
