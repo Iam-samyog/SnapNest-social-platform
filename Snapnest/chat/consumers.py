@@ -95,6 +95,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
         else:
+            # Relay signal to the room (for ChatBox)
             await self.channel_layer.group_send(
                 self.room_name,
                 {
@@ -103,6 +104,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'sender_id': self.user.id
                 }
             )
+            
+            # Forward call signals to the personal notification channel
+            if data.get('type') == 'call_user':
+                user_to_call = data.get('userToCall') 
+                if user_to_call:
+                    await self.channel_layer.group_send(
+                        f'notify_{user_to_call}',
+                        {
+                            'type': 'notification_message',
+                            'data': {
+                                'type': 'incoming_call',
+                                'from': self.user.id,
+                                'signalData': data.get('signalData')
+                            }
+                        }
+                    )
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
