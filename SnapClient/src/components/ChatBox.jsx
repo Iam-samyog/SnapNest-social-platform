@@ -16,10 +16,10 @@ import {
     faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 
-const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
+const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack, autoAnswerSignal }) => {
     const navigate = useNavigate();
-    const { messages, sendMessage, sendReaction, isRecipientOnline, socket } = useChat(otherUser.id);
-    const [input, setInput] = useState('');
+    const { messages, loading, sendMessage, sendReaction, socket } = useChat(otherUser?.id, currentUserId);
+    const [messageInput, setMessageInput] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [activeReactionMessageId, setActiveReactionMessageId] = useState(null);
     
@@ -27,6 +27,18 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
     const [isCalling, setIsCalling] = useState(false);
     const [isIncomingCall, setIsIncomingCall] = useState(false);
     const [callData, setCallData] = useState(null);
+    
+    // Handle Auto-Answer signal from global notification
+    useEffect(() => {
+        if (autoAnswerSignal) {
+            setCallData({
+                from: otherUser.id,
+                signalData: autoAnswerSignal
+            });
+            setIsCalling(true);
+            setIsIncomingCall(false);
+        }
+    }, [autoAnswerSignal, otherUser.id]);
     const [callAccepted, setCallAccepted] = useState(false);
     
     const scrollRef = useRef();
@@ -100,14 +112,14 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
     };
 
     const handleSend = () => {
-        if (input.trim()) {
-            sendMessage(input);
-            setInput('');
+        if (messageInput.trim()) {
+            sendMessage(messageInput);
+            setMessageInput('');
         }
     };
 
     const addEmoji = (emoji) => {
-        setInput(prev => prev + emoji);
+        setMessageInput(prev => prev + emoji);
         setShowEmojiPicker(false);
     };
 
@@ -277,13 +289,13 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
     </button>
     <input 
         type="text" 
-        value={input} 
-        onChange={(e) => setInput(e.target.value)}
+        value={messageInput} 
+        onChange={(e) => setMessageInput(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
         placeholder="Type a message..."
         className="flex-1 bg-transparent py-2 sm:py-3 focus:outline-none text-[15px] sm:text-[16px] font-bold text-black placeholder-gray-500 min-w-0"
     />
-    {input.trim() && (
+    {messageInput.trim() && (
         <button 
             onClick={handleSend} 
             className="bg-white text-black px-3 sm:px-6 py-2 rounded-full font-black text-xs sm:text-sm uppercase tracking-widest hover:bg-black hover:text-white transition-all active:scale-95 border-2 border-black flex-shrink-0"
@@ -295,17 +307,28 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
             </div>
 
             
-            {/* Call Interface */}
+            {/* Call State Management */}
+            
+            {/* 1. Active Call Interface (Either started by me or accepted by me) */}
             {isCalling && (
-                <CallInterface 
-                    isInitiator={true}
-                    currentUser={{ id: currentUserId, username: currentUserUsername }} // We need to ensure we pass IDs correctly
-                    otherUser={otherUser}
-                    socket={socket}
-                    onClose={() => setIsCalling(false)}
-                />
+                <div className="absolute top-0 left-0 w-full h-full z-50">
+                    <CallInterface 
+                        isInitiator={!callData} 
+                        currentUser={{ id: currentUserId, username: currentUserUsername }}
+                        otherUser={otherUser}
+                        socket={socket}
+                        incomingCallSignal={callData?.signalData}
+                        autoAccept={!!autoAnswerSignal}
+                        onClose={() => {
+                            setIsCalling(false);
+                            setIsIncomingCall(false);
+                            setCallData(null);
+                        }}
+                    />
+                </div>
             )}
 
+            {/* 2. Incoming Call Modal (Pending, not yet accepted/rejected) */}
             {isIncomingCall && !isCalling && (
                 <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
                     <div className="bg-white border-4 border-black p-6 rounded-lg max-w-sm w-full text-center shadow-[8px_8px_0px_0px_rgba(251,191,36,1)]">
@@ -323,8 +346,10 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
                                 onClick={() => {
                                     setIsIncomingCall(false);
                                     setCallData(null);
-                                    // Send rejection signal?
-                                    socket.send(JSON.stringify({ type: 'end_call', to: otherUser.id }));
+                                    // Send rejection signal
+                                    if(socket?.readyState === WebSocket.OPEN) {
+                                        socket.send(JSON.stringify({ type: 'end_call', to: otherUser.id }));
+                                    }
                                 }}
                                 className="bg-red-500 text-white p-4 rounded-full border-2 border-black hover:scale-110 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                             >
@@ -333,7 +358,7 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
                             <button 
                                 onClick={() => {
                                     setIsCalling(true);
-                                    setIsIncomingCall(false); // Hide outgoing/incoming modal, show CallInterface
+                                    setIsIncomingCall(false);
                                 }}
                                 className="bg-green-500 text-white p-4 rounded-full border-2 border-black hover:scale-110 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse"
                             >
@@ -342,21 +367,6 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack }) => {
                         </div>
                     </div>
                 </div>
-            )}
-             
-            {/* If we accepted a call (isCalling becomes true via the accept button above), we render CallInterface with connectionData */}
-            {isCalling && callData && (
-                 <CallInterface 
-                    isInitiator={false}
-                    currentUser={{ id: currentUserId, username: currentUserUsername }} 
-                    otherUser={otherUser}
-                    socket={socket}
-                    connectionData={callData}
-                    onClose={() => {
-                        setIsCalling(false);
-                        setCallData(null);
-                    }}
-                />
             )}
         </div>
     );

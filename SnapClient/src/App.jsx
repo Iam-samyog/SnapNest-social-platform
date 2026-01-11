@@ -15,6 +15,7 @@ import ResetPassword from './components/ResetPassword';
 import GitHubCallback from './components/GitHubCallback';
 import ImageEdit from './components/ImageEdit';
 import Messenger from './components/Messenger';
+import { NotificationProvider } from './context/NotificationContext';
 
 const App = () => {
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -22,6 +23,7 @@ const App = () => {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || ""}>
       <BrowserRouter>
+        <NotificationProvider>
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/auth" element={<AuthPages />} />
@@ -108,6 +110,7 @@ const App = () => {
             } 
           />
         </Routes>
+        </NotificationProvider>
       </BrowserRouter>
     </GoogleOAuthProvider>
   );

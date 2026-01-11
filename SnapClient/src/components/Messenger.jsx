@@ -11,6 +11,7 @@ const Messenger = () => {
     const location = useLocation();
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(location.state?.selectedUser || null);
+    const [autoAnswerSignal, setAutoAnswerSignal] = useState(null);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [currentUserId, setCurrentUserId] = useState(null);
@@ -29,6 +30,17 @@ const Messenger = () => {
                     setCurrentUserId(payload.user_id);
                     setCurrentUserUsername(payload.username || payload.name || 'You'); // Fallback if username not in payload
                     setUsers(data.filter(u => u.id !== payload.user_id));
+
+                    // Check for preselected user from notification redirect
+                    if (location.state?.preselectedUserId) {
+                        const targetUser = data.find(u => u.id === parseInt(location.state.preselectedUserId));
+                        if (targetUser) {
+                            setSelectedUser(targetUser);
+                            if (location.state.autoAnswerSignal) {
+                                setAutoAnswerSignal(location.state.autoAnswerSignal);
+                            }
+                        }
+                    }
                 } else {
                     setUsers(data);
                 }
@@ -39,7 +51,7 @@ const Messenger = () => {
             }
         };
         fetchUsers();
-    }, []);
+    }, [location.state]);
 
     const filteredUsers = users.filter(u => 
         u.username.toLowerCase().includes(search.toLowerCase())
@@ -136,6 +148,7 @@ const Messenger = () => {
                             currentUserId={currentUserId}
                             currentUserUsername={currentUserUsername}
                             onBack={handleBack}
+                            autoAnswerSignal={autoAnswerSignal}
                         />
                     ) : (
                         <div className="hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center bg-gray-50/30">

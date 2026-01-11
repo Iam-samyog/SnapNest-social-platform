@@ -3,12 +3,13 @@ import SimplePeer from 'simple-peer';
 import { Phone, Video, Mic, MicOff, Video as VideoIcon, VideoOff, X } from 'lucide-react';
 
 const CallInterface = ({ 
-  connectionData, 
+  incomingCallSignal, 
   currentUser, 
   socket, 
   onClose,
   isInitiator,
-  otherUser
+  otherUser,
+  autoAccept
 }) => {
   const [stream, setStream] = useState(null);
   const [callAccepted, setCallAccepted] = useState(false);
@@ -126,8 +127,8 @@ const CallInterface = ({
 
   // Effect to handle answering a call (for the receiver)
   useEffect(() => {
-    if (!isInitiator && connectionData && stream) {
-        // We are answering
+    // If we have a signal from the caller (incomingCallSignal), we answer.
+    if (!isInitiator && incomingCallSignal && stream) {
         setCallAccepted(true);
         const peer = new SimplePeer({
             initiator: false,
@@ -142,11 +143,13 @@ const CallInterface = ({
         });
 
         peer.on('signal', (data) => {
-            socket.send(JSON.stringify({
-                type: 'answer_call',
-                signal: data,
-                to: connectionData.from
-            }));
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'answer_call',
+                    signal: data,
+                    to: otherUser.id
+                }));
+            }
         });
 
         peer.on('stream', (currentStream) => {
@@ -155,10 +158,13 @@ const CallInterface = ({
             }
         });
 
-        peer.signal(connectionData.signalData);
+        peer.signal(incomingCallSignal);
+
         connectionRef.current = peer;
     }
-  }, [stream, connectionData]); // Run when stream is ready and we have connection data
+  }, [incomingCallSignal, stream, isInitiator]);
+
+
 
 
   const leaveCall = () => {
