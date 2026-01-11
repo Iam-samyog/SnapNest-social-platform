@@ -25,7 +25,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.room_name, self.channel_name)
         
         # Track user online status in Redis
-        # Use a set for all online users and a specific key for this user
         r.sadd('online_users', self.user.id)
         
         await self.accept()
@@ -135,6 +134,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Only relay signal to the OTHER person
         if self.user.id != event['sender_id']:
             await self.send(text_data=json.dumps(event['data']))
+
+
+class NotificationConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope['user']
+        if not self.user.is_authenticated:
+            await self.close()
+            return
+            
+        self.group_name = f'notify_{self.user.id}'
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        if hasattr(self, 'group_name'):
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def receive(self, text_data):
+        # Mostly just for keeping connection alive or ack
+        pass
+
+    async def notification_message(self, event):
+        # Relay notification to the websocket
+        await self.send(text_data=json.dumps(event['data']))
 
     @database_sync_to_async
     def save_message(self, content):
