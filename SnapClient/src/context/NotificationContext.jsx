@@ -25,43 +25,51 @@ export const NotificationProvider = ({ children }) => {
         const host = API_BASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
         const wsUrl = `${protocol}//${host}/ws/notify/?token=${token}`;
 
-        const ws = new WebSocket(wsUrl);
+        let ws;
+        let reconnectTimer;
 
-        ws.onopen = () => {
-            console.log('Notification WebSocket Connected');
-        };
+        const connect = () => {
+            console.log('Connecting to Notification WS:', wsUrl);
+            ws = new WebSocket(wsUrl);
 
-        ws.onmessage = async (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'incoming_call') {
-                // Fetch caller info nicely
+            ws.onopen = () => {
+                console.log('✅ Notification WebSocket Connected');
+            };
+
+            ws.onmessage = async (event) => {
+                console.log('📩 Notification Received:', event.data);
                 try {
-                    const response = await axiosInstance.get(`users/profile/${data.from}/`);
-                    // Or however we get user details by ID. 
-                    // If endpoints assume username, we might need a lookup map or IDs.
-                    // For now, let's assume we might need to fetch by ID or receive username in signal.
-                    // Let's assume we can get basic info.
-                    setCallerInfo(response.data); 
-                } catch (e) {
-                    console.error("Could not fetch caller details", e);
-                    setCallerInfo({ username: 'Unknown User' });
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'incoming_call') {
+                        console.log('📞 Incoming Call Detect!', data);
+                        try {
+                            const response = await axiosInstance.get(`users/profile/${data.from}/`);
+                            setCallerInfo(response.data); 
+                        } catch (e) {
+                            console.error("Could not fetch caller details", e);
+                            setCallerInfo({ username: 'Unknown User' });
+                        }
+                        setIncomingCall(data);
+                    }
+                } catch (err) {
+                    console.error("Notification Parse Error:", err);
                 }
+            };
 
-                setIncomingCall(data);
-                // Play Ringtone
-                // audioRef.current.play().catch(e => console.log("Audio play failed", e));
-            }
+            ws.onclose = (e) => {
+                 console.log('❌ Notification WebSocket Disconnected', e.code, e.reason);
+                 // Try to reconnect in 3 seconds
+                 reconnectTimer = setTimeout(connect, 3000);
+            };
+            
+            setSocket(ws);
         };
 
-        ws.onclose = () => {
-             console.log('Notification WebSocket Disconnected');
-             // Reconnect logic could go here
-        };
-
-        setSocket(ws);
+        connect();
 
         return () => {
-            ws.close();
+            if (ws) ws.close();
+            if (reconnectTimer) clearTimeout(reconnectTimer);
         };
     }, []);
 
