@@ -9,17 +9,37 @@ const useChat = (recipientId) => {
     const socketRef = useRef(null);
     const typingTimeoutRef = useRef(null);
 
-    // ... (previous useEffect for history)
+    // Fetch message history
+    useEffect(() => {
+        if (!recipientId) return;
+
+        const fetchHistory = async () => {
+            try {
+                const response = await axiosInstance.get(`messages/${recipientId}/`);
+                const history = response.data.results || response.data || [];
+                setMessages(history.map(m => ({
+                    ...m,
+                    id: m.id,
+                    message: m.content || m.message, 
+                    sender_id: m.sender,
+                    timestamp: m.timestamp,
+                    reactions: []
+                })));
+            } catch (err) {
+                console.error("Fetch message history error:", err);
+            }
+        };
+
+        fetchHistory();
+    }, [recipientId]);
 
     useEffect(() => {
         if (!recipientId) return;
         
         const token = localStorage.getItem('access');
         if (token) {
-            // Determine WebSocket URL from API_BASE_URL
             const isLocal = API_BASE_URL.includes('localhost') || API_BASE_URL.includes('127.0.0.1');
             const protocol = isLocal ? 'ws:' : 'wss:';
-            // Extract host from API_BASE_URL (remove protocol)
             const host = API_BASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
             const wsUrl = `${protocol}//${host}/ws/chat/${recipientId}/?token=${token}`;
             
@@ -69,7 +89,7 @@ const useChat = (recipientId) => {
                         }
                     }
                 } catch (err) {
-                    // Critical errors can stay or be silent. User requested no logs.
+                    // Silently ignore
                 }
             };
 

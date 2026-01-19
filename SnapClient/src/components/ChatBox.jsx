@@ -52,14 +52,8 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack, autoAn
     // Typing Indicator Logic
     const handleInputChange = (e) => {
         setMessageInput(e.target.value);
-        
-        // Send typing=true
         sendTypingStatus(true);
-
-        // Clear existing timeout
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
-        // Set timeout to send typing=false after 2 seconds of inactivity
         typingTimeoutRef.current = setTimeout(() => {
             sendTypingStatus(false);
         }, 2000);
@@ -74,66 +68,54 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack, autoAn
         }
     };
 
+    const toggleReactionMenu = (msgId) => {
+        setActiveReactionMessageId(prev => prev === msgId ? null : msgId);
+    };
+
+    const addEmoji = (emoji) => {
+        setMessageInput(prev => prev + emoji);
+        setShowEmojiPicker(false);
+    };
+
     return (
-        <div className="flex-1 flex flex-col h-full bg-white font-sans overflow-hidden">
-            {/* Premium Chat Header */}
-            <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                <div className="flex items-center gap-3">
+        <div className="flex-1 flex flex-col h-full bg-white relative">
+            {/* Chat Header (Original Yellow/Black) */}
+            <div className="px-6 py-4 bg-yellow-400 border-b-4 border-black flex items-center justify-between sticky top-0 z-10">
+                <div className="flex items-center gap-4">
                     {onBack && (
-                        <button onClick={onBack} className="md:hidden text-black p-2 -ml-2 hover:bg-gray-50 rounded-full transition-colors">
-                            <FontAwesomeIcon icon={faArrowLeft} />
+                        <button onClick={onBack} className="md:hidden text-black mr-2 hover:scale-110 transition-transform">
+                            <FontAwesomeIcon icon={faArrowLeft} className="text-xl" />
                         </button>
                     )}
                     <div 
                         onClick={() => navigate(`/users/${otherUser.username}`)}
-                        className="flex items-center gap-3 cursor-pointer group"
+                        className="flex items-center gap-4 cursor-pointer group"
                     >
-                        <div className="relative">
-                            <UserAvatar user={otherUser} className="w-10 h-10 border border-gray-100 shadow-sm" />
+                        <div className="relative group-hover:scale-105 transition-transform">
+                            <UserAvatar user={otherUser} className="w-11 h-11 border-2 border-black" />
                             {isRecipientOnline && (
-                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm animate-pulse" title="Online" />
+                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 border-2 border-black rounded-full animate-pulse" />
                             )}
                         </div>
-                        <div className="flex flex-col">
-                            <span className="font-bold text-[15px] text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
+                        <div>
+                            <h2 className="text-[17px] font-black text-black tracking-tight leading-none group-hover:underline decoration-2">
                                 {otherUser.username}
-                            </span>
-                            <span className="text-[11px] text-gray-500 font-medium tracking-wide">
-                                {isRecipientOnline ? 'Active now' : 'Offline'}
-                            </span>
+                            </h2>
+                            {isTyping && (
+                                <span className="text-[10px] font-black uppercase text-black/60 italic">typing...</span>
+                            )}
                         </div>
                     </div>
                 </div>
-                
-                <div className="flex items-center gap-1">
-                    <button className="p-2.5 text-gray-700 hover:bg-gray-50 rounded-full transition-colors">
-                        <FontAwesomeIcon icon={faPhone} className="text-lg" />
-                    </button>
-                    <button className="p-2.5 text-gray-700 hover:bg-gray-50 rounded-full transition-colors">
-                        <FontAwesomeIcon icon={faVideo} className="text-lg" />
-                    </button>
-                    <button className="p-2.5 text-gray-700 hover:bg-gray-50 rounded-full transition-colors">
-                        <FontAwesomeIcon icon={faInfoCircle} className="text-lg" />
-                    </button>
-                </div>
             </div>
             
-            {/* Message Thread Area */}
-            <div className="flex-1 overflow-y-auto px-4 py-8 space-y-4 bg-white scrollbar-hide">
+            {/* Messages Area (Original Bubble Style) */}
+            <div ref={messagesAreaRef} className="flex-1 overflow-y-auto px-4 py-6 space-y-2 bg-white">
                 {messages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <div className="relative group mb-4">
-                            <div className="absolute inset-0 bg-blue-500/20 blur-2xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <UserAvatar user={otherUser} className="w-24 h-24 relative border-4 border-white shadow-xl" />
-                        </div>
-                        <h3 className="font-extrabold text-xl text-gray-900 mb-1">{otherUser.username}</h3>
-                        <p className="text-gray-400 text-sm mb-6">You're starting a conversation</p>
-                        <button 
-                            onClick={() => navigate(`/users/${otherUser.username}`)}
-                            className="bg-gray-50 text-gray-900 font-bold text-xs px-6 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-100 transition-all active:scale-95 uppercase tracking-widest shadow-sm"
-                        >
-                            View Profile
-                        </button>
+                    <div className="flex flex-col items-center justify-center py-10">
+                        <UserAvatar user={otherUser} className="w-20 h-20 mb-4 border-2 border-black" />
+                        <h3 className="font-exrabold text-lg text-black">{otherUser.username}</h3>
+                        <p className="text-gray-500 font-bold text-sm tracking-tight text-center">SnapNest • Forever Free Messaging</p>
                     </div>
                 )}
                 
@@ -141,79 +123,99 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack, autoAn
                     const isMe = Number(msg.sender_id) === Number(currentUserId);
                     const prevMsg = messages[i - 1];
                     const isFirstInGroup = !prevMsg || Number(prevMsg.sender_id) !== Number(msg.sender_id);
+                    const isMenuOpen = activeReactionMessageId === msg.id;
 
                     return (
-                        <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-                            <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                <div className="group relative flex items-center gap-2">
-                                    <div 
-                                        className={`
-                                            px-4 py-2.5 text-[14.5px] leading-relaxed shadow-sm
-                                            ${isMe 
-                                                ? 'bg-blue-600 text-white rounded-[22px] rounded-tr-none' 
-                                                : 'bg-gray-100 text-gray-900 rounded-[22px] rounded-tl-none'
-                                            }
-                                        `}
-                                    >
-                                        {msg.message}
+                        <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} mb-1`}>
+                            {isFirstInGroup && (
+                                <span className={`text-[10px] font-black uppercase tracking-widest mb-1 opacity-40 ${isMe ? 'mr-3' : 'ml-3'}`}>
+                                    {isMe ? 'You' : (msg.sender_username || otherUser.username)}
+                                </span>
+                            )}
+                            <div className="relative flex items-end gap-2">
+                                {/* Reaction Popover */}
+                                {isMenuOpen && (
+                                    <div className={`
+                                        absolute bottom-full mb-1 ${isMe ? 'right-0' : 'left-0'} 
+                                        flex bg-white border-2 border-black rounded-full p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] z-20 gap-1
+                                    `}>
+                                        {commonEmojis.slice(0, 6).map(emoji => (
+                                            <button 
+                                                key={emoji}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    sendReaction(msg.id, emoji);
+                                                    setActiveReactionMessageId(null);
+                                                }}
+                                                className="hover:scale-125 transition-transform p-1 text-sm"
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))}
                                     </div>
-                                    
-                                    {/* Action buttons on hover (premium touch) */}
-                                    <div className={`absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 ${isMe ? 'right-full mr-2' : 'left-full ml-2'}`}>
-                                        <button className="text-gray-400 hover:text-gray-600 p-1"><FontAwesomeIcon icon={faSmile} size="xs" /></button>
+                                )}
+
+                                <div 
+                                    onClick={() => toggleReactionMenu(msg.id)}
+                                    className={`
+                                        cursor-pointer relative max-w-[100%] min-w-[120px] px-4 py-2 text-[14px] leading-snug break-words border-2 border-black transition-transform active:scale-[0.98] font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+                                        ${isMe 
+                                            ? 'bg-yellow-400 text-black rounded-2xl rounded-tr-none' 
+                                            : 'bg-white text-black rounded-2xl rounded-tl-none'
+                                        }
+                                    `}
+                                >
+                                    <div className="relative z-10">{msg.message}</div>
+                                    <div className="text-[9px] font-black uppercase tracking-tighter mt-1 opacity-50 flex justify-end">
+                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </div>
-                                {isFirstInGroup && (
-                                    <span className="text-[10px] text-gray-400 font-semibold mt-1 px-1">
-                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                )}
                             </div>
                         </div>
                     );
                 })}
+                <div ref={scrollRef} className="pb-2" />
+            </div>
 
-                {/* Typing Indicator Bubble */}
-                {isTyping && (
-                    <div className="flex justify-start w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <div className="bg-gray-100 px-4 py-3 rounded-[22px] rounded-tl-none flex gap-1 items-center shadow-sm">
-                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" />
-                        </div>
+            {/* Input Bar (Original Yellow/Black) */}
+            <div className="p-4 bg-yellow-400 border-t-4 border-black relative">
+                {showEmojiPicker && (
+                    <div ref={emojiBarRef} className="absolute bottom-[100%] left-4 mb-2 bg-white border-4 border-black p-2 flex gap-3 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] rounded-xl z-30">
+                        {commonEmojis.map(emoji => (
+                            <button 
+                                key={emoji}
+                                onClick={() => addEmoji(emoji)}
+                                className="text-xl hover:scale-125 transition-transform"
+                            >
+                                {emoji}
+                            </button>
+                        ))}
                     </div>
                 )}
                 
-                <div ref={scrollRef} />
-            </div>
-
-            {/* Premium Input Area */}
-            <div className="p-4 bg-white border-t border-gray-100">
-                <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-3xl px-4 py-1.5 shadow-inner focus-within:bg-white focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                    <button className="text-gray-500 hover:text-blue-600 p-2"><FontAwesomeIcon icon={faSmile} /></button>
+                <div className="bg-white border-2 border-black rounded-full flex items-center px-4 py-1 gap-2 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
+                    <button 
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className="text-black hover:scale-110 transition-transform"
+                    >
+                        <FontAwesomeIcon icon={faSmile} className="text-xl" />
+                    </button>
                     <input 
                         type="text" 
                         value={messageInput} 
                         onChange={handleInputChange}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="Message..."
-                        className="flex-1 bg-transparent py-2.5 focus:outline-none text-[15px] text-gray-900 placeholder-gray-400 font-medium"
+                        placeholder="Type a message..."
+                        className="flex-1 bg-transparent py-3 focus:outline-none text-[16px] font-bold text-black placeholder-gray-500"
                     />
-                    <div className="flex items-center gap-1">
-                        {!messageInput.trim() ? (
-                            <>
-                                <button className="text-gray-500 hover:text-gray-700 p-2"><FontAwesomeIcon icon={faImage} /></button>
-                                <button className="text-gray-500 hover:text-red-500 p-2"><FontAwesomeIcon icon={faHeart} /></button>
-                            </>
-                        ) : (
-                            <button 
-                                onClick={handleSend}
-                                className="text-blue-600 font-bold px-4 py-2 hover:scale-105 transition-transform"
-                            >
-                                Send
-                            </button>
-                        )}
-                    </div>
+                    {messageInput.trim() && (
+                        <button 
+                            onClick={handleSend} 
+                            className="bg-black text-white px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest hover:bg-yellow-400 hover:text-black transition-all active:scale-95 border-2 border-black"
+                        >
+                            Send
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
