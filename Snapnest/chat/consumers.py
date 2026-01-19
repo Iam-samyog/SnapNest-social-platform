@@ -167,6 +167,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if self.user.id != event['sender_id']:
             await self.send(text_data=json.dumps(event['data']))
 
+    @database_sync_to_async
+    def save_message(self, content):
+        receiver = User.objects.get(id=int(self.other_user_id))
+        return Message.objects.create(sender=self.user, receiver=receiver, content=content)
+
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -185,8 +190,3 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def notification_message(self, event):
         await self.send(text_data=json.dumps(event['data']))
-
-    @database_sync_to_async
-    def save_message(self, content):
-        receiver = User.objects.get(id=int(self.other_user_id))
-        return Message.objects.create(sender=self.user, receiver=receiver, content=content)
