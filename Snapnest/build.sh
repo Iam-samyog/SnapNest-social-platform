@@ -23,6 +23,6 @@ if not User.objects.filter(username=username).exists():
 else:
     print(f"ℹ️ Superuser '{username}' already exists.")
 END
-else:
+else
   echo ">>> Skipping superuser creation (env variables not set)"
 fi
