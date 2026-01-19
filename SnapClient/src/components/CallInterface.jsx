@@ -30,10 +30,22 @@ const CallInterface = ({
   useEffect(() => {
     let mounted = true;
 
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    const constraints = {
+      video: {
+        width: { min: 640, ideal: 1280, max: 1920 },
+        height: { min: 480, ideal: 720, max: 1080 },
+        frameRate: { ideal: 30, max: 60 }
+      },
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
       .then((currentStream) => {
         if (!mounted) {
-            // Component unmounted before stream was ready. Stop it immediately.
             currentStream.getTracks().forEach(track => track.stop());
             return;
         }
@@ -44,7 +56,6 @@ const CallInterface = ({
           myVideo.current.srcObject = currentStream;
         }
 
-        // If we are the initiator, create the peer immediately
         if (isInitiator) {
           const peer = new SimplePeer({
             initiator: true,
@@ -76,32 +87,20 @@ const CallInterface = ({
           });
 
           const handleCallEvents = (event) => {
-            const data = JSON.parse(event.data);
-             if (data.type === 'call_accepted') {
-                setCallAccepted(true);
-                peer.signal(data.signal);
-            } else if (data.type === 'toggle_media') {
-                if (data.kind === 'audio') setRemoteMuted(!data.status);
-                if (data.kind === 'video') setRemoteVideoOff(!data.status);
-            }
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'call_accepted') {
+                   setCallAccepted(true);
+                   peer.signal(data.signal);
+               } else if (data.type === 'toggle_media') {
+                   if (data.kind === 'audio') setRemoteMuted(!data.status);
+                   if (data.kind === 'video') setRemoteVideoOff(!data.status);
+               }
+            } catch(e) {}
           };
 
           socket.addEventListener('message', handleCallEvents);
           activeListeners.current.push(handleCallEvents);
-          
-          // Store handler for cleanup
-          connectionRef.current = peer;
-          // We need to attach cleanup logic for this listener to the peer destroy or component cleanup?
-          // Since this is inside useEffect, we can't easily access the cleanup function of useEffect from here directly 
-          // without refs or closures.
-          // Better: assign it to a ref so the cleanup function (line 67) can access it.
-          // However, lines 60-61 close the "if (isInitiator)" block.
-          // Let's rely on a reliable cleanup strategy.
-          
-          // We can attach the listener removal to the peer.destroy? No, peer doesn't know about socket.
-          // Let's add it to a ref.
-          activeListeners.current.push(handleCallAccepted);
-
           connectionRef.current = peer;
         } 
       })
@@ -109,15 +108,12 @@ const CallInterface = ({
       
       return () => {
           mounted = false;
-          // Cleanup
           if(streamRef.current) {
               streamRef.current.getTracks().forEach(track => track.stop());
           }
           if(connectionRef.current) {
               connectionRef.current.destroy();
           }
-          
-          // Remove all listeners attached during this session
           activeListeners.current.forEach(listener => {
               socket.removeEventListener('message', listener);
           });
@@ -125,9 +121,17 @@ const CallInterface = ({
       }
   }, []);
 
+  // Effect for auto-answer
+  useEffect(() => {
+    if (autoAccept && !isInitiator && !callAccepted) {
+        // Logic for auto-acceptance is handled by the presence of incomingCallSignal
+        // which triggers the second useEffect. This autoAccept prop currently 
+        // helps distinguish manual vs automatic entry.
+    }
+  }, [autoAccept]);
+
   // Effect to handle answering a call (for the receiver)
   useEffect(() => {
-    // If we have a signal from the caller (incomingCallSignal), we answer.
     if (!isInitiator && incomingCallSignal && stream) {
         setCallAccepted(true);
         const peer = new SimplePeer({
@@ -152,33 +156,38 @@ const CallInterface = ({
             }
         });
 
-        peer.on('stream', (currentStream) => {
+        peer.on('stream', (remoteStream) => {
             if (userVideo.current) {
-                userVideo.current.srcObject = currentStream;
+                userVideo.current.srcObject = remoteStream;
             }
         });
 
         peer.signal(incomingCallSignal);
 
+        const handleRemoteMedia = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'toggle_media' && data.to === currentUser.id) {
+                    if (data.kind === 'audio') setRemoteMuted(!data.status);
+                    if (data.kind === 'video') setRemoteVideoOff(!data.status);
+                }
+            } catch(e) {}
+        };
+        socket.addEventListener('message', handleRemoteMedia);
+        activeListeners.current.push(handleRemoteMedia);
+
         connectionRef.current = peer;
     }
   }, [incomingCallSignal, stream, isInitiator]);
 
-
-
-
   const leaveCall = () => {
     setCallEnded(true);
-    
-    // Stop all tracks immediately
     if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
     }
-    
     if (connectionRef.current) {
       connectionRef.current.destroy();
     }
-    // Notify other user
     socket.send(JSON.stringify({
          type: 'end_call',
          to: otherUser.id
@@ -189,49 +198,24 @@ const CallInterface = ({
   const toggleMute = async () => {
       if (isTogglingAudio) return;
       setIsTogglingAudio(true);
-
       try {
-          // Logic for turning Audio ON (Unmute)
           if (isMuted) {
               const newStream = await navigator.mediaDevices.getUserMedia({ audio: true });
               const newAudioTrack = newStream.getAudioTracks()[0];
-              
               if (stream && connectionRef.current) {
                   const oldAudioTrack = stream.getAudioTracks()[0];
                   if (oldAudioTrack) connectionRef.current.replaceTrack(oldAudioTrack, newAudioTrack, stream);
-                  
                   stream.removeTrack(oldAudioTrack);
                   stream.addTrack(newAudioTrack);
-                  
                   setIsMuted(false);
-                  
-                  if (socket.readyState === WebSocket.OPEN) {
-                      socket.send(JSON.stringify({
-                          type: 'toggle_media',
-                          kind: 'audio',
-                          status: true,
-                          to: otherUser.id
-                      }));
-                  }
+                  socket.send(JSON.stringify({ type: 'toggle_media', kind: 'audio', status: true, to: otherUser.id }));
               }
-          } 
-          // Logic for turning Audio OFF (Mute)
-          else {
+          } else {
               if(stream) {
                   const audioTrack = stream.getAudioTracks()[0];
-                  if (audioTrack) {
-                      audioTrack.stop();
-                  }
+                  if (audioTrack) audioTrack.stop();
                   setIsMuted(true);
-                  
-                  if (socket.readyState === WebSocket.OPEN) {
-                      socket.send(JSON.stringify({
-                          type: 'toggle_media',
-                          kind: 'audio',
-                          status: false,
-                          to: otherUser.id
-                      }));
-                  }
+                  socket.send(JSON.stringify({ type: 'toggle_media', kind: 'audio', status: false, to: otherUser.id }));
               }
           }
       } catch (err) {
@@ -244,53 +228,25 @@ const CallInterface = ({
   const toggleVideo = async () => {
       if (isTogglingVideo) return;
       setIsTogglingVideo(true);
-
       try {
-          // Logic for turning Video ON
           if (isVideoOff) {
               const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
               const newVideoTrack = newStream.getVideoTracks()[0];
-              
               if (stream && connectionRef.current) {
                   const oldVideoTrack = stream.getVideoTracks()[0];
                   if (oldVideoTrack) connectionRef.current.replaceTrack(oldVideoTrack, newVideoTrack, stream);
-                  
                   stream.removeTrack(oldVideoTrack);
                   stream.addTrack(newVideoTrack);
-                  
-                  if (myVideo.current) {
-                      myVideo.current.srcObject = stream;
-                  }
-                  
+                  if (myVideo.current) myVideo.current.srcObject = stream;
                   setIsVideoOff(false);
-                  
-                  if (socket.readyState === WebSocket.OPEN) {
-                      socket.send(JSON.stringify({
-                          type: 'toggle_media',
-                          kind: 'video',
-                          status: true,
-                          to: otherUser.id
-                      }));
-                  }
+                  socket.send(JSON.stringify({ type: 'toggle_media', kind: 'video', status: true, to: otherUser.id }));
               }
-          } 
-          // Logic for turning Video OFF
-          else {
+          } else {
               if(stream) {
                   const videoTrack = stream.getVideoTracks()[0];
-                  if (videoTrack) {
-                      videoTrack.stop();
-                  }
+                  if (videoTrack) videoTrack.stop();
                   setIsVideoOff(true);
-                  
-                  if (socket.readyState === WebSocket.OPEN) {
-                      socket.send(JSON.stringify({
-                          type: 'toggle_media',
-                          kind: 'video',
-                          status: false,
-                          to: otherUser.id
-                      }));
-                  }
+                  socket.send(JSON.stringify({ type: 'toggle_media', kind: 'video', status: false, to: otherUser.id }));
               }
           }
       } catch (err) {
@@ -301,80 +257,108 @@ const CallInterface = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
-      <div className="relative w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* My Video */}
-        <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden border-2 border-white">
-            <video playsInline muted ref={myVideo} autoPlay className={`w-full h-full object-cover ${isVideoOff ? 'hidden' : ''}`} />
-            {isVideoOff && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-                    <div className="flex flex-col items-center">
-                        <div className="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-500 mb-2">
-                             <VideoOff size={32} className="text-white" />
-                        </div>
-                        <p className="text-white font-bold">You</p>
-                    </div>
+    <div className="fixed inset-0 z-[100] bg-zinc-950 flex flex-col items-center justify-center font-sans overflow-hidden">
+      {/* Main Remote Video Container */}
+      <div className="relative w-full h-full flex items-center justify-center bg-zinc-900 overflow-hidden">
+        {callAccepted && !callEnded ? (
+          <div className="w-full h-full relative">
+            <video playsInline ref={userVideo} autoPlay className={`w-full h-full object-cover transition-opacity duration-500 ${remoteVideoOff ? 'opacity-0' : 'opacity-100'}`} />
+            
+            {remoteVideoOff && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 border-zinc-800">
+                <div className="w-32 h-32 rounded-full bg-zinc-800 flex items-center justify-center border-2 border-zinc-700 mb-4 shadow-xl">
+                  <span className="text-5xl font-bold text-zinc-100">{otherUser?.username?.[0]?.toUpperCase() || '?'}</span>
                 </div>
+                <h3 className="text-xl font-medium text-zinc-200">{otherUser?.username || 'User'}</h3>
+                <p className="text-zinc-500 mt-2 flex items-center gap-2">
+                    <VideoOff size={16} /> Video is off
+                </p>
+              </div>
             )}
-             <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-sm flex items-center gap-2">
-                <span>You</span>
-                {isMuted && <MicOff size={14} className="text-red-500" />}
-            </div>
-        </div>
 
-        {/* Other User Video */}
-        <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden border-2 border-white">
-           {callAccepted && !callEnded ? (
-             <>
-                <video playsInline ref={userVideo} autoPlay className={`w-full h-full object-cover ${remoteVideoOff ? 'hidden' : ''}`} />
-                {remoteVideoOff && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-                        <div className="flex flex-col items-center">
-                            <div className="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-500 mb-2">
-                                <span className="text-2xl font-bold text-white">{otherUser.username[0].toUpperCase()}</span>
-                            </div>
-                            <p className="text-white font-bold">{otherUser.username} (Camera Off)</p>
-                        </div>
+            {/* Remote Status Indicators */}
+            <div className="absolute top-6 left-6 flex flex-col gap-2">
+              <div className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-3 border border-white/10">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-white font-medium tracking-wide">{otherUser?.username || 'User'}</span>
+                {remoteMuted && (
+                    <div className="bg-red-500/80 p-1 rounded-full shadow-lg">
+                        <MicOff size={12} className="text-white" />
                     </div>
                 )}
-             </>
-           ) : (
-                <div className="flex items-center justify-center h-full text-white">
-                    {isInitiator ? 'Calling...' : 'Connecting...'}
-                </div>
-           )}
-            <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-sm flex items-center gap-2">
-                <span>{otherUser?.username || 'User'}</span>
-                {remoteMuted && <MicOff size={14} className="text-red-500" />}
+              </div>
             </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-700">
+            <div className="w-32 h-32 rounded-full bg-zinc-800 flex items-center justify-center border-4 border-zinc-700 shadow-2xl relative">
+               <span className="text-5xl font-bold text-zinc-100">{otherUser?.username?.[0]?.toUpperCase() || '?'}</span>
+               <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-zinc-950 rounded-full flex items-center justify-center border-2 border-zinc-700">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-ping" />
+               </div>
+            </div>
+            <div className="text-center">
+                <h3 className="text-2xl font-semibold text-zinc-100 mb-1">{otherUser?.username || 'User'}</h3>
+                <p className="text-zinc-400 text-lg animate-pulse">
+                    {isInitiator ? 'Calling...' : 'Connecting...'}
+                </p>
+            </div>
+          </div>
+        )}
+
+        {/* Local Self-View (Picture-in-Picture) */}
+        <div className="absolute bottom-28 md:bottom-8 right-6 w-32 h-48 md:w-48 md:h-64 bg-zinc-800 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-10 transition-all hover:scale-105 active:scale-95 group">
+          <video playsInline muted ref={myVideo} autoPlay className={`w-full h-full object-cover mirror ${isVideoOff ? 'opacity-0' : 'opacity-100'}`} />
+          
+          {isVideoOff && (
+            <div className="absolute inset-0 flex items-center justify-center bg-zinc-800 border-zinc-700">
+              <div className="w-12 h-12 rounded-full bg-zinc-700 flex items-center justify-center border border-zinc-600">
+                <VideoOff size={20} className="text-zinc-400" />
+              </div>
+            </div>
+          )}
+          
+          <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-lg text-white text-[10px] font-medium border border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+            You {isMuted && '(Muted)'}
+          </div>
+        </div>
+
+        {/* Call Controls Overlay */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 md:gap-8 bg-zinc-900/40 backdrop-blur-xl px-8 py-4 rounded-[40px] border border-white/10 shadow-2xl z-20">
+          <button 
+            onClick={toggleMute}
+            disabled={isTogglingAudio}
+            className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${isMuted ? 'bg-zinc-800 text-zinc-400 scale-90' : 'bg-zinc-100 text-zinc-900 hover:bg-white active:scale-95 shadow-lg shadow-white/5'}`}
+          >
+            {isTogglingAudio ? (
+                <div className="animate-spin w-6 h-6 border-2 border-current border-t-transparent rounded-full" />
+            ) : (isMuted ? <MicOff size={24} /> : <Mic size={24} />)}
+          </button>
+          
+          <button 
+            onClick={leaveCall}
+            className="w-16 h-16 rounded-full bg-red-500 text-white hover:bg-red-400 active:scale-90 transition-all flex items-center justify-center shadow-xl shadow-red-500/20 group"
+          >
+            <Phone size={28} className="rotate-[135deg] group-hover:rotate-[145deg] transition-transform" />
+          </button>
+
+          <button 
+            onClick={toggleVideo}
+            disabled={isTogglingVideo}
+            className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${isVideoOff ? 'bg-zinc-800 text-zinc-400 scale-90' : 'bg-zinc-100 text-zinc-900 hover:bg-white active:scale-95 shadow-lg shadow-white/5'}`}
+          >
+            {isTogglingVideo ? (
+                <div className="animate-spin w-6 h-6 border-2 border-current border-t-transparent rounded-full" />
+            ) : (isVideoOff ? <VideoOff size={24} /> : <VideoIcon size={24} />)}
+          </button>
         </div>
       </div>
 
-      <div className="mt-8 flex gap-4">
-        <button 
-            onClick={toggleMute}
-            disabled={isTogglingAudio}
-            className={`p-4 rounded-full ${isMuted ? 'bg-red-500' : 'bg-gray-700'} text-white hover:opacity-80 transition-all ${isTogglingAudio ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-            {/* Show simple spinner or icon */}
-            {isTogglingAudio ? <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" /> : (isMuted ? <MicOff size={24} /> : <Mic size={24} />)}
-        </button>
-        
-        <button 
-            onClick={toggleVideo}
-            disabled={isTogglingVideo}
-            className={`p-4 rounded-full ${isVideoOff ? 'bg-red-500' : 'bg-gray-700'} text-white hover:opacity-80 transition-all ${isTogglingVideo ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-             {isTogglingVideo ? <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" /> : (isVideoOff ? <VideoOff size={24} /> : <VideoIcon size={24} />)}
-        </button>
-
-        <button 
-            onClick={leaveCall}
-            className="p-4 rounded-full bg-red-600 text-white hover:bg-red-700 transition-all"
-        >
-            <Phone size={24} className="rotate-[135deg]" />
-        </button>
-      </div>
+      <style jsx>{`
+        .mirror {
+          transform: scaleX(-1);
+        }
+      `}</style>
     </div>
   );
 };

@@ -147,7 +147,7 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack, autoAn
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-6 text-black">
+                {/* <div className="flex items-center gap-6 text-black">
                      <button 
                         onClick={() => setIsCalling(true)}
                         className="hover:scale-110 transition-transform"
@@ -162,7 +162,7 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack, autoAn
                     >
                         <FontAwesomeIcon icon={faPhone} className="text-lg sm:text-xl" />
                     </button>
-                </div>
+                </div> */}
             </div>
             
             {/* Messages Area */}
@@ -330,39 +330,47 @@ const ChatBox = ({ otherUser, currentUserId, currentUserUsername, onBack, autoAn
 
             {/* 2. Incoming Call Modal (Pending, not yet accepted/rejected) */}
             {isIncomingCall && !isCalling && (
-                <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-                    <div className="bg-white border-4 border-black p-6 rounded-lg max-w-sm w-full text-center shadow-[8px_8px_0px_0px_rgba(251,191,36,1)]">
-                        <div className="w-24 h-24 mx-auto mb-4 relative">
-                            <UserAvatar user={otherUser} className="w-full h-full border-4 border-black" />
-                            <div className="absolute -bottom-2 -right-2 bg-yellow-400 border-2 border-black p-2 rounded-full animate-bounce">
-                                <FontAwesomeIcon icon={faVideo} className="text-black" />
+                <div className="fixed inset-0 z-50 bg-zinc-950/40 backdrop-blur-md flex items-end md:items-center justify-center p-4 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
+                     <div className="bg-zinc-900 border border-white/10 p-6 rounded-[32px] max-w-sm w-full text-center shadow-2xl shadow-black/50 overflow-hidden relative group">
+                        {/* Background Pulse Effect */}
+                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse" />
+                        
+                        <div className="w-24 h-24 mx-auto mb-6 relative">
+                            <div className="w-full h-full rounded-3xl bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden shadow-inner animate-in zoom-in duration-500">
+                                <UserAvatar user={otherUser} className="w-full h-full" />
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-zinc-950 rounded-full flex items-center justify-center border-2 border-zinc-800">
+                                <div className="w-3 h-3 bg-blue-500 rounded-full animate-ping" />
                             </div>
                         </div>
-                        <h3 className="text-2xl font-black text-black mb-2">Incoming Call...</h3>
-                        <p className="text-gray-600 font-bold mb-8">{otherUser.username} is calling you</p>
+
+                        <div className="mb-8">
+                            <h3 className="text-zinc-400 text-sm font-medium tracking-widest uppercase mb-1">Incoming Video Call</h3>
+                            <h2 className="text-2xl font-bold text-white tracking-tight">{otherUser.username}</h2>
+                        </div>
                         
-                        <div className="flex gap-4 justify-center">
+                        <div className="flex gap-4">
                             <button 
                                 onClick={() => {
                                     setIsIncomingCall(false);
                                     setCallData(null);
-                                    // Send rejection signal
                                     if(socket?.readyState === WebSocket.OPEN) {
                                         socket.send(JSON.stringify({ type: 'end_call', to: otherUser.id }));
                                     }
                                 }}
-                                className="bg-red-500 text-white p-4 rounded-full border-2 border-black hover:scale-110 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-4 rounded-2xl font-semibold transition-all active:scale-95 border border-white/5"
                             >
-                                <FontAwesomeIcon icon={faPhone} className="rotate-[135deg] text-xl" />
+                                Decline
                             </button>
                             <button 
                                 onClick={() => {
                                     setIsCalling(true);
                                     setIsIncomingCall(false);
                                 }}
-                                className="bg-green-500 text-white p-4 rounded-full border-2 border-black hover:scale-110 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse"
+                                className="flex-1 bg-white hover:bg-zinc-200 text-zinc-950 py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-lg shadow-white/5 flex items-center justify-center gap-2"
                             >
-                                <FontAwesomeIcon icon={faPhone} className="text-xl" />
+                                <FontAwesomeIcon icon={faVideo} size="sm" />
+                                <span>Answer</span>
                             </button>
                         </div>
                     </div>
