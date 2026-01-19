@@ -116,6 +116,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             'data': {
                                 'type': 'incoming_call',
                                 'from': self.user.id,
+                                'from_username': self.user.username,
                                 'signalData': data.get('signalData')
                             }
                         }
