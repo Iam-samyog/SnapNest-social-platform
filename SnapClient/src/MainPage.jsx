@@ -8,6 +8,7 @@ import Review from './components/Reviews'
 import CTASection from './components/CTASection'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import MigrationNotice from './components/MigrationNotice'
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ const MainPage = () => {
 
   return (
     <>
+    <MigrationNotice />
     <div className='container mx-auto max-w-[1450px]'>
     <Navbar/>
      </div>

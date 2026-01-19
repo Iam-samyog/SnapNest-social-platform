@@ -3,11 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
 from .models import Message
-import redis
 from django.conf import settings
-
-# Initialize redis connection
-r = redis.from_url(settings.REDIS_URL)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -20,13 +16,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         ids = sorted([self.user.id, int(self.other_user_id)])
         self.room_name = f'chat_{ids[0]}_{ids[1]}'
-        self.user_presence_key = f'user_online_{self.user.id}'
        
         await self.channel_layer.group_add(self.room_name, self.channel_name)
-        
-        # Track user online status in Redis
-        r.sadd('online_users', self.user.id)
-        
         await self.accept()
 
         # Broadcast that user is online to the room
@@ -39,21 +30,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
         
-        # Also check if the other user is online and send to the current user
-        is_other_online = r.sismember('online_users', self.other_user_id)
-        if is_other_online:
-            await self.send(text_data=json.dumps({
-                'type': 'user_status',
-                'user_id': int(self.other_user_id),
-                'status': 'online'
-            }))
+        # In a real InMemory setup without Redis, we can't easily query 'all online users'
+        # across different group scopes without a shared state. 
+        # However, for 1-on-1 chat, both users are in the same room.
+        # When we connect, we broadcast. If the other person is there, they will receive it.
+        # To get the other person's status immediately, we can send a 'ping'
+        await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type': 'status_request',
+                'requester_id': self.user.id
+            }
+        )
 
     async def disconnect(self, close_code):
-        # Remove user from online status
-        if hasattr(self, 'user') and self.user.is_authenticated:
-            r.srem('online_users', self.user.id)
-            
-            # Broadcast that user is offline
+        # Broadcast that user is offline
+        if hasattr(self, 'room_name'):
             await self.channel_layer.group_send(
                 self.room_name,
                 {
@@ -62,8 +54,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'status': 'offline'
                 }
             )
-        
-        if hasattr(self, 'room_name'):
             await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
     async def receive(self, text_data):
@@ -94,8 +84,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'sender_id': self.user.id
                 }
             )
+        elif message_type == 'typing':
+            await self.channel_layer.group_send(
+                self.room_name,
+                {
+                    'type': 'typing_indicator',
+                    'sender_id': self.user.id,
+                    'is_typing': data.get('is_typing', False)
+                }
+            )
         else:
-            # Relay signal to the room (for ChatBox)
+            # Relay signal to the room (for ChatBox/WebRTC)
             await self.channel_layer.group_send(
                 self.room_name,
                 {
@@ -141,15 +140,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def user_status(self, event):
-        # Notify frontend about user status change
         await self.send(text_data=json.dumps({
             'type': 'user_status',
             'user_id': event['user_id'],
             'status': event['status']
         }))
 
+    async def status_request(self, event):
+        # If someone asks for status, and I am not the requester, I respond
+        if event['requester_id'] != self.user.id:
+            await self.send(text_data=json.dumps({
+                'type': 'user_status',
+                'user_id': self.user.id,
+                'status': 'online'
+            }))
+
+    async def typing_indicator(self, event):
+        if event['sender_id'] != self.user.id:
+            await self.send(text_data=json.dumps({
+                'type': 'typing',
+                'user_id': event['sender_id'],
+                'is_typing': event['is_typing']
+            }))
+
     async def signal_message(self, event):
-        # Only relay signal to the OTHER person
         if self.user.id != event['sender_id']:
             await self.send(text_data=json.dumps(event['data']))
 
@@ -169,12 +183,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if hasattr(self, 'group_name'):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
-    async def receive(self, text_data):
-        # Mostly just for keeping connection alive or ack
-        pass
-
     async def notification_message(self, event):
-        # Relay notification to the websocket
         await self.send(text_data=json.dumps(event['data']))
 
     @database_sync_to_async
