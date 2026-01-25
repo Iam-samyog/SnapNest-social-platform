@@ -60,6 +60,15 @@ class ImageViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(serializer.data)
 
         # Non-paginated results
+        # Batch fetch view counts for non-paginated results too
+        image_ids = [img.id for img in queryset]
+        if image_ids:
+            keys = [f'image:{img_id}:views' for img_id in image_ids]
+            view_counts = r.mget(keys)
+            # Store in a temporary attribute for the serializer
+            for img, count in zip(queryset, view_counts):
+                img._redis_views = int(count) if count else (getattr(img, 'total_views', 0))
+        
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -75,13 +84,15 @@ class ImageViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         if 'url' in self.request.data and not self.request.data.get('image'):
-            # Download image from URL
+            # Download image from URL with optimizations
             import requests
             import ipaddress
             from urllib.parse import urlparse
             from django.core.files.base import ContentFile
             from django.utils.text import slugify
             from rest_framework.exceptions import ValidationError
+            from io import BytesIO
+            from PIL import Image as PILImage
             
             image_url = self.request.data['url']
             
@@ -110,39 +121,111 @@ class ImageViewSet(viewsets.ModelViewSet):
                 raise ValidationError({"url": f"Invalid URL: {str(e)}"})
 
             try:
-                # Add a timeout and ensure we follow redirects
+                # Optimized download with streaming and size limits
+                MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB limit
+                CHUNK_SIZE = 8192  # 8KB chunks
+                
                 response = requests.get(
                     image_url, 
-                    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'},
-                    timeout=10,
-                    allow_redirects=True
+                    headers={
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Accept': 'image/*'
+                    },
+                    timeout=(5, 30),  # (connect timeout, read timeout)
+                    allow_redirects=True,
+                    stream=True  # Stream download for better performance
                 )
                 response.raise_for_status()
                 
-                # Get file extension or default to .jpg
-                ext = 'jpg'
-                content_type = response.headers.get('content-type', '')
-                if 'image/' in content_type:
-                    ext = content_type.split('/')[-1]
+                # Check content type
+                content_type = response.headers.get('content-type', '').lower()
+                if 'image/' not in content_type:
+                    raise ValidationError({"url": "URL does not point to a valid image."})
                 
-                title = self.request.data.get('title', 'image')
-                file_name = f"{slugify(title)}.{ext}"
+                # Download in chunks with size limit
+                content = BytesIO()
+                downloaded = 0
+                for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+                    if chunk:
+                        downloaded += len(chunk)
+                        if downloaded > MAX_FILE_SIZE:
+                            raise ValidationError({"url": "Image is too large. Maximum size is 20MB."})
+                        content.write(chunk)
                 
-                serializer.save(
-                    user=self.request.user, 
-                    image=ContentFile(response.content, name=file_name)
-                )
+                content.seek(0)
+                
+                # Optimize image using Pillow
+                try:
+                    img = PILImage.open(content)
+                    
+                    # Convert RGBA/LA/P to RGB if needed (for JPEG compatibility)
+                    if img.mode in ('RGBA', 'LA'):
+                        # Create white background
+                        background = PILImage.new('RGB', img.size, (255, 255, 255))
+                        if img.mode == 'RGBA':
+                            background.paste(img, mask=img.split()[3])  # Use alpha channel as mask
+                        else:  # LA mode
+                            background.paste(img, mask=img.split()[1])  # Use alpha channel
+                        img = background
+                    elif img.mode == 'P':
+                        # Palette mode - convert to RGBA first, then RGB
+                        img = img.convert('RGBA')
+                        background = PILImage.new('RGB', img.size, (255, 255, 255))
+                        background.paste(img, mask=img.split()[3])
+                        img = background
+                    elif img.mode not in ('RGB', 'L'):
+                        # Convert other modes to RGB
+                        img = img.convert('RGB')
+                    elif img.mode == 'L':
+                        # Grayscale - convert to RGB
+                        img = img.convert('RGB')
+                    
+                    # Resize if too large (max 2048px on longest side, maintain aspect ratio)
+                    max_dimension = 2048
+                    if max(img.size) > max_dimension:
+                        img.thumbnail((max_dimension, max_dimension), PILImage.Resampling.LANCZOS)
+                    
+                    # Save optimized image
+                    optimized = BytesIO()
+                    img.save(optimized, format='JPEG', quality=85, optimize=True)
+                    optimized.seek(0)
+                    
+                    title = self.request.data.get('title', 'image')
+                    file_name = f"{slugify(title)}.jpg"
+                    
+                    serializer.save(
+                        user=self.request.user, 
+                        image=ContentFile(optimized.read(), name=file_name)
+                    )
+                except PILImage.UnidentifiedImageError:
+                    raise ValidationError({"url": "The URL does not point to a valid image file."})
+                except Exception as img_error:
+                    raise ValidationError({"url": f"Failed to process image: {str(img_error)}"})
+                    
             except requests.exceptions.Timeout:
-                from rest_framework.exceptions import ValidationError
-                raise ValidationError({"url": "This image could not be bookmarked, sorry."})
+                raise ValidationError({"url": "Request timed out. The image server is taking too long to respond."})
+            except requests.exceptions.RequestException as e:
+                raise ValidationError({"url": f"Failed to download image: {str(e)}"})
+            except ValidationError:
+                raise
             except Exception as e:
-                from rest_framework.exceptions import ValidationError
                 print(f"Error downloading image from {image_url}: {str(e)}")
-                raise ValidationError({"url": "This image could not be bookmarked, sorry."})
+                raise ValidationError({"url": "Failed to bookmark image. Please try again or use a different image URL."})
         else:
             serializer.save(user=self.request.user)
             
-        create_action(self.request.user, 'uploaded image', serializer.instance)
+        # Initialize view count in Redis to 1 when image is created (user views it after upload)
+        image = serializer.instance
+        view_key = f'image:{image.id}:views'
+        if not r.exists(view_key):
+            r.set(view_key, 1)  # Start at 1 since user views it after upload
+            # Also initialize in ranking
+            r.zadd('image_ranking', {image.id: 1})
+            # Sync to DB
+            image.total_views = 1
+            image.save(update_fields=['total_views'])
+            
+        create_action(self.request.user, 'uploaded image', image)
 
     def perform_destroy(self, instance):
         if instance.user != self.request.user:
