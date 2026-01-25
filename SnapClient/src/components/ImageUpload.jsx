@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Upload } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpload, faTimes, faLink, faBookmark, faCamera, faSync } from '@fortawesome/free-solid-svg-icons';
 import axiosInstance from '../utils/axiosInstance';
@@ -192,7 +191,7 @@ const ImageUpload = () => {
     }
 
     setLoading(true);
-    setLoadingMessage(isUrlMode ? 'Saving bookmark...' : 'Uploading image to server...');
+    setLoadingMessage(isUrlMode ? 'Downloading image from URL...' : 'Uploading image to server...');
     
     try {
       const uploadData = new FormData();
@@ -201,25 +200,58 @@ const ImageUpload = () => {
       
       if (isUrlMode) {
          uploadData.append('url', formData.url);
+         setLoadingMessage('Downloading image...');
       } else {
          uploadData.append('image', formData.image);
+         setLoadingMessage('Uploading image...');
       }
 
-      setLoadingMessage('Optimizing and saving details...');
+      setLoadingMessage(isUrlMode ? 'Optimizing and processing image...' : 'Processing image...');
+      
       const response = await axiosInstance.post('images/', uploadData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 60000, // 60 second timeout for bookmarking
+        onUploadProgress: (progressEvent) => {
+          if (!isUrlMode && progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setLoadingMessage(`Uploading... ${percentCompleted}%`);
+          }
+        },
       });
 
-      setLoadingMessage('Success! Opening image...');
+      setLoadingMessage('Success! Redirecting...');
       setTimeout(() => {
-        navigate(`/images/${response.data.uuid}`);
-      }, 800);
+        navigate(`/dashboard`);
+        setLoading(false);
+      }, 500);
       
     } catch (error) {
-      if (error.response?.data) {
-        setErrors(error.response.data);
+      console.error('Upload error:', error);
+      
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        setErrors({ general: 'Request timed out. The image may be too large or the server is slow. Please try again.' });
+      } else if (error.response?.data) {
+        // Handle specific field errors
+        const errorData = error.response.data;
+        if (typeof errorData === 'object') {
+          const fieldErrors = {};
+          Object.keys(errorData).forEach(key => {
+            if (Array.isArray(errorData[key])) {
+              fieldErrors[key] = errorData[key][0];
+            } else if (typeof errorData[key] === 'string') {
+              fieldErrors[key] = errorData[key];
+            } else {
+              fieldErrors.general = errorData[key];
+            }
+          });
+          setErrors(fieldErrors);
+        } else {
+          setErrors({ general: errorData || 'Error uploading image. Please try again.' });
+        }
+      } else if (error.request) {
+        setErrors({ general: 'Network error. Please check your connection and try again.' });
       } else {
         setErrors({ general: 'Error uploading image. Please try again.' });
       }
@@ -248,6 +280,12 @@ const ImageUpload = () => {
             {errors.general && (
               <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
                 <p className="font-semibold">{errors.general}</p>
+              </div>
+            )}
+            
+            {errors.url && (
+              <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
+                <p className="font-semibold">URL Error: {errors.url}</p>
               </div>
             )}
 
@@ -365,10 +403,19 @@ const ImageUpload = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-black text-yellow-400 py-4 rounded-lg font-bold text-xl uppercase tracking-widest hover:bg-gray-800 transition-all duration-300 border-4 border-black disabled:opacity-50 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]"
+                className="w-full bg-black text-yellow-400 py-4 rounded-lg font-bold text-xl uppercase tracking-widest hover:bg-gray-800 transition-all duration-300 border-4 border-black disabled:opacity-50 disabled:cursor-not-allowed shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] flex items-center justify-center gap-3"
               >
-                {loading && <Upload className="w-5 h-5 animate-bounce" />}
-                {loading ? loadingMessage : (isUrlMode ? 'Save Bookmark' : 'Upload Image')}
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-400"></div>
+                    <span>{loadingMessage || 'Processing...'}</span>
+                  </>
+                ) : (
+                  <>
+                    {isUrlMode ? <FontAwesomeIcon icon={faBookmark} /> : <FontAwesomeIcon icon={faUpload} />}
+                    {isUrlMode ? 'Save Bookmark' : 'Upload Image'}
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -379,5 +426,6 @@ const ImageUpload = () => {
 };
 
 export default ImageUpload;
+
 
 
